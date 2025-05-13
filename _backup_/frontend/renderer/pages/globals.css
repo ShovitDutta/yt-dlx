@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .border-cross {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-width: 2px;
+    border-color: transparent;
+    border-image: linear-gradient(45deg, transparent 33.33%, #000 33.33%, #000 66.67%, transparent 66.67%) 20;
+    border-image-slice: 1;
+  }
+}

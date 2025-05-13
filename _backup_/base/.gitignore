@@ -1,0 +1,10 @@
+node_modules
+ffprobe.**
+cprobe.**
+ffmpeg.**
+ffprobe_**
+cprobe_**
+ffmpeg_**
+dist
+temp
+out

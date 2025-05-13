@@ -25,32 +25,31 @@ interface CategorizedFunctions {
   Misc?: Function[];
 }
 const FunctionTable = ({ title, functions }: { title: string; functions: Function[] }) => (
-  <motion.div className="overflow-x-auto mb-8" {...AndBounce}>
-    <h3 className="text-2xl font-black tracking-tighter sm:text-3xl text-red-700 mb-4 text-center">{title}</h3>
+  <motion.div className="w-full h-96 overflow-y-auto mb-8 bg-neutral-950 rounded-4xl border-4 border-double border-red-950 hover:border-red-900" {...AndBounce}>
+    <h3 className="text-2xl font-black tracking-tighter sm:text-3xl text-red-700 mb-4 pt-6 underline text-center">{title}</h3>
     <table className="table mx-auto text-left">
       <thead>
         <tr>
           <th className="text-red-700 font-black uppercase">Function Name</th> <th className="text-red-700 font-black uppercase">Description</th>
         </tr>
       </thead>
-
       <tbody>
         {functions.map(func => (
-          <tr key={func.href}>
+          <tr key={func.href} className="hover:bg-red-700 hover:text-black">
             <td className="px-6">
               <Link
                 href={func.href}
                 data-tooltip-place="top"
-                data-tooltip-id="function-tooltip"
+                data-tooltip-id={`function-tooltip-${func.href.replace(/\//g, "-")}`}
                 data-tooltip-content="Press to see examples"
-                className="font-bold flex items-center gap-2 hover:text-red-700"
+                className="font-bold flex items-center gap-2 hover:text-black"
                 data-tooltip-style='{ "backgroundColor": "#1f2937", "color": "#f4f4f5", "fontSize": "14px", "padding": "8px", "borderRadius": "4px", "border": "1px solid #cd322d" }'>
-                <FaClipboardCheck className="mr-2 inline-block h-4 w-4 text-red-700" /> {func.name}
-              </Link>
-              <Tooltip id="function-tooltip" />
-            </td>
-            <td className="py-2 text-sm font-extralight">{func.description}</td>
-          </tr>
+              <FaClipboardCheck className="mr-2 inline-block h-4 w-4" /> {func.name}
+            </Link>
+            <Tooltip id={`function-tooltip-${func.href.replace(/\//g, '-')}`} />
+          </td>
+          <td className="py-2 text-sm font-extralight hover:text-black">{func.description}</td>
+        </tr>
         ))}
       </tbody>
     </table>
@@ -63,67 +62,67 @@ export default function HomePage() {
       category: "Audio",
       href: "/docs/Audio/Custom",
       name: "YouTubeDLX.Audio.Custom()",
-      description: "placeholder_description",
+      description: "Downloads or streams audio from YouTube with customizable options for quality, filters, and output formats.",
     },
     {
       category: "Audio",
       href: "/docs/Audio/Lowest",
       name: "YouTubeDLX.Audio.Lowest()",
-      description: "placeholder_description",
+      description: "Downloads or streams the lowest quality audio from YouTube.",
     },
     {
       category: "Audio",
       href: "/docs/Audio/Highest",
       name: "YouTubeDLX.Audio.Highest()",
-      description: "placeholder_description",
+      description: "Downloads or streams the highest quality audio from YouTube.",
     } /* Video Functions */,
     {
       category: "Video",
       href: "/docs/Video/Custom",
       name: "YouTubeDLX.Video.Custom()",
-      description: "placeholder_description",
+      description: "Downloads or streams video from YouTube with custom options.",
     },
     {
       category: "Video",
       href: "/docs/Video/Highest",
       name: "YouTubeDLX.Video.Highest()",
-      description: "placeholder_description",
+      description: "Downloads or streams the highest quality video from YouTube.",
     },
     {
       category: "Video",
       href: "/docs/Video/Lowest",
       name: "YouTubeDLX.Video.Lowest()",
-      description: "placeholder_description",
+      description: "Downloads or streams the lowest quality video from YouTube.",
     } /* Audio_Video Functions */,
     {
       category: "Audio_Video",
       href: "/docs/Audio_Video/Custom",
       name: "YouTubeDLX.Audio_Video.Custom()",
-      description: "placeholder_description",
+      description: "Downloads or streams combined audio and video from YouTube with custom options.",
     },
     {
       category: "Audio_Video",
       href: "/docs/Audio_Video/Highest",
       name: "YouTubeDLX.Audio_Video.Highest()",
-      description: "placeholder_description",
+      description: "Downloads or streams the highest quality audio from YouTube with filter options.",
     },
     {
       category: "Audio_Video",
       href: "/docs/Audio_Video/Lowest",
       name: "YouTubeDLX.Audio_Video.Lowest()",
-      description: "placeholder_description",
+      description: "Downloads or streams the lowest quality audio and video from YouTube.",
     } /* Search Functions */,
     {
       category: "Search",
       href: "/docs/Search/Channel/Multiple",
       name: "YouTubeDLX.Search.Channel.Multiple()",
-      description: "placeholder_description",
+      description: "Searches for YouTube channels based on a query.",
     },
     {
       category: "Search",
       href: "/docs/Search/Channel/Single",
       name: "YouTubeDLX.Search.Channel.Single()",
-      description: "placeholder_description",
+      description: "Fetches data for a single YouTube channel. This function retrieves detailed information about a specific YouTube channel using its link or ID.",
     },
     {
       category: "Search",
@@ -236,10 +235,10 @@ export default function HomePage() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center gap-6 lg:gap-12">
             <div className="flex flex-col justify-center space-y-4 text-center">
-              <motion.div className="inline-block rounded-3xl bg-red-700 text-neutral-900 cursor-not-allowed font-black px-3 py-1 text-sm"> Viewing Documentation For: </motion.div>
               <motion.h2 className="text-3xl font-black tracking-tighter sm:text-4xl lg:text-5xl text-red-700" {...FromLeftToRight}>
                 Various API Functions
               </motion.h2>
+              <motion.div className="inline-block rounded-3xl bg-red-700 text-neutral-900 cursor-not-allowed font-black px-3 py-1 text-sm"> Viewing Documentation For: </motion.div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-center items-center">
                 {categorizedFunctions.Audio && <FunctionTable title="Audio Functions" functions={categorizedFunctions.Audio} />}
                 {categorizedFunctions.Video && <FunctionTable title="Video Functions" functions={categorizedFunctions.Video} />}

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "esnext"
+  },
+  "include": ["src/**/*.ts"],
+  "extends": "./config/base.json",
+  "exclude": ["out", "client", "node_modules"]
+}
