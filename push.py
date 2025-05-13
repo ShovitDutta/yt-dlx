@@ -3,12 +3,7 @@ import subprocess
 def monitor_and_commit():
     while True:
         try:
-            status_check = subprocess.run(
-                ["git", "status", "--porcelain"],
-                capture_output=True,
-                check=False,
-                text=True,
-            )
+            status_check = subprocess.run(["git", "status", "--porcelain"], capture_output=True,check=False,text=True,)
             if status_check.stdout.strip():
                 print("Changes detected. Staging, Committing, and Pushing...")
                 add_command = subprocess.run(["git", "add", "."], capture_output=True, text=True, check=True)
@@ -22,7 +17,7 @@ def monitor_and_commit():
                 print(push_command.stderr)
                 print("Commit and push successful.")
             else:
-                time.sleep(30)
+                time.sleep(10)
         except subprocess.CalledProcessError as e:
             print(f"Git command failed: {e}")
             print(f"Stdout: {e.stdout}")
