@@ -206,13 +206,13 @@ export default function HomePage() {
       category: "Misc",
       href: "/docs/Misc/Video/Transcript",
       name: "YouTubeDLX.Misc.Video.Transcript()",
-      description: "placeholder_description",
+      description: "Fetches comments for a YouTube video based on a search query. This function searches for a video matching the query and retrieves its comments.",
     },
   ] as {
     category: "Audio" | "Video" | "Audio_Video" | "Account" | "Search" | "Misc";
+    description: string;
     href: string;
     name: string;
-    description: string;
   }[];
   const categorizedFunctions: CategorizedFunctions = functions.reduce((acc, func) => {
     if (!acc[func.category]) acc[func.category] = [];
