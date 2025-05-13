@@ -182,7 +182,7 @@ export default function HomePage() {
       category: "Misc",
       href: "/docs/Misc/Video/Extract",
       name: "YouTubeDLX.Misc.Video.Extract()",
-      description: "placeholder_description",
+      description: "Fetches the transcript of a YouTube video.",
     },
     {
       category: "Misc",
