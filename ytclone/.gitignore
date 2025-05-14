@@ -1,58 +1,41 @@
-# Node.js modules
-**/node_modules/
-**/.yarn/
-**/.pnp/
-**/.pnp.*
-**/.yarn/*
-!**/.yarn/patches
-!**/.yarn/plugins
-!**/.yarn/releases
-!**/.yarn/versions
-# Cookies and specific binaries
-**/cookies.txt
-**/ffprobe**
-**/ytprobe**
-**/ffmpeg**
-**/yt-dlx**
-**/tor**
-**/YouTubeDLX
-**/yt-dlx
-# Environment variables
-**/.env
-**/.env*
-**/.env*.local
-**/expo-env.d.ts
-# Logs and debug files
-**/*.log
-**/npm-debug.*
-**/yarn-debug.*
-**/yarn-error.*
-**/pnpm-debug.log*
-# Build and distribution files
-**/package/
-**/dist/
-**/temp/
-**/out/
-**/build/
-**/web-build/
-**/next-env.d.ts
-# Expo, React, and Next.js specific
-**/.expo/
-**/.next/
-**/android/
-**/ios/
-# IDE and system files
-**/.DS_Store
-**/*.orig.*
-**/*.jks
-**/*.p8
-**/*.p12
-**/*.key
-**/*.mobileprovision
-**/.metro-health-check*
-**/*.pem
-# TypeScript build info
-**/*.tsbuildinfo
-# Coverage and other misc files
-**/coverage/
-**/.vercel/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
