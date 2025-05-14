@@ -15,5 +15,6 @@
     "**/Thumbs.db": true,
     "**/.DS_Store": true,
     "**/node_modules": true
-  }
+  },
+  "zencoder.enableRepoIndexing": true
 }
