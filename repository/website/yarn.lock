@@ -1279,9 +1279,9 @@ debug@^3.2.7:
     ms "^2.1.1"
 
 debug@^4.3.1, debug@^4.3.2, debug@^4.3.4, debug@^4.3.5, debug@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.0.tgz#2b3f2aea2ffeb776477460267377dc8710faba8a"
-  integrity sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.1.tgz#e5a8bc6cbc4c6cd3e64308b0693a3d4fa550189b"
+  integrity sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==
   dependencies:
     ms "^2.1.3"
 
@@ -3928,10 +3928,10 @@ youtubei@^1.6.7:
     node-fetch "2.6.7"
     protobufjs "7.2.6"
 
-yt-dlx@^17.7.6:
-  version "17.7.6"
-  resolved "https://registry.yarnpkg.com/yt-dlx/-/yt-dlx-17.7.6.tgz#bf02fea76f3ffd04a8025e70601dc29414d1e14a"
-  integrity sha512-15T+N6406qNqe9cavqzqxgD5ruzrCmaHP2Y4k0L5++1j7XkgiqPbW9eLC4M+m1MuSYPwHpNveSxGgYzn9+ha/Q==
+yt-dlx@^17.8.7:
+  version "17.8.7"
+  resolved "https://registry.yarnpkg.com/yt-dlx/-/yt-dlx-17.8.7.tgz#176e10382d3bac2effd52139eda5a60d329b6768"
+  integrity sha512-Tv9D/yEw3j9x/d4V3hx3XcDs9UI4UwRo59Ev9GuWTNK7WPzpYKDk0np1JWOeGHI+WqaLLynEkLmCxxolnYGARA==
   dependencies:
     async-retry "^1.3.3"
     axios "^1.8.4"
