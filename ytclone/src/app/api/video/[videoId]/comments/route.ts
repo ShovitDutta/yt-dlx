@@ -1,38 +1,39 @@
 // ./ytclone/src/app/api/video/[videoId]/comments/route.ts
+import { NextResponse } from "next/server";
+import YouTubeDLX from "yt-dlx";
 
-import { NextResponse } from 'next/server';
-import YouTubeDLX from 'yt-dlx';
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ videoId: string }> }, // Update type to Promise
+) {
+  // Await params before accessing properties
+  const resolvedParams = await context.params;
+  const { videoId } = resolvedParams;
 
-export async function GET(request: Request, { params }: { params: { videoId: string } }) {
-  const { videoId } = params;
   const { searchParams } = new URL(request.url);
-  const verbose = searchParams.get('verbose') === 'true';
+  const verbose = searchParams.get("verbose") === "true";
 
-  if (!videoId) {
-    return NextResponse.json({ error: 'Video ID parameter is required' }, { status: 400 });
-  }
+  if (!videoId) return NextResponse.json({ error: "Video ID parameter is required" }, { status: 400 });
 
   try {
     const videoComments = await new Promise((resolve, reject) => {
-      // The Comments function in yt-dlx takes a query, not a videoId directly.
-      // We'll use the videoId as the query here, assuming yt-dlx can handle it.
-      // If not, we might need an intermediate step to get video details first.
       const emitter = YouTubeDLX.Misc.Video.Comments({
         query: videoId,
         verbose,
       });
 
-      emitter.on('data', (data) => {
+      emitter.on("data", data => {
         resolve(data);
       });
 
-      emitter.on('error', (error) => {
+      emitter.on("error", error => {
         reject(error);
       });
     });
 
     return NextResponse.json(videoComments);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Error fetching video comments:", error); // Add server-side logging
+    return NextResponse.json({ error: error.message || "Failed to fetch video comments" }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "linux": "python3 -m venv context/linux/venv && python3 repack.py",
-    "windows": "python3 -m venv context/windows/venv && python3 repack.py"
+    "linux": "python3 -m venv repository/python/context/linux/venv && ./repository/python/context/linux/venv/bin/python repository/python/repack.py",
+    "windows": ".\\context\\windows\\venv\\python.exe .\\repack.py"
   }
 }

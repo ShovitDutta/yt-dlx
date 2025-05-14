@@ -1,31 +1,45 @@
 // ./ytclone/src/app/(public)/watch/[videoId]/page.tsx
 
-'use client';
+"use client"; // Make sure this directive is at the very top
 
-import React, { useEffect, useState } from 'react';
-import VideoPlayer from '@/components/VideoPlayer';
-import VideoDetails from '@/components/VideoDetails';
-import CommentsSection from '@/components/CommentsSection';
-import TranscriptDisplay from '@/components/TranscriptDisplay';
-import RelatedVideosList from '@/components/RelatedVideosList';
-import { VideoDetails as VideoDetailsType, Comment, TranscriptSegment, RelatedVideo } from '@/types/youtube'; // Import interfaces
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation"; // Import useParams
+import VideoPlayer from "@/components/VideoPlayer";
+import VideoDetails from "@/components/VideoDetails";
+import CommentsSection from "@/components/CommentsSection";
+import TranscriptDisplay from "@/components/TranscriptDisplay";
+import RelatedVideosList from "@/components/RelatedVideosList";
+import { VideoDetails as VideoDetailsType, Comment, TranscriptSegment, RelatedVideo } from "@/types/youtube";
 
-interface VideoPlaybackPageProps {
-  params: {
-    videoId: string;
-  };
-}
+// No need for the VideoPlaybackPageProps interface if not receiving params as a prop
+// interface VideoPlaybackPageProps {
+//   params: {
+//     videoId: string;
+//   };
+// }
 
-const VideoPlaybackPage: React.FC<VideoPlaybackPageProps> = ({ params }) => {
-  const { videoId } = params;
-  const [videoDetails, setVideoDetails] = useState<VideoDetailsType | null>(null); // Use imported interface
-  const [comments, setComments] = useState<Comment[]>([]); // Use imported interface
-  const [transcript, setTranscript] = useState<TranscriptSegment[]>([]); // Use imported interface
-  const [relatedVideos, setRelatedVideos] = useState<RelatedVideo[]>([]); // Use imported interface
+// The component function does not receive params as a prop
+const VideoPlaybackPage: React.FC = () => {
+  // Use the useParams hook to get the params object
+  const params = useParams();
+  // Access the videoId property directly from the object returned by useParams
+  const videoId = params.videoId as string; // Cast to string for TypeScript
+
+  const [videoDetails, setVideoDetails] = useState<VideoDetailsType | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
+  const [relatedVideos, setRelatedVideos] = useState<RelatedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Now you can use videoId obtained from useParams
+    if (!videoId) {
+      setError("Video ID not found in parameters.");
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -34,44 +48,40 @@ const VideoPlaybackPage: React.FC<VideoPlaybackPageProps> = ({ params }) => {
         const detailsResponse = await fetch(`/api/video/${videoId}/details`);
         if (!detailsResponse.ok) {
           const errorData = await detailsResponse.json();
-          throw new Error(errorData.error || 'Failed to fetch video details');
+          throw new Error(errorData.error || "Failed to fetch video details");
         }
-        const detailsData: VideoDetailsType = await detailsResponse.json(); // Cast to imported interface
+        const detailsData: VideoDetailsType = await detailsResponse.json();
         setVideoDetails(detailsData);
 
         // Fetch comments
         const commentsResponse = await fetch(`/api/video/${videoId}/comments`);
         if (!commentsResponse.ok) {
-           console.error('Failed to fetch comments:', commentsResponse.statusText);
-           setComments([]);
+          console.error("Failed to fetch comments:", commentsResponse.statusText);
+          setComments([]);
         } else {
-           const commentsData: Comment[] = await commentsResponse.json(); // Cast to imported interface
-           setComments(commentsData);
+          const commentsData: Comment[] = await commentsResponse.json();
+          setComments(commentsData);
         }
-
 
         // Fetch transcript
         const transcriptResponse = await fetch(`/api/video/${videoId}/transcript`);
-         if (!transcriptResponse.ok) {
-           console.error('Failed to fetch transcript:', transcriptResponse.statusText);
-           setTranscript([]);
+        if (!transcriptResponse.ok) {
+          console.error("Failed to fetch transcript:", transcriptResponse.statusText);
+          setTranscript([]);
         } else {
-           const transcriptData: TranscriptSegment[] = await transcriptResponse.json(); // Cast to imported interface
-           setTranscript(transcriptData);
+          const transcriptData: TranscriptSegment[] = await transcriptResponse.json();
+          setTranscript(transcriptData);
         }
-
 
         // Fetch related videos
         const relatedVideosResponse = await fetch(`/api/video/${videoId}/related`);
-         if (!relatedVideosResponse.ok) {
-           console.error('Failed to fetch related videos:', relatedVideosResponse.statusText);
-           setRelatedVideos([]);
+        if (!relatedVideosResponse.ok) {
+          console.error("Failed to fetch related videos:", relatedVideosResponse.statusText);
+          setRelatedVideos([]);
         } else {
-           const relatedVideosData: RelatedVideo[] = await relatedVideosResponse.json(); // Cast to imported interface
-           setRelatedVideos(relatedVideosData);
+          const relatedVideosData: RelatedVideo[] = await relatedVideosResponse.json();
+          setRelatedVideos(relatedVideosData);
         }
-
-
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -80,7 +90,7 @@ const VideoPlaybackPage: React.FC<VideoPlaybackPageProps> = ({ params }) => {
     };
 
     fetchData();
-  }, [videoId]);
+  }, [videoId]); // Depend on videoId from useParams
 
   if (loading) {
     return <div className="container mx-auto px-4 py-8 text-center">Loading video...</div>;
