@@ -283,12 +283,12 @@ export default function AudioVideoCustom({ query, stream, output, useTor, filter
             if (metadata) {
                 emitter.emit("metadata", {
                     metaData: engineData.metaData,
-                    AudioLowF: engineData.AudioLowF,
-                    AudioHighF: engineData.AudioHighF,
+                    BestAudioLow: engineData.BestAudioLow,
+                    BestAudioHigh: engineData.BestAudioHigh,
                     AudioLowDRC: engineData.AudioLowDRC,
                     AudioHighDRC: engineData.AudioHighDRC,
-                    VideoLowF: engineData.VideoLowF,
-                    VideoHighF: engineData.VideoHighF,
+                    BestVideoLow: engineData.BestVideoLow,
+                    BestVideoHigh: engineData.BestVideoHigh,
                     VideoLowHDR: engineData.VideoLowHDR,
                     VideoHighHDR: engineData.VideoHighHDR,
                     ManifestLow: engineData.ManifestLow,
@@ -324,11 +324,11 @@ export default function AudioVideoCustom({ query, stream, output, useTor, filter
                 emitter.emit("error", `${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
                 return;
             }
-            if (!engineData.AudioHighF?.url) {
+            if (!engineData.BestAudioHigh?.url) {
                 emitter.emit("error", `${colors.red("@error:")} Highest quality audio URL was not found.`);
                 return;
             }
-            instance.addInput(engineData.AudioHighF.url);
+            instance.addInput(engineData.BestAudioHigh.url);
             instance.withOutputFormat("matroska");
             const resolutionWithoutP = resolution.replace("p", "");
             const vdata = engineData.ManifestHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolutionWithoutP));

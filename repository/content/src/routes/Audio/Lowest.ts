@@ -245,7 +245,7 @@ export default function AudioLowest({ query, output, useTor, stream, filter, met
             if (metadata) {
                 emitter.emit("metadata", {
                     metaData: engineData.metaData,
-                    AudioLowF: engineData.AudioLowF,
+                    BestAudioLow: engineData.BestAudioLow,
                     AudioLowDRC: engineData.AudioLowDRC,
                     filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
                 });
@@ -285,11 +285,11 @@ export default function AudioLowest({ query, output, useTor, stream, filter, met
             }
             instance.addInput(engineData.metaData.thumbnail);
             instance.withOutputFormat("avi");
-            if (!engineData.AudioLowF?.url) {
+            if (!engineData.BestAudioLow?.url) {
                 emitter.emit("error", `${colors.red("@error:")} Lowest quality audio URL was not found.`);
                 return;
             }
-            instance.addInput(engineData.AudioLowF.url);
+            instance.addInput(engineData.BestAudioLow.url);
             const filenameBase = `yt-dlx_AudioLowest_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, filename);

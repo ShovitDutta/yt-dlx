@@ -243,9 +243,9 @@ export default function AudioVideoLowest({ query, stream, verbose, output, metad
             if (metadata) {
                 emitter.emit("metadata", {
                     metaData: engineData.metaData,
-                    AudioLowF: engineData.AudioLowF,
+                    BestAudioLow: engineData.BestAudioLow,
                     AudioLowDRC: engineData.AudioLowDRC,
-                    VideoLowF: engineData.VideoLowF,
+                    BestVideoLow: engineData.BestVideoLow,
                     VideoLowHDR: engineData.VideoLowHDR,
                     ManifestLow: engineData.ManifestLow,
                     filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
@@ -286,11 +286,11 @@ export default function AudioVideoLowest({ query, stream, verbose, output, metad
             }
             instance.addInput(engineData.ManifestLow[0].url);
 
-            if (!engineData.AudioLowF?.url) {
+            if (!engineData.BestAudioLow?.url) {
                 emitter.emit("error", `${colors.red("@error:")} Lowest quality audio URL not found.`);
                 return;
             }
-            instance.addInput(engineData.AudioLowF.url);
+            instance.addInput(engineData.BestAudioLow.url);
             instance.withOutputFormat("matroska");
             const filenameBase = `yt-dlx_AudioVideoLowest_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;

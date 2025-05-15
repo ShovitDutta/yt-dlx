@@ -242,7 +242,7 @@ export default function VideoLowest({ query, stream, verbose, output, metadata, 
             if (metadata) {
                 emitter.emit("metadata", {
                     metaData: engineData.metaData,
-                    VideoLowF: engineData.VideoLowF,
+                    BestVideoLow: engineData.BestVideoLow,
                     VideoLowHDR: engineData.VideoLowHDR,
                     ManifestLow: engineData.ManifestLow,
                     filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
@@ -277,11 +277,11 @@ export default function VideoLowest({ query, stream, verbose, output, metadata, 
                 return;
             }
 
-            if (!engineData.VideoLowF?.url) {
+            if (!engineData.BestVideoLow?.url) {
                 emitter.emit("error", `${colors.red("@error:")} Lowest quality video URL not found.`);
                 return;
             }
-            instance.addInput(engineData.VideoLowF.url);
+            instance.addInput(engineData.BestVideoLow.url);
             instance.withOutputFormat("mp4");
             const filenameBase = `yt-dlx_VideoLowest_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mp4`;

@@ -271,8 +271,8 @@ export default function AudioCustom({ query, output, useTor, stream, filter, ver
             if (metadata) {
                 emitter.emit("metadata", {
                     metaData: engineData.metaData,
-                    AudioLowF: engineData.AudioLowF,
-                    AudioHighF: engineData.AudioHighF,
+                    BestAudioLow: engineData.BestAudioLow,
+                    BestAudioHigh: engineData.BestAudioHigh,
                     AudioLowDRC: engineData.AudioLowDRC,
                     AudioHighDRC: engineData.AudioHighDRC,
                     filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),

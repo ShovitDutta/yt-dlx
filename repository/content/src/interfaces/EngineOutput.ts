@@ -4,14 +4,14 @@ import type VideoFormat from "./VideoFormat";
 import type ManifestFormat from "./ManifestFormat";
 export default interface EngineOutput {
     metaData: VideoInfo;
-    AudioLowF: AudioFormat;
-    AudioHighF: AudioFormat;
+    BestAudioLow: AudioFormat;
+    BestAudioHigh: AudioFormat;
     AudioLow: AudioFormat[];
     AudioHigh: AudioFormat[];
     AudioLowDRC: AudioFormat[];
     AudioHighDRC: AudioFormat[];
-    VideoLowF: VideoFormat;
-    VideoHighF: VideoFormat;
+    BestVideoLow: VideoFormat;
+    BestVideoHigh: VideoFormat;
     VideoLow: VideoFormat[];
     VideoHigh: VideoFormat[];
     VideoLowHDR: VideoFormat[];

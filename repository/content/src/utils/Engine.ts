@@ -54,7 +54,7 @@ export var sizeFormat: sizeFormat = (filesize: number): string | number => {
         return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
     } else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
 };
-function nAudio(i: any) {
+function CleanAudioFormat(i: any) {
     i.filesizeP = sizeFormat(i.filesize);
     delete i.format_id;
     delete i.source_preference;
@@ -76,11 +76,11 @@ function nAudio(i: any) {
     delete i.video_ext;
     return i;
 }
-function nVideo(i: VideoFormat) {
+function CeanVideoFormat(i: VideoFormat) {
     i.filesizeP = sizeFormat(i.filesize);
     return i;
 }
-function pAudio(i: any) {
+function MapAudioFormat(i: any) {
     return {
         filesize: i.filesize as number,
         filesizeP: sizeFormat(i.filesize) as string,
@@ -97,7 +97,7 @@ function pAudio(i: any) {
         format: i.format as string,
     };
 }
-function pVideo(i: any) {
+function MapVideoFormat(i: any) {
     return {
         filesize: i.filesize as number,
         filesizeP: sizeFormat(i.filesize) as string,
@@ -118,7 +118,7 @@ function pVideo(i: any) {
         format: i.format as string,
     };
 }
-function pManifest(i: any) {
+function MapManifest(i: any) {
     return {
         url: i.url as string,
         manifest_url: i.manifest_url as string,
@@ -164,10 +164,10 @@ export default async function Engine({ query, useTor = false, verbose = false })
     var AudioHighDRC: any = {};
     var VideoLowHDR: any = {};
     var VideoHighHDR: any = {};
-    var AudioLowF: AudioFormat | any = null;
-    var AudioHighF: AudioFormat | any = null;
-    var VideoLowF: VideoFormat | any = null;
-    var VideoHighF: VideoFormat | any = null;
+    var BestAudioLow: AudioFormat | any = null;
+    var BestAudioHigh: AudioFormat | any = null;
+    var BestVideoLow: VideoFormat | any = null;
+    var BestVideoHigh: VideoFormat | any = null;
     var config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
     const ytprobeArgs = [
         "--ytprobe",
@@ -244,11 +244,11 @@ export default async function Engine({ query, useTor = false, verbose = false })
     (Object.values(AudioLow) as AudioFormat[]).forEach((audio: AudioFormat) => {
         if (audio.filesize !== null) {
             switch (true) {
-                case !AudioLowF || audio.filesize < AudioLowF.filesize:
-                    AudioLowF = audio;
+                case !BestAudioLow || audio.filesize < BestAudioLow.filesize:
+                    BestAudioLow = audio;
                     break;
-                case !AudioHighF || audio.filesize > AudioHighF.filesize:
-                    AudioHighF = audio;
+                case !BestAudioHigh || audio.filesize > BestAudioHigh.filesize:
+                    BestAudioHigh = audio;
                     break;
                 default:
                     break;
@@ -258,49 +258,49 @@ export default async function Engine({ query, useTor = false, verbose = false })
     (Object.values(VideoLow) as VideoFormat[]).forEach((video: VideoFormat) => {
         if (video.filesize !== null) {
             switch (true) {
-                case !VideoLowF || video.filesize < VideoLowF.filesize:
-                    VideoLowF = video;
+                case !BestVideoLow || video.filesize < BestVideoLow.filesize:
+                    BestVideoLow = video;
                     break;
-                case !VideoHighF || video.filesize > VideoHighF.filesize:
-                    VideoHighF = video;
+                case !BestVideoHigh || video.filesize > BestVideoHigh.filesize:
+                    BestVideoHigh = video;
                     break;
                 default:
                     break;
             }
         }
     });
-    function propfilter(formats: any[]) {
+    function FilterFormats(formats: any[]) {
         return formats.filter(i => {
             return !i.format_note.includes("DRC") && !i.format_note.includes("HDR");
         });
     }
     var payLoad: EngineOutput = {
-        AudioLowF: (() => {
-            var i = AudioLowF || ({} as AudioFormat);
-            return nAudio(i);
+        BestAudioLow: (() => {
+            var i = BestAudioLow || ({} as AudioFormat);
+            return CleanAudioFormat(i);
         })(),
-        AudioHighF: (() => {
-            var i = AudioHighF || ({} as AudioFormat);
-            return nAudio(i);
+        BestAudioHigh: (() => {
+            var i = BestAudioHigh || ({} as AudioFormat);
+            return CleanAudioFormat(i);
         })(),
-        VideoLowF: (() => {
-            var i = VideoLowF || ({} as VideoFormat);
-            return nVideo(i);
+        BestVideoLow: (() => {
+            var i = BestVideoLow || ({} as VideoFormat);
+            return CeanVideoFormat(i);
         })(),
-        VideoHighF: (() => {
-            var i = VideoHighF || ({} as VideoFormat);
-            return nVideo(i);
+        BestVideoHigh: (() => {
+            var i = BestVideoHigh || ({} as VideoFormat);
+            return CeanVideoFormat(i);
         })(),
-        AudioLowDRC: Object.values(AudioLowDRC).map(i => pAudio(i)),
-        AudioHighDRC: Object.values(AudioHighDRC).map(i => pAudio(i)),
-        AudioLow: propfilter(Object.values(AudioLow)).map(i => pAudio(i)),
-        AudioHigh: propfilter(Object.values(AudioHigh)).map(i => pAudio(i)),
-        VideoLowHDR: Object.values(VideoLowHDR).map(i => pVideo(i)),
-        VideoHighHDR: Object.values(VideoHighHDR).map(i => pVideo(i)),
-        VideoLow: propfilter(Object.values(VideoLow)).map(i => pVideo(i)),
-        VideoHigh: propfilter(Object.values(VideoHigh)).map(i => pVideo(i)),
-        ManifestLow: Object.values(ManifestLow).map(i => pManifest(i)),
-        ManifestHigh: Object.values(ManifestHigh).map(i => pManifest(i)),
+        AudioLowDRC: Object.values(AudioLowDRC).map(i => MapAudioFormat(i)),
+        AudioHighDRC: Object.values(AudioHighDRC).map(i => MapAudioFormat(i)),
+        AudioLow: FilterFormats(Object.values(AudioLow)).map(i => MapAudioFormat(i)),
+        AudioHigh: FilterFormats(Object.values(AudioHigh)).map(i => MapAudioFormat(i)),
+        VideoLowHDR: Object.values(VideoLowHDR).map(i => MapVideoFormat(i)),
+        VideoHighHDR: Object.values(VideoHighHDR).map(i => MapVideoFormat(i)),
+        VideoLow: FilterFormats(Object.values(VideoLow)).map(i => MapVideoFormat(i)),
+        VideoHigh: FilterFormats(Object.values(VideoHigh)).map(i => MapVideoFormat(i)),
+        ManifestLow: Object.values(ManifestLow).map(i => MapManifest(i)),
+        ManifestHigh: Object.values(ManifestHigh).map(i => MapManifest(i)),
         metaData: {
             id: i.id as string,
             title: i.title as string,

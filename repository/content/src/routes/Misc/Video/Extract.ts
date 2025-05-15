@@ -244,10 +244,10 @@ export default function extract(options: z.infer<typeof ZodSchema>): EventEmitte
             const transcriptPromise = fetchVideoTranscript(metaBody.metaData.id, verbose ?? false);
             const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
             const payload = {
-                AudioLowF: metaBody.AudioLowF,
-                AudioHighF: metaBody.AudioHighF,
-                VideoLowF: metaBody.VideoLowF,
-                VideoHighF: metaBody.VideoHighF,
+                BestAudioLow: metaBody.BestAudioLow,
+                BestAudioHigh: metaBody.BestAudioHigh,
+                BestVideoLow: metaBody.BestVideoLow,
+                BestVideoHigh: metaBody.BestVideoHigh,
                 AudioLowDRC: metaBody.AudioLowDRC,
                 AudioHighDRC: metaBody.AudioHighDRC,
                 AudioLow: metaBody.AudioLow,
