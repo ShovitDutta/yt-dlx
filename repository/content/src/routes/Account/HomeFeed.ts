@@ -128,82 +128,82 @@ const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(
  *
  */
 export default function home_feed(options: z.infer<typeof ZodSchema>): EventEmitter {
-  const emitter = new EventEmitter();
-  (async () => {
-    try {
-      ZodSchema.parse(options);
-      const { verbose, cookies, sort } = options;
-      if (verbose) console.log(colors.green("@info:"), "Fetching home feed...");
-      if (!cookies) {
-        emitter.emit("error", `${colors.red("@error:")} cookies not provided!`);
-        return;
-      }
-      const client: TubeType = await TubeLogin(cookies);
-      if (!client) {
-        emitter.emit("error", `${colors.red("@error:")} Could not initialize Tube client.`);
-        return;
-      }
-      const homeFeed = await client.getHomeFeed();
-      if (!homeFeed) {
-        emitter.emit("error", `${colors.red("@error:")} Failed to fetch home feed.`);
-        return;
-      }
-      const result: TubeResponse<{ Shorts: any[]; Videos: any[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
-      homeFeed.contents?.contents?.forEach((section: any) => {
-        if (section?.type === "RichItem" && section?.content?.type === "Video") {
-          const sanitized = sanitizeContentItem(section);
-          if (sanitized?.content) {
-            result.data?.Videos.push({
-              type: sanitized.content.type || "",
-              title: sanitized.content.title?.text || "",
-              videoId: sanitized.content.video_id || "",
-              description: sanitized.content.description_snippet?.text || "",
-              thumbnails: sanitized.content.thumbnails || [],
-              authorId: sanitized.content.author?.id || "",
-              authorName: sanitized.content.author?.name || "",
-              authorThumbnails: sanitized.content.author.thumbnails || [],
-              authorBadges: sanitized.content.author.badges || [],
-              authorUrl: sanitized.content.author.url || "",
-              viewCount: sanitized.content.view_count?.text || "",
-              shortViewCount: sanitized.content.short_view_count?.text || "",
-            });
-          }
-        } else if (section?.type === "RichSection" && section?.content?.type === "RichShelf") {
-          section.content.contents?.forEach((item: any) => {
-            if (item?.content?.type === "ShortsLockupView") {
-              const short = { title: item.content.accessibility_text || "", videoId: item.content.on_tap_endpoint?.payload?.videoId, thumbnails: item.content.thumbnail || [] };
-              result.data?.Shorts.push(short);
+    const emitter = new EventEmitter();
+    (async () => {
+        try {
+            ZodSchema.parse(options);
+            const { verbose, cookies, sort } = options;
+            if (verbose) console.log(colors.green("@info:"), "Fetching home feed...");
+            if (!cookies) {
+                emitter.emit("error", `${colors.red("@error:")} cookies not provided!`);
+                return;
             }
-          });
+            const client: TubeType = await TubeLogin(cookies);
+            if (!client) {
+                emitter.emit("error", `${colors.red("@error:")} Could not initialize Tube client.`);
+                return;
+            }
+            const homeFeed = await client.getHomeFeed();
+            if (!homeFeed) {
+                emitter.emit("error", `${colors.red("@error:")} Failed to fetch home feed.`);
+                return;
+            }
+            const result: TubeResponse<{ Shorts: any[]; Videos: any[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
+            homeFeed.contents?.contents?.forEach((section: any) => {
+                if (section?.type === "RichItem" && section?.content?.type === "Video") {
+                    const sanitized = sanitizeContentItem(section);
+                    if (sanitized?.content) {
+                        result.data?.Videos.push({
+                            type: sanitized.content.type || "",
+                            title: sanitized.content.title?.text || "",
+                            videoId: sanitized.content.video_id || "",
+                            description: sanitized.content.description_snippet?.text || "",
+                            thumbnails: sanitized.content.thumbnails || [],
+                            authorId: sanitized.content.author?.id || "",
+                            authorName: sanitized.content.author?.name || "",
+                            authorThumbnails: sanitized.content.author.thumbnails || [],
+                            authorBadges: sanitized.content.author.badges || [],
+                            authorUrl: sanitized.content.author.url || "",
+                            viewCount: sanitized.content.view_count?.text || "",
+                            shortViewCount: sanitized.content.short_view_count?.text || "",
+                        });
+                    }
+                } else if (section?.type === "RichSection" && section?.content?.type === "RichShelf") {
+                    section.content.contents?.forEach((item: any) => {
+                        if (item?.content?.type === "ShortsLockupView") {
+                            const short = { title: item.content.accessibility_text || "", videoId: item.content.on_tap_endpoint?.payload?.videoId, thumbnails: item.content.thumbnail || [] };
+                            result.data?.Shorts.push(short);
+                        }
+                    });
+                }
+            });
+            switch (sort) {
+                case "oldest":
+                    if (result.data?.Shorts) result.data.Shorts.splice(0, result.data.Shorts.length - 1);
+                    if (result.data?.Videos) result.data.Videos.splice(0, result.data.Videos.length - 1);
+                    break;
+                case "newest":
+                    if (result.data?.Shorts) result.data.Shorts.splice(1);
+                    if (result.data?.Videos) result.data.Videos.splice(1);
+                    break;
+                case "old-to-new":
+                    if (result.data?.Shorts) result.data.Shorts.sort((a, b) => a.videoId.localeCompare(b.videoId));
+                    if (result.data?.Videos) result.data.Videos.sort((a, b) => a.videoId.localeCompare(b.videoId));
+                    break;
+                case "new-to-old":
+                    if (result.data?.Shorts) result.data.Shorts.sort((a, b) => b.videoId.localeCompare(a.videoId));
+                    if (result.data?.Videos) result.data.Videos.sort((a, b) => b.videoId.localeCompare(a.videoId));
+                    break;
+            }
+            if (verbose) console.log(colors.green("@info:"), "Home feed fetched!");
+            emitter.emit("data", result);
+        } catch (error) {
+            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
+            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        } finally {
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         }
-      });
-      switch (sort) {
-        case "oldest":
-          if (result.data?.Shorts) result.data.Shorts.splice(0, result.data.Shorts.length - 1);
-          if (result.data?.Videos) result.data.Videos.splice(0, result.data.Videos.length - 1);
-          break;
-        case "newest":
-          if (result.data?.Shorts) result.data.Shorts.splice(1);
-          if (result.data?.Videos) result.data.Videos.splice(1);
-          break;
-        case "old-to-new":
-          if (result.data?.Shorts) result.data.Shorts.sort((a, b) => a.videoId.localeCompare(b.videoId));
-          if (result.data?.Videos) result.data.Videos.sort((a, b) => a.videoId.localeCompare(b.videoId));
-          break;
-        case "new-to-old":
-          if (result.data?.Shorts) result.data.Shorts.sort((a, b) => b.videoId.localeCompare(a.videoId));
-          if (result.data?.Videos) result.data.Videos.sort((a, b) => b.videoId.localeCompare(a.videoId));
-          break;
-      }
-      if (verbose) console.log(colors.green("@info:"), "Home feed fetched!");
-      emitter.emit("data", result);
-    } catch (error) {
-      if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-      else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-      else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-    } finally {
-      console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-    }
-  })();
-  return emitter;
+    })();
+    return emitter;
 }

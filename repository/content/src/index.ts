@@ -26,54 +26,54 @@ import search_playlists from "./routes/Search/Playlist/Multiple";
 import subscriptions_feed from "./routes/Account/SubscriptionsFeed";
 import unseen_notifications from "./routes/Account/UnseenNotifications";
 var YouTubeDLX = {
-  Audio: {
-    Custom: AudioCustom, // YouTubeDLX.Audio.Custom
-    Lowest: AudioLowest, // YouTubeDLX.Audio.Lowest
-    Highest: AudioHighest, // YouTubeDLX.Audio.Highest
-  },
-  Video: {
-    Custom: VideoCustom, // YouTubeDLX.Video.Custom
-    Lowest: VideoLowest, // YouTubeDLX.Video.Lowest
-    Highest: VideoHighest, // YouTubeDLX.Video.Highest
-  },
-  Audio_Video: {
-    Custom: AudioVideoCustom, // YouTubeDLX.Audio_Video.Custom
-    Lowest: AudioVideoLowest, // YouTubeDLX.Audio_Video.Lowest
-    Highest: AudioVideoHighest, // YouTubeDLX.Audio_Video.Highest
-  },
-  Search: {
-    Channel: {
-      Single: channel_data, // YouTubeDLX.Search.Channel.Single
-      Multiple: search_channels, // YouTubeDLX.Search.Channel.Multiple
-    },
-    Playlist: {
-      Single: playlist_data, // YouTubeDLX.Search.Playlist.Single
-      Multiple: search_playlists, // YouTubeDLX.Search.Playlist.Multiple
+    Audio: {
+        Custom: AudioCustom, // YouTubeDLX.Audio.Custom
+        Lowest: AudioLowest, // YouTubeDLX.Audio.Lowest
+        Highest: AudioHighest, // YouTubeDLX.Audio.Highest
     },
     Video: {
-      Single: video_data, // YouTubeDLX.Search.Video.Single
-      Multiple: search_videos, // YouTubeDLX.Search.Video.Multiple
+        Custom: VideoCustom, // YouTubeDLX.Video.Custom
+        Lowest: VideoLowest, // YouTubeDLX.Video.Lowest
+        Highest: VideoHighest, // YouTubeDLX.Video.Highest
     },
-  },
-  Account: {
-    HomeFeed: home_feed, // YouTubeDLX.Account.HomeFeed
-    History: watch_history, // YouTubeDLX.Account.History
-    SubscriptionsFeed: subscriptions_feed, // YouTubeDLX.Account.SubscriptionsFeed
-    UnseenNotifications: unseen_notifications, // YouTubeDLX.Account.UnseenNotifications
-  },
-  Misc: {
-    System: {
-      Help: help, // YouTubeDLX.Misc.System.Help
-      ProgressBar: progbar, // YouTubeDLX.Misc.System.ProgressBar
+    Audio_Video: {
+        Custom: AudioVideoCustom, // YouTubeDLX.Audio_Video.Custom
+        Lowest: AudioVideoLowest, // YouTubeDLX.Audio_Video.Lowest
+        Highest: AudioVideoHighest, // YouTubeDLX.Audio_Video.Highest
     },
-    Video: {
-      GetId: YouTubeID, // YouTubeDLX.Misc.Video.GetId
-      Extract: extract, // YouTubeDLX.Misc.Video.Extract
-      Formats: list_formats, // YouTubeDLX.Misc.Video.Formats
-      Related: related_videos, // YouTubeDLX.Misc.Video.Related
-      Comments: video_comments, // YouTubeDLX.Video.Misc.Comments
-      Transcript: video_transcript, // YouTubeDLX.Misc.Video.Transcript
+    Search: {
+        Channel: {
+            Single: channel_data, // YouTubeDLX.Search.Channel.Single
+            Multiple: search_channels, // YouTubeDLX.Search.Channel.Multiple
+        },
+        Playlist: {
+            Single: playlist_data, // YouTubeDLX.Search.Playlist.Single
+            Multiple: search_playlists, // YouTubeDLX.Search.Playlist.Multiple
+        },
+        Video: {
+            Single: video_data, // YouTubeDLX.Search.Video.Single
+            Multiple: search_videos, // YouTubeDLX.Search.Video.Multiple
+        },
     },
-  },
+    Account: {
+        HomeFeed: home_feed, // YouTubeDLX.Account.HomeFeed
+        History: watch_history, // YouTubeDLX.Account.History
+        SubscriptionsFeed: subscriptions_feed, // YouTubeDLX.Account.SubscriptionsFeed
+        UnseenNotifications: unseen_notifications, // YouTubeDLX.Account.UnseenNotifications
+    },
+    Misc: {
+        System: {
+            Help: help, // YouTubeDLX.Misc.System.Help
+            ProgressBar: progbar, // YouTubeDLX.Misc.System.ProgressBar
+        },
+        Video: {
+            GetId: YouTubeID, // YouTubeDLX.Misc.Video.GetId
+            Extract: extract, // YouTubeDLX.Misc.Video.Extract
+            Formats: list_formats, // YouTubeDLX.Misc.Video.Formats
+            Related: related_videos, // YouTubeDLX.Misc.Video.Related
+            Comments: video_comments, // YouTubeDLX.Video.Misc.Comments
+            Transcript: video_transcript, // YouTubeDLX.Misc.Video.Transcript
+        },
+    },
 };
 export default YouTubeDLX;

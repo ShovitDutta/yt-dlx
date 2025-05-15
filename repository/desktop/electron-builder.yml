@@ -3,11 +3,11 @@ productName: yt-dlx
 appId: com.shovitdutta.ytdlx
 copyright: Copyright © 2025 Shovit Dutta
 directories:
-  output: pkg
-  buildResources: resources
+    output: pkg
+    buildResources: resources
 files:
-  - from: .
-    filter:
-      - app
-      - resources
-      - package.json
+    - from: .
+      filter:
+          - app
+          - resources
+          - package.json

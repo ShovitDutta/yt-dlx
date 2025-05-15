@@ -1,12 +1,12 @@
 {
-  "extends": "./root.json",
-  "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "declaration": true,
-    "declarationMap": true,
-    "removeComments": false,
-    "emitDeclarationOnly": true,
-    "declarationDir": "../../package/types"
-  }
+    "extends": "./root.json",
+    "compilerOptions": {
+        "module": "esnext",
+        "target": "esnext",
+        "declaration": true,
+        "declarationMap": true,
+        "removeComments": false,
+        "emitDeclarationOnly": true,
+        "declarationDir": "../../package/types"
+    }
 }

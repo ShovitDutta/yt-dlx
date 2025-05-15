@@ -60,36 +60,36 @@ const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(
  *
  */
 export default function unseen_notifications(options: z.infer<typeof ZodSchema>): EventEmitter {
-  const emitter = new EventEmitter();
-  (async () => {
-    try {
-      ZodSchema.parse(options);
-      const { verbose, cookies } = options;
-      if (verbose) console.log(colors.green("@info:"), "Fetching unseen notifications...");
-      if (!cookies) {
-        emitter.emit("error", `${colors.red("@error:")} cookies not provided!`);
-        return;
-      }
-      const client: TubeType = await TubeLogin(cookies);
-      if (!client) {
-        emitter.emit("error", `${colors.red("@error:")} Could not initialize Tube client.`);
-        return;
-      }
-      const count = await client.getUnseenNotificationsCount();
-      if (count === undefined) {
-        emitter.emit("error", `${colors.red("@error:")} Failed to fetch unseen notifications count.`);
-        return;
-      }
-      const result: TubeResponse<{ count: number }> = { status: "success", data: { count: Number(count) || 0 } };
-      if (verbose) console.log(colors.green("@info:"), "Unseen notifications fetched!");
-      emitter.emit("data", result);
-    } catch (error) {
-      if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-      else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-      else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-    } finally {
-      console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-    }
-  })();
-  return emitter;
+    const emitter = new EventEmitter();
+    (async () => {
+        try {
+            ZodSchema.parse(options);
+            const { verbose, cookies } = options;
+            if (verbose) console.log(colors.green("@info:"), "Fetching unseen notifications...");
+            if (!cookies) {
+                emitter.emit("error", `${colors.red("@error:")} cookies not provided!`);
+                return;
+            }
+            const client: TubeType = await TubeLogin(cookies);
+            if (!client) {
+                emitter.emit("error", `${colors.red("@error:")} Could not initialize Tube client.`);
+                return;
+            }
+            const count = await client.getUnseenNotificationsCount();
+            if (count === undefined) {
+                emitter.emit("error", `${colors.red("@error:")} Failed to fetch unseen notifications count.`);
+                return;
+            }
+            const result: TubeResponse<{ count: number }> = { status: "success", data: { count: Number(count) || 0 } };
+            if (verbose) console.log(colors.green("@info:"), "Unseen notifications fetched!");
+            emitter.emit("data", result);
+        } catch (error) {
+            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
+            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        } finally {
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        }
+    })();
+    return emitter;
 }

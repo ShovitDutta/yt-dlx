@@ -1,8 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "esnext"
-  },
-  "include": ["src/**/*.ts"],
-  "extends": "./src/config/root.json",
-  "exclude": ["package", "node_modules", "examples"]
+    "compilerOptions": {
+        "target": "esnext"
+    },
+    "include": ["src/**/*.ts"],
+    "extends": "./src/config/root.json",
+    "exclude": ["package", "node_modules", "examples"]
 }

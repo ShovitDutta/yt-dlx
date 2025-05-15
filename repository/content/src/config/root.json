@@ -1,23 +1,23 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "sourceMap": true,
-    "alwaysStrict": true,
-    "skipLibCheck": true,
-    "noImplicitAny": false,
-    "noImplicitThis": true,
-    "noUnusedLocals": false,
-    "esModuleInterop": true,
-    "strictNullChecks": true,
-    "resolveJsonModule": true,
-    "noImplicitReturns": true,
-    "moduleResolution": "node",
-    "noImplicitOverride": true,
-    "downlevelIteration": true,
-    "noUnusedParameters": false,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["../../src/**/*.ts"],
-  "exclude": ["../../package", "../../node_modules", "../../examples"]
+    "compilerOptions": {
+        "strict": true,
+        "sourceMap": true,
+        "alwaysStrict": true,
+        "skipLibCheck": true,
+        "noImplicitAny": false,
+        "noImplicitThis": true,
+        "noUnusedLocals": false,
+        "esModuleInterop": true,
+        "strictNullChecks": true,
+        "resolveJsonModule": true,
+        "noImplicitReturns": true,
+        "moduleResolution": "node",
+        "noImplicitOverride": true,
+        "downlevelIteration": true,
+        "noUnusedParameters": false,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["../../src/**/*.ts"],
+    "exclude": ["../../package", "../../node_modules", "../../examples"]
 }
