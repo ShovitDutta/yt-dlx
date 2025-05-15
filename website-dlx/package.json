@@ -1,0 +1,30 @@
+{
+    "name": "website-dlx",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "ws:start": "node server.mjs --production",
+        "dev": "next dev --turbopack",
+        "ws:dev": "node server.mjs",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "next": "15.3.2",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-player": "^2.16.0",
+        "socket.io": "^4.8.1",
+        "socket.io-client": "^4.8.1",
+        "yt-dlx": "^17.8.7"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
+}
