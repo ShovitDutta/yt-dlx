@@ -10,9 +10,9 @@ const binDL = async (url, filepath, binaryName, retries = 3) => {
         const progressBar = new cliProgress.SingleBar(
             {
                 format: `[${binaryName}] [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} Bytes`,
-                hideCursor: true,
                 clearOnComplete: true,
                 stopOnComplete: true,
+                hideCursor: true,
             },
             cliProgress.Presets.shades_classic,
         );
@@ -26,9 +26,9 @@ const binDL = async (url, filepath, binaryName, retries = 3) => {
                 }
             }
             const response = await axios({
-                url,
-                method: "GET",
                 responseType: "stream",
+                method: "GET",
+                url,
             });
             if (response.status !== 200) {
                 if (response.status === 416) {
