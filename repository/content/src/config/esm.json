@@ -1,8 +1,0 @@
-{
-    "extends": "./root.json",
-    "compilerOptions": {
-        "target": "esnext",
-        "module": "esnext",
-        "outDir": "../../package/esm"
-    }
-}
