@@ -1,6 +1,6 @@
 {
   "semi": true,
-  "tabWidth": 2,
+  "tabWidth": 4,
   "printWidth": 200,
   "singleQuote": false,
   "proseWrap": "always",
