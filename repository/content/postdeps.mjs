@@ -26,9 +26,9 @@ const binDL = async (url, filepath, binaryName, retries = 3) => {
                 }
             }
             const response = await axios({
-                responseType: "stream",
-                method: "GET",
                 url,
+                method: "GET",
+                responseType: "stream",
             });
             if (response.status !== 200) {
                 if (response.status === 416) {
