@@ -60,9 +60,9 @@
         "prepublishOnly": "rimraf package && yarn build",
         "tor": "shx chmod -R +x . && ./install-tor.sh",
         "postinstall": "node postdeps.mjs && shx chmod -R +x .",
-        "test": "yarn build && node package/cjs/src/spec/quick.spec.js",
-        "spec:general": "yarn build && node package/cjs/src/spec/general.spec.js",
-        "spec:express": "yarn build && node package/cjs/src/spec/express.spec.js",
+        "test": "yarn build && node package/cjs/src/spec/code/index.js",
+        "test:quick": "yarn build && node package/cjs/src/spec/quick.spec.js",
+        "test:express": "yarn build && node package/cjs/src/spec/express.spec.js",
         "build": "rimraf package/cjs package/esm package/types && tsc -p ./src/config/cjs.json && tsc -p ./src/config/esm.json && tsc -p ./src/config/types.json"
     }
 }

@@ -1,6 +1,6 @@
+import YouTubeDLX from "..";
 import express from "express";
 import * as path from "path";
-import YouTubeDLX from "..";
 const Test_Server = express();
 Test_Server.use(express.json());
 function wrapEmitter(emitter, eventType = "data") {
