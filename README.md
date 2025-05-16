@@ -1,5 +1,5 @@
 <div style="text-align: center;">
-    <video src="https://raw.githubusercontent.com/ShovitDutta/yt-dlx/main/YouTubeDLX.mp4" autoplay loop muted style="max-width: 100%; height: auto;"></video>
+  <img src="https://raw.githubusercontent.com/ShovitDutta/yt-dlx/main/repository/video.gif" alt="YT-DLX Demo GIF" style="max-width: 100%; height: auto;">
 </div>
 
 # YT-DLX: Elevate Your Video Downloading & Streaming Experience 🚀
