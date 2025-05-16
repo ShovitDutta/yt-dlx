@@ -3,314 +3,349 @@ import colors from "colors";
 import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
-import Tuber from "../../utils/Agent";
-import { EventEmitter } from "events";
+import Agent from "../../utils/Agent";
+import * as fsPromises from "fs/promises";
 import { locator } from "../../utils/locator";
-var ZodSchema = z.object({
-    query: z.string().min(2),
-    output: z.string().optional(),
-    useTor: z.boolean().optional(),
-    stream: z.boolean().optional(),
-    verbose: z.boolean().optional(),
-    metadata: z.boolean().optional(),
-    filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-});
-/**
- * @shortdesc Downloads or streams the highest quality video from YouTube.
- *
- * @description This function allows you to download or stream the highest available video quality from YouTube based on a search query or video URL. It offers customization options such as saving the output to a specified directory, using Tor for anonymity, enabling verbose logging, streaming the output, or simply fetching the metadata without downloading. Video filters can also be applied.
- *
- * The function requires a search query or video URL. It automatically selects the highest quality video format available.
- *
- * It supports the following configuration options:
- * - **query:** A string representing the search query or video URL. This is a mandatory parameter.
- * - **output:** An optional string specifying the directory where the output video file should be saved. If not provided, the file will be saved in the current working directory. This parameter cannot be used when `metadata` is true.
- * - **useTor:** An optional boolean value. If true, the function will attempt to use Tor for the network requests, enhancing anonymity.
- * - **stream:** An optional boolean value. If true, the video will be streamed instead of saved to a file. When streaming, the `end` event will provide the streamable path and the `stream` event will provide the FFmpeg instance. This parameter cannot be used when `metadata` is true.
- * - **verbose:** An optional boolean value. If true, enables detailed logging to the console, providing more information about the process.
- * - **metadata:** An optional boolean value. If true, the function will only fetch and emit the video metadata without downloading or streaming the video. When `metadata` is true, the `output`, `stream`, and `filter` parameters are not allowed.
- * - **filter:** An optional string specifying a video filter to apply to the video stream. This parameter is ignored when `metadata` is true. Available filters include: "invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal".
- *
- * The function returns an EventEmitter instance that emits events during the process:
- * - `"start"`: Emitted when the process begins, providing the FFmpeg command being executed.
- * - `"progress"`: Emitted periodically during the download/streaming process, providing progress details (e.g., downloaded size, time remaining).
- * - `"end"`: Emitted when the download/streaming process completes successfully, providing the path to the saved file. If `stream` is true, it provides the streamable path.
- * - `"metadata"`: Emitted only when the `metadata` parameter is true. Provides an object containing the video metadata, the highest video format details, and a suggested filename.
- * - `"stream"`: Emitted only when the `stream` parameter is true. Provides an object containing the streamable filename/path and the FFmpeg instance.
- * - `"error"`: Emitted when an error occurs at any stage, such as argument validation, network issues, or FFmpeg errors. The emitted data is the error message.
- *
- * @param {object} options - An object containing the configuration options.
- * @param {string} options.query - The search query or video URL. **Required**.
- * @param {string} [options.output] - The directory to save the output file. Cannot be used with `metadata: true`.
- * @param {boolean} [options.useTor] - Whether to use Tor.
- * @param {boolean} [options.stream] - Whether to stream the output. Cannot be used with `metadata: true`.
- * @param {boolean} [options.verbose] - Enable verbose logging.
- * @param {boolean} [options.metadata] - Only fetch metadata. Cannot be used with `output`, `stream`, or `filter`.
- * @param {("invert" | "rotate90" | "rotate270" | "grayscale" | "rotate180" | "flipVertical" | "flipHorizontal")} [options.filter] - A video filter to apply. Cannot be used with `metadata: true`.
- *
- * @returns {EventEmitter} An EventEmitter instance for handling events during the video processing.
- *
- * @example
- * // 1. Download the highest quality video to the current directory
- * YouTubeDLX.Video.Highest({ query: "your search query or url" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 2. Download the highest quality video to a custom output directory
- * YouTubeDLX.Video.Highest({ query: "your search query or url", output: "./highest_video_downloads" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 3. Stream the highest quality video
- * YouTubeDLX.Video.Highest({ query: "your search query or url", stream: true })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream available:", data.filename);
- * // You can use data.ffmpeg instance for streaming
- * })
- * .on("end", (streamPath) => console.log("Streaming session ended:", streamPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 4. Fetch only metadata for the highest quality video
- * YouTubeDLX.Video.Highest({ query: "your search query or url", metadata: true })
- * .on("metadata", (data) => console.log("Metadata:", data))
- * .on("error", (error) => console.error("Error:", error));
- * // Note: output, stream, and filter are ignored when metadata is true.
- *
- * @example
- * // 5. Download the highest quality video and apply a filter
- * YouTubeDLX.Video.Highest({ query: "your search query or url", filter: "grayscale" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 6. Download the highest quality video and use Tor
- * YouTubeDLX.Video.Highest({ query: "your search query or url", useTor: true })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 7. Download the highest quality video and enable verbose logging
- * YouTubeDLX.Video.Highest({ query: "your search query or url", verbose: true })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 8. Download the highest quality video with custom output and apply a filter
- * YouTubeDLX.Video.Highest({ query: "your search query or url", output: "./filtered_videos", filter: "flipVertical" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 9. Stream the highest quality video and apply a filter
- * YouTubeDLX.Video.Highest({ query: "your search query or url", stream: true, filter: "rotate90" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream available:", data.filename);
- * // You can use data.ffmpeg instance for streaming
- * })
- * .on("end", (streamPath) => console.log("Streaming session ended:", streamPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 10. Download the highest quality video with all applicable options (query, output, useTor, verbose, filter)
- * YouTubeDLX.Video.Highest({ query: "your search query or url", output: "./full_options", useTor: true, verbose: true, filter: "invert" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 11. Stream the highest quality video with all applicable options (query, stream, useTor, verbose, filter)
- * YouTubeDLX.Video.Highest({ query: "your search query or url", stream: true, useTor: true, verbose: true, filter: "rotate180" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream available:", data.filename);
- * // You can use data.ffmpeg instance for streaming
- * })
- * .on("end", (streamPath) => console.log("Streaming session ended:", streamPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 12. Fetch metadata with verbose logging and use Tor
- * YouTubeDLX.Video.Highest({ query: "your search query or url", metadata: true, verbose: true, useTor: true })
- * .on("metadata", (data) => console.log("Metadata (Verbose, Tor):", data))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 13. Attempt to use output with metadata (will result in an error)
- * YouTubeDLX.Video.Highest({ query: "your search query or url", metadata: true, output: "./should_fail" })
- * .on("error", (error) => console.error("Expected Error (output with metadata):", error));
- *
- * @example
- * // 14. Attempt to use stream with metadata (will result in an error)
- * YouTubeDLX.Video.Highest({ query: "your search query or url", metadata: true, stream: true })
- * .on("error", (error) => console.error("Expected Error (stream with metadata):", error));
- *
- * @example
- * // 15. Attempt to use filter with metadata (will result in an error)
- * YouTubeDLX.Video.Highest({ query: "your search query or url", metadata: true, filter: "grayscale" })
- * .on("error", (error) => console.error("Expected Error (filter with metadata):", error));
- *
- * @example
- * // 16. Attempt to use stream and output together
- * // Based on the code, stream: true and an output path provided will likely result in a file being saved and the stream event also firing.
- * YouTubeDLX.Video.Highest({ query: "your search query or url", stream: true, output: "./streamed_and_saved" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream event fired, file likely being saved to:", data.filename);
- * })
- * .on("end", (outputPath) => console.log("Process ended, file saved at:", outputPath)) // Should output the path in './streamed_and_saved'
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 17. Missing required 'query' parameter (will result in an error)
- * YouTubeDLX.Video.Highest({} as any)
- * .on("error", (error) => console.error("Expected Error (missing query):", error));
- *
- * @example
- * // 18. Invalid 'filter' value (will result in an error - Zod validation)
- * YouTubeDLX.Video.Highest({ query: "your search query or url", filter: "nonexistentfilter" as any })
- * .on("error", (error) => console.error("Expected Error (invalid filter):", error));
- *
- * @example
- * // 19. Query results in no engine data
- * // Note: This scenario depends on the internal Tuber function's behavior.
- * // You can simulate by providing a query that is unlikely to return results.
- * YouTubeDLX.Video.Highest({ query: "a query that should return no results 12345abcde" })
- * .on("error", (error) => console.error("Expected Error (no engine data):", error));
- *
- */
-export default function VideoHighest({ query, stream, verbose, output, metadata, useTor, filter }: z.infer<typeof ZodSchema>): EventEmitter {
-    const emitter = new EventEmitter();
-    (async () => {
-        try {
-            if (!query) {
-                emitter.emit("error", `${colors.red("@error:")} The 'query' parameter is always required.`);
-                return;
-            }
-            if (metadata) {
-                if (stream) {
-                    emitter.emit("error", `${colors.red("@error:")} The 'stream' parameter cannot be used when 'metadata' is true.`);
-                    return;
-                }
-                if (output) {
-                    emitter.emit("error", `${colors.red("@error:")} The 'output' parameter cannot be used when 'metadata' is true.`);
-                    return;
-                }
-                if (filter) {
-                    emitter.emit("error", `${colors.red("@error:")} The 'filter' parameter cannot be used when 'metadata' is true.`);
-                    return;
-                }
-            }
-            if (stream && metadata) {
-                emitter.emit("error", `${colors.red("@error:")} The 'stream' parameter cannot be true when 'metadata' is true.`);
-                return;
-            }
-            ZodSchema.parse({ query, stream, verbose, output, metadata, useTor, filter });
-            const engineData = await Tuber({ query, verbose, useTor }).catch(error => {
-                emitter.emit("error", `${colors.red("@error:")} Engine error: ${error?.message}`);
-                return undefined;
-            });
-            if (!engineData) {
-                emitter.emit("error", `${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-                return;
-            }
-            if (!engineData.metaData) {
-                emitter.emit("error", `${colors.red("@error:")} Metadata not found in the engine response.`);
-                return;
-            }
-            if (metadata) {
-                emitter.emit("metadata", {
-                    metaData: engineData.metaData,
-                    VideoHighF: engineData.VideoHighF,
-                    VideoHighHDR: engineData.VideoHighHDR,
-                    ManifestHigh: engineData.ManifestHigh,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
-                });
-                return;
-            }
-            const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
-            const folder = output ? output : process.cwd();
-            if (!fs.existsSync(folder)) {
-                try {
-                    fs.mkdirSync(folder, { recursive: true });
-                } catch (mkdirError: any) {
-                    emitter.emit("error", `${colors.red("@error:")} Failed to create output directory: ${mkdirError?.message}`);
-                    return;
-                }
-            }
-            const instance: ffmpeg.FfmpegCommand = ffmpeg();
-            try {
-                const paths = await locator();
-                if (!paths.ffmpeg) {
-                    emitter.emit("error", `${colors.red("@error:")} ffmpeg executable not found.`);
-                    return;
-                }
-                if (!paths.ffprobe) {
-                    emitter.emit("error", `${colors.red("@error:")} ffprobe executable not found.`);
-                    return;
-                }
-                instance.setFfmpegPath(paths.ffmpeg);
-                instance.setFfprobePath(paths.ffprobe);
-            } catch (locatorError: any) {
-                emitter.emit("error", `${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
-                return;
-            }
 
-            if (!engineData.VideoHighF?.url) {
-                emitter.emit("error", `${colors.red("@error:")} Highest quality video URL not found.`);
-                return;
-            }
-            instance.addInput(engineData.VideoHighF.url);
-            instance.withOutputFormat("mp4");
-            const filenameBase = `yt-dlx_VideoHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mp4`;
-            const outputPath = path.join(folder, filename);
-            const filterMap: Record<string, string[]> = {
-                grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
-                invert: ["negate"],
-                rotate90: ["rotate=PI/2"],
-                rotate180: ["rotate=PI"],
-                rotate270: ["rotate=3*PI/2"],
-                flipHorizontal: ["hflip"],
-                flipVertical: ["vflip"],
-            };
-            if (filter && filterMap[filter]) instance.withVideoFilter(filterMap[filter]);
-            else instance.outputOptions("-c copy");
-            instance.on("progress", progress => emitter.emit("progress", progress));
-            instance.on("error", error => emitter.emit("error", `${colors.red("@error:")} FFmpeg error: ${error?.message}`));
-            instance.on("start", start => emitter.emit("start", start));
-            instance.on("end", () => emitter.emit("end", outputPath));
-            instance.output(outputPath);
-            if (stream) emitter.emit("stream", { filename: outputPath, ffmpeg: instance });
-            instance.run();
-        } catch (error) {
-            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error?.message}`);
-            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        } finally {
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+// Define the Zod schema for input validation for VideoHighest
+// Note: This schema does NOT include a 'resolution' parameter, as Highest quality is automatic.
+var ZodSchema = z.object({
+    query: z.string().min(2), // Mandatory query
+    output: z.string().optional(), // Optional output directory
+    useTor: z.boolean().optional(), // Optional Tor usage flag
+    stream: z.boolean().optional(), // Optional streaming flag
+    verbose: z.boolean().optional(), // Optional verbose logging flag
+    metadata: z.boolean().optional(), // Optional metadata-only flag
+    filter: z // Optional video filter
+        .enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"])
+        .optional(),
+});
+
+// Define types for the possible return values based on flags
+type MetadataResult = {
+    metaData: any; // General video metadata
+    VideoHighF: any; // Details for the highest quality video format
+    VideoHighHDR: any; // Details for highest HDR video
+    ManifestHigh: any; // Details for high range manifest formats (often contains video formats)
+    filename: string; // Cleaned filename based on video title
+};
+
+type StreamResult = {
+    filename: string; // Output path used as filename reference for streaming
+    ffmpeg: ffmpeg.FfmpegCommand; // The FFmpeg instance for piping/handling the stream
+};
+
+type DownloadResult = string; // The output file path where the video was saved
+
+// Define the union type for the async function's Promise resolution
+type VideoHighestResult = MetadataResult | StreamResult | DownloadResult;
+
+/**
+ * @shortdesc Downloads, streams, or fetches metadata for the highest quality video from YouTube using async/await instead of events.
+ *
+ * @description This function allows you to download, stream, or fetch metadata for the highest available video quality from YouTube based on a search query or video URL using async/await.
+ * It provides customization options such as saving the output to a specified directory, using Tor for anonymity, enabling verbose logging, streaming the output, or simply fetching the metadata without downloading. Video filters can also be applied.
+ *
+ * The function requires a search query or video URL. It automatically selects the highest quality video format available based on the engine's results.
+ *
+ * It returns a Promise that resolves with the result of the operation (metadata object, stream info object, or output file path) or rejects with an error, replacing the EventEmitter pattern.
+ *
+ * @param options - An object containing the configuration options validated by ZodSchema.
+ * @param options.query - The search query or video URL. **Required**.
+ * @param {string} [options.output] - The directory where the output video file should be saved. Not allowed when `metadata` is true.
+ * @param {boolean} [options.useTor] - Whether to attempt to use Tor for the network requests.
+ * @param {boolean} [options.stream] - If true, the video will be processed for streaming instead of saved to a file. Not allowed when `metadata` is true. When streaming, the Promise resolves when FFmpeg starts with an object containing the filename (output path reference) and the FFmpeg instance.
+ * @param {boolean} [options.verbose] - If true, enables detailed logging to the console, including FFmpeg command and progress.
+ * @param {boolean} [options.metadata] - If true, the function will only fetch metadata without processing video. Not allowed with `output`, `stream`, or `filter`. The Promise resolves with a `MetadataResult` object.
+ * @param {("invert" | "rotate90" | "rotate270" | "grayscale" | "rotate180" | "flipVertical" | "flipHorizontal")} [options.filter] - A video filter to apply. Ignored when `metadata` is true.
+ *
+ * @returns {Promise<VideoHighestResult>} A Promise that resolves based on the operation mode:
+ * - If `metadata` is true: Resolves with a `MetadataResult` object.
+ * - If `stream` is true (and `metadata` is false): Resolves with a `StreamResult` object when FFmpeg starts.
+ * - If downloading (neither `metadata` nor `stream` is true): Resolves with the `DownloadResult` string (the output file path) when FFmpeg finishes successfully.
+ * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine fails to retrieve data, if required metadata or formats are missing, if directory creation fails, if FFmpeg/FFprobe executables are not found, or if FFmpeg encounters an error during processing.
+ *
+ * @example
+ * // 1. Download the highest quality video using async/await syntax with try...catch
+ * const query = "some video query";
+ * try {
+ * const outputPath = await YouTubeDLX.Video.Highest({ query });
+ * console.log("Download finished:", outputPath);
+ * } catch (error) {
+ * console.error("Error during download:", error);
+ * }
+ *
+ * @example
+ * // 2. Stream the highest quality video with verbose logging using async/await
+ * const query = "another video query";
+ * try {
+ * const streamInfo = await YouTubeDLX.Video.Highest({ query, stream: true, verbose: true });
+ * console.log("Stream available:", streamInfo.filename);
+ * // Use streamInfo.ffmpeg instance for piping, e.g., streamInfo.ffmpeg.pipe(myWritableStream);
+ * // Remember to handle the end and error events on the ffmpeg instance for stream cleanup if necessary.
+ * } catch (error) {
+ * console.error("Error during streaming setup:", error);
+ * }
+ *
+ * @example
+ * // 3. Fetch only metadata for the highest quality video using async/await
+ * const query = "metadata test";
+ * try {
+ * const metadata = await YouTubeDLX.Video.Highest({ query, metadata: true });
+ * console.log("Metadata:", metadata);
+ * console.log("Highest video format details:", metadata.VideoHighF);
+ * } catch (error) {
+ * console.error("Error fetching metadata:", error);
+ * }
+ *
+ * @example
+ * // 4. Download highest quality video with a filter and custom output directory using async/await
+ * const query = "video with filter";
+ * try {
+ * const outputPath = await YouTubeDLX.Video.Highest({ query, output: "./filtered_videos_out", filter: "grayscale" });
+ * console.log("Filtered download finished:", outputPath);
+ * } catch (error) {
+ * console.error("Error during filtered download:", error);
+ * }
+ *
+ * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
+ */
+export default async function VideoHighest({ query, stream, verbose, output, metadata, useTor, filter }: z.infer<typeof ZodSchema>): Promise<VideoHighestResult> {
+    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
+    try {
+        // Perform initial validation checks before Zod parse for clearer messages on common requirement errors.
+        if (!query) {
+            throw new Error(`${colors.red("@error:")} The 'query' parameter is always required.`);
         }
-    })();
-    return emitter;
+        // Validate parameter combinations that are not allowed when metadata is true.
+        if (metadata) {
+            if (stream) {
+                throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used when 'metadata' is true.`);
+            }
+            if (output) {
+                throw new Error(`${colors.red("@error:")} The 'output' parameter cannot be used when 'metadata' is true.`);
+            }
+            if (filter) {
+                // Explicitly check filter when metadata is true, as per original logic
+                throw new Error(`${colors.red("@error:")} The 'filter' parameter cannot be used when 'metadata' is true.`);
+            }
+        }
+        // Validate that stream and metadata are not both true (redundant check but harmless).
+        if (stream && metadata) {
+            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be true when 'metadata' is true.`);
+        }
+
+        // Perform Zod schema validation on the provided options. This call is synchronous.
+        // It will throw a ZodError if validation fails based on the defined schema.
+        ZodSchema.parse({ query, stream, verbose, output, metadata, useTor, filter });
+
+        // Await the asynchronous call to the Agent to get engine data.
+        // This function is assumed to return a Promise<EngineOutput | null>.
+        // Removed the original `.catch()` on the await call so errors propagate naturally to the main try/catch.
+        const engineData = await Agent({ query, verbose, useTor });
+
+        // Check if engine data was successfully retrieved.
+        if (!engineData) {
+            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        }
+
+        // Check if metadata is present in the engine response, which is required for processing.
+        if (!engineData.metaData) {
+            throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
+        }
+
+        // Handle the metadata-only mode.
+        if (metadata) {
+            // If metadata is requested, return the relevant metadata object immediately.
+            // The async function automatically wraps this return value in a resolved Promise.
+            return {
+                metaData: engineData.metaData, // Include general video metadata from engineData
+                VideoHighF: engineData.VideoHighF, // Include highest video format details from engineData
+                VideoHighHDR: engineData.VideoHighHDR,
+                ManifestHigh: engineData.ManifestHigh, // Include high range manifest details from engineData
+                filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "metadata", // Provide a cleaned filename based on title, default if title missing
+            };
+        }
+
+        // If not in metadata-only mode, proceed with download or stream setup.
+        // Clean the video title for use in the filename.
+        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "untitled"; // Clean title, default if missing
+
+        // Determine the output folder based on the 'output' option or default to the current working directory.
+        const folder = output ? output : process.cwd();
+
+        // Refactor synchronous folder existence check and creation to use asynchronous file system operations.
+        try {
+            // Attempt to access the specified output folder asynchronously to check if it exists and is visible.
+            await fsPromises.access(folder, fs.constants.F_OK);
+            if (verbose) console.log(colors.green("@info:"), `Output directory already exists: ${folder}`);
+        } catch (e: any) {
+            // If access fails, check if the error indicates the folder does not exist.
+            if (e.code === "ENOENT") {
+                if (verbose) console.log(colors.green("@info:"), `Output directory does not exist, attempting to create: ${folder}`);
+                try {
+                    // If the folder doesn't exist, create it asynchronously, including any necessary parent directories.
+                    await fsPromises.mkdir(folder, { recursive: true });
+                    if (verbose) console.log(colors.green("@info:"), `Output directory created: ${folder}`);
+                } catch (mkdirError: any) {
+                    // If directory creation fails, throw a specific error.
+                    throw new Error(`${colors.red("@error:")} Failed to create output directory: ${mkdirError.message}`);
+                }
+            } else {
+                // If access failed for a reason other than 'ENOENT', re-throw the original error.
+                throw new Error(`${colors.red("@error:")} Error checking output directory: ${e.message}`);
+            }
+        }
+
+        // Initialize a new fluent-ffmpeg instance.
+        const instance: ffmpeg.FfmpegCommand = ffmpeg();
+
+        // Locate the required ffmpeg and ffprobe executables using the asynchronous locator function.
+        try {
+            const paths = await locator(); // Await the asynchronous locator function call.
+            if (!paths.ffmpeg) {
+                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            }
+            if (!paths.ffprobe) {
+                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+            }
+            // Set the located paths for ffmpeg and ffprobe in the fluent-ffmpeg instance.
+            instance.setFfmpegPath(paths.ffmpeg);
+            instance.setFfprobePath(paths.ffprobe);
+        } catch (locatorError: any) {
+            // Catch and re-throw any errors that occurred during the executable location process.
+            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
+        }
+
+        // Select the highest quality video stream URL.
+        const hqVideoUrl = engineData.VideoHighF?.url; // Use VideoHighF for highest video URL
+
+        // Check if the highest quality video URL is available.
+        if (!hqVideoUrl) {
+            // Use optional chaining for safer access.
+            // Throw an error if the highest quality video URL is not found.
+            throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
+        }
+        // Add the highest quality video stream URL as the input to FFmpeg.
+        instance.addInput(hqVideoUrl);
+
+        // Set the output format for FFmpeg. MP4 is suitable for video.
+        instance.withOutputFormat("mp4"); // Original code sets MP4 output format
+
+        // Determine the final output filename and its full path.
+        const filenameBase = `yt-dlx_VideoHighest_`;
+        // Clean the title again for filename safety and provide a default if the title was empty or missing.
+        const cleanTitleForFilename = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "untitled";
+        let filename = `${filenameBase}${filter ? filter + "_" : ""}${cleanTitleForFilename}.mp4`; // Use .mp4 extension
+        const outputPath = path.join(folder, filename);
+
+        // Define the mapping of filter names to their corresponding FFmpeg *video* filter complex options.
+        const filterMap: Record<string, string[]> = {
+            grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
+            invert: ["negate"],
+            rotate90: ["rotate=PI/2"],
+            rotate180: ["rotate=PI"],
+            rotate270: ["rotate=3*PI/2"],
+            flipHorizontal: ["hflip"],
+            flipVertical: ["vflip"],
+        };
+
+        // Apply the specified video filter if a valid one is provided.
+        if (filter && filterMap[filter]) {
+            // Apply the video filter complex options using `withVideoFilter`.
+            instance.withVideoFilter(filterMap[filter]);
+        } else {
+            // If no filter is applied, use the 'copy' codec option for the video stream.
+            // This copies the stream without re-encoding.
+            instance.outputOptions("-c copy");
+        }
+
+        // Set output path if not streaming.
+        if (!stream) {
+            instance.output(outputPath);
+        }
+        // In streaming mode, the output is typically piped. The 'stream' event in the original
+        // code emitted the outputPath and instance, implying the path is a reference or temporary file location.
+
+        // Setup FFmpeg event listeners and wrap the `instance.run()` call in a Promise for async/await compatibility.
+        // The Promise will resolve or reject based on the FFmpeg process completion or error.
+
+        if (stream) {
+            // Stream mode: Create a Promise that resolves when FFmpeg starts its process.
+            // This signals that the video stream is likely available for consumption via the FFmpeg instance.
+            const streamReadyPromise = new Promise<StreamResult>((resolve, reject) => {
+                // Listen for the FFmpeg 'start' event.
+                instance.on("start", commandLine => {
+                    if (verbose) console.log(colors.green("@info:"), "FFmpeg command:", commandLine);
+                    // Resolve the promise immediately upon start with stream info.
+                    // Use the determined outputPath as a filename reference for the stream.
+                    resolve({ filename: outputPath, ffmpeg: instance });
+                });
+                // Listen for FFmpeg 'progress' events (optional logging if verbose).
+                instance.on("progress", progress => {
+                    if (verbose) console.log(colors.green("@info:"), "FFmpeg progress:", progress);
+                });
+                // Listen for FFmpeg 'error' events.
+                instance.on("error", (error, stdout, stderr) => {
+                    // Reject the promise if FFmpeg encounters an error during stream setup or processing.
+                    reject(new Error(`${colors.red("@error:")} FFmpeg error during stream setup: ${error.message}\nStdout: ${stdout}\nStderr: ${stderr}`));
+                });
+                // In stream mode, the main promise is resolved on 'start'. The 'end' event still fires when the process finishes.
+            });
+
+            // Start the FFmpeg process.
+            instance.run();
+
+            // Await the promise that signals the stream is ready.
+            return await streamReadyPromise;
+        } else {
+            // Download mode: Create a Promise that resolves when FFmpeg finishes the download successfully.
+            const downloadCompletePromise = new Promise<DownloadResult>((resolve, reject) => {
+                // Listen for the FFmpeg 'start' event (optional logging if verbose).
+                instance.on("start", commandLine => {
+                    if (verbose) console.log(colors.green("@info:"), "FFmpeg command:", commandLine);
+                });
+                // Listener for FFmpeg 'progress' events (optional logging if verbose).
+                instance.on("progress", progress => {
+                    if (verbose) console.log(colors.green("@info:"), "FFmpeg progress:", progress);
+                });
+                // Listener for FFmpeg 'error' events.
+                instance.on("error", (error, stdout, stderr) => {
+                    // Reject the promise if FFmpeg encounters an error during the download process.
+                    reject(new Error(`${colors.red("@error:")} FFmpeg error during download: ${error.message}\nStdout: ${stdout}\nStderr: ${stderr}`));
+                });
+                // Listener for the FFmpeg 'end' event (successful completion).
+                instance.on("end", () => {
+                    // Resolve the promise with the output file path upon successful completion.
+                    resolve(outputPath);
+                });
+            });
+
+            // Start the FFmpeg process to begin the download.
+            instance.run();
+
+            // Await the promise that indicates the download process has completed successfully.
+            return await downloadCompletePromise;
+        }
+    } catch (error: any) {
+        // Catch any errors that occurred during the setup phase before FFmpeg potentially started
+        // (e.g., validation errors, engine data retrieval errors, locator errors, directory creation errors).
+        // Format the error message based on the error type and re-throw it to reject the main function's Promise.
+        if (error instanceof ZodError) {
+            // Handle Zod validation errors by formatting the error details.
+            throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        } else if (error instanceof Error) {
+            // Re-throw standard Error objects with their existing message.
+            throw new Error(`${colors.red("@error:")} ${error.message}`);
+        } else {
+            // Handle any other unexpected error types by converting them to a string.
+            throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        }
+        // Note: FFmpeg errors caught by the listeners attached to the instance
+        // are handled by rejecting the specific promise being awaited (streamReadyPromise or downloadCompletePromise),
+        // and these rejections will be caught by this outer try/catch block as exceptions.
+    } finally {
+        // This block executes after the try block successfully returns or the catch block throws.
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+    }
 }

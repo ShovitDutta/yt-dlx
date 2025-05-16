@@ -3,59 +3,244 @@ import retry from "async-retry";
 import readline from "readline";
 import { promisify } from "util";
 import { locator } from "./locator";
-import { spawn, execFile } from "child_process";
-import type sizeFormat from "../interfaces/sizeFormat";
-import type AudioFormat from "../interfaces/AudioFormat";
-import type VideoFormat from "../interfaces/VideoFormat";
-import type EngineOutput from "../interfaces/EngineOutput";
-let cachedLocatedPaths: any = null;
-export const getLocatedPaths = async () => {
-    if (cachedLocatedPaths === null) cachedLocatedPaths = await locator();
+import type { Readable } from "stream";
+import { spawn, execFile, ChildProcess } from "child_process";
+
+export interface sizeFormat {
+    (filesize: number): Promise<string | number>;
+}
+export interface VideoFormat {
+    filesize: number;
+    filesizeP: string | number;
+    format_note: string;
+    fps: number;
+    height: number;
+    width: number;
+    tbr: number;
+    url: string;
+    ext: string;
+    vcodec: string;
+    dynamic_range: string;
+    container: string;
+    resolution: string;
+    aspect_ratio: number;
+    video_ext: string;
+    vbr: number;
+    format: string;
+}
+
+export interface VideoInfo {
+    id: string;
+    title: string;
+    channel: string;
+    uploader: string;
+    duration: number;
+    thumbnail: string;
+    age_limit: number;
+    channel_id: string;
+    categories: string[];
+    display_id: string;
+    description: string;
+    channel_url: string;
+    webpage_url: string;
+    live_status: boolean;
+    view_count: number;
+    like_count: number;
+    comment_count: number;
+    channel_follower_count: number;
+    upload_date: string;
+    uploader_id: string;
+    original_url: string;
+    uploader_url: string;
+    duration_string: string;
+}
+export interface AudioFormat {
+    filesize: number;
+    filesizeP: string | number;
+    asr: number;
+    format_note: string;
+    tbr: number;
+    url: string;
+    ext: string;
+    acodec: string;
+    container: string;
+    resolution: string;
+    audio_ext: string;
+    abr: number;
+    format: string;
+}
+export interface ManifestFormat {
+    url: string;
+    manifest_url: string;
+    tbr: number;
+    ext: string;
+    fps: number;
+    width: number;
+    height: number;
+    vcodec: string;
+    dynamic_range: string;
+    aspect_ratio: number;
+    video_ext: string;
+    vbr: number;
+    format: string;
+}
+
+export interface EngineOutput {
+    metaData: VideoInfo;
+    BestAudioLow: AudioFormat;
+    BestAudioHigh: AudioFormat;
+    AudioLow: AudioFormat[];
+    AudioHigh: AudioFormat[];
+    AudioLowDRC: AudioFormat[];
+    AudioHighDRC: AudioFormat[];
+    BestVideoLow: VideoFormat;
+    BestVideoHigh: VideoFormat;
+    VideoLow: VideoFormat[];
+    VideoHigh: VideoFormat[];
+    VideoLowHDR: VideoFormat[];
+    VideoHighHDR: VideoFormat[];
+    ManifestLow: ManifestFormat[];
+    ManifestHigh: ManifestFormat[];
+}
+
+let cachedLocatedPaths: { [key: string]: string } | null = null;
+
+/**
+ * Retrieves cached executable paths or calls the locator function to find them using async/await.
+ * Caches the result for subsequent calls.
+ *
+ * @returns A Promise that resolves with an object mapping executable names to their paths.
+ */
+export const getLocatedPaths = async (): Promise<{ [key: string]: string }> => {
+    if (cachedLocatedPaths === null) {
+        // Await the asynchronous locator function
+        cachedLocatedPaths = await locator();
+    }
     return cachedLocatedPaths;
 };
-const startTor = async (ytDlxPath: string, verbose = false) => {
-    return new Promise(async (resolve, reject) => {
-        if (verbose) console.log(colors.green("@info:"), `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
-        const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] });
-        const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
-        const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
-        rlStdout.on("line", line => {
+
+/**
+ * Spawns the yt-dlx process with the --tor flag and waits for Tor to bootstrap using async/await and event handling via Promises.
+ *
+ * @param ytDlxPath The path to the yt-dlx executable.
+ * @param verbose Whether to log verbose output from the Tor process.
+ * @returns A Promise that resolves with the spawned ChildProcess once Tor is bootstrapped, or rejects if an error occurs during spawning or bootstrapping.
+ */
+const startTor = async (ytDlxPath: string, verbose = false): Promise<ChildProcess> => {
+    if (verbose) console.log(colors.green("@info:"), `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
+
+    // Spawn the child process
+    const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] });
+
+    if (verbose) console.log(colors.green("@info:"), `Spawned yt-dlx --tor process with PID: ${torProcess.pid} using ${ytDlxPath}. Waiting for bootstrap...`);
+
+    // Create readline interfaces to process stdout and stderr line by line
+    const rlStdout = readline.createInterface({ input: torProcess.stdout as Readable, terminal: false });
+    const rlStderr = readline.createInterface({ input: torProcess.stderr as Readable, terminal: false });
+
+    // Create Promises to represent the bootstrap success and error conditions
+    const bootstrapSuccess = new Promise<ChildProcess>(resolve => {
+        const lineListener = (line: string) => {
             if (verbose) console.log(colors.green("@info:"), line);
             if (line.includes("Bootstrapped 100% (done): Done")) {
                 if (verbose) console.log(colors.green("@info:"), "Tor is 100% bootstrapped!");
-                rlStdout.removeAllListeners("line");
-                rlStderr.removeAllListeners("line");
-                resolve(torProcess);
+                // Clean up listeners after success to prevent leaks
+                rlStdout.removeListener("line", lineListener);
+                // Optionally remove stderr listener if added elsewhere
+                rlStderr.removeAllListeners("line"); // Remove any stderr listeners
+
+                rlStdout.close(); // Close the readline interfaces
+                rlStderr.close();
+
+                resolve(torProcess); // Resolve the promise with the process
             }
-        });
+        };
+        rlStdout.on("line", lineListener);
+
+        // Add a listener for stderr to log errors during bootstrap without immediately failing
         rlStderr.on("line", line => {
             if (verbose) console.error(colors.red("@error:"), line);
         });
-        torProcess.on("error", err => {
+    });
+
+    const processError = new Promise<never>((_, reject) => {
+        // Listen for process errors (e.g., file not found)
+        torProcess.once("error", err => {
             console.error(colors.red("@error:"), "Tor process error:", err);
+            // Clean up listeners before rejecting
+            rlStdout.removeAllListeners("line");
+            rlStderr.removeAllListeners("line");
+            rlStdout.close();
+            rlStderr.close();
             reject(err);
         });
-        torProcess.on("close", code => {
+
+        // Listen for process close events
+        torProcess.once("close", code => {
             console.log(colors.green("@info:"), `Tor process closed with code ${code}`);
-            if (code !== 0) reject(new Error(`Tor process exited with code ${code} before bootstrapping.`));
+            // If the process closes with a non-zero code before bootstrap success
+            if (code !== 0) {
+                rlStdout.removeAllListeners("line");
+                rlStderr.removeAllListeners("line");
+                rlStdout.close();
+                rlStderr.close();
+                reject(new Error(`Tor process exited with code ${code} before bootstrapping.`));
+            }
+            // If code is 0 but bootstrap didn't finish, the success promise will handle it
         });
-        if (verbose) console.log(colors.green("@info:"), `Spawned yt-dlx --tor process with PID: ${torProcess.pid} using ${ytDlxPath}. Waiting for bootstrap...`);
     });
+
+    try {
+        // Race the success signal against error/close signals
+        const result = await Promise.race([bootstrapSuccess, processError]);
+        return result;
+    } catch (err) {
+        // If an error occurred, ensure the process is killed
+        if (torProcess && !torProcess.killed) {
+            torProcess.kill();
+            if (verbose) console.log(colors.green("@info:"), "Tor process killed due to startup error.");
+        }
+        rlStdout.close(); // Ensure interfaces are closed on error
+        rlStderr.close();
+        throw err; // Re-throw the error
+    }
 };
-export var sizeFormat: sizeFormat = (filesize: number): string | number => {
+
+/**
+ * Formats a filesize in bytes into a human-readable string (B, KB, MB, GB, TB) using async function syntax.
+ * Although this function's internal operations are purely synchronous, it is defined as an async function
+ * to maintain consistency with a codebase being refactored to predominantly use async/await.
+ * It resolves immediately with the formatted string.
+ *
+ * @param filesize The filesize in bytes.
+ * @returns A Promise resolving with the formatted filesize string (e.g., "1.50 MB"), or the original input if invalid.
+ */
+export var sizeFormat: sizeFormat = async (filesize: number): Promise<string | number> => {
     if (isNaN(filesize) || filesize < 0) return filesize;
-    var bytesPerMegabyte = 1024 * 1024;
-    var bytesPerGigabyte = bytesPerMegabyte * 1024;
-    var bytesPerTerabyte = bytesPerGigabyte * 1024;
-    if (filesize < bytesPerMegabyte) return filesize + " B";
-    else if (filesize < bytesPerGigabyte) {
-        return (filesize / bytesPerGigabyte).toFixed(2) + " MB";
-    } else if (filesize < bytesPerTerabyte) {
-        return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
-    } else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
+
+    const bytesPerKilobyte = 1024;
+    const bytesPerMegabyte = 1024 * bytesPerKilobyte;
+    const bytesPerGigabyte = bytesPerMegabyte * 1024;
+    const bytesPerTerabyte = bytesPerGigabyte * 1024;
+
+    if (filesize < bytesPerKilobyte) return filesize + " B";
+    else if (filesize < bytesPerMegabyte) return (filesize / bytesPerKilobyte).toFixed(2) + " KB";
+    else if (filesize < bytesPerGigabyte) return (filesize / bytesPerMegabyte).toFixed(2) + " MB";
+    else if (filesize < bytesPerTerabyte) return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
+    else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
 };
-function CleanAudioFormat(i: any) {
-    i.filesizeP = sizeFormat(i.filesize);
+
+/**
+ * Cleans properties from an audio format object. Marked as async for consistency, resolves immediately.
+ * Calls async `sizeFormat`.
+ *
+ * @param i The audio format object.
+ * @returns A Promise resolving with the cleaned object.
+ */
+async function CleanAudioFormat(i: any): Promise<any> {
+    // Await the async sizeFormat call
+    i.filesizeP = await sizeFormat(i.filesize);
+
     delete i.format_id;
     delete i.source_preference;
     delete i.has_drm;
@@ -76,14 +261,34 @@ function CleanAudioFormat(i: any) {
     delete i.video_ext;
     return i;
 }
-function CeanVideoFormat(i: VideoFormat) {
-    i.filesizeP = sizeFormat(i.filesize);
+
+/**
+ * Cleans properties from a video format object. Marked as async for consistency, resolves immediately.
+ * Calls async `sizeFormat`.
+ * Note: Original function name is "CeanVideoFormat" - typo? Preserving it.
+ *
+ * @param i The video format object.
+ * @returns A Promise resolving with the cleaned object.
+ */
+async function CeanVideoFormat(i: VideoFormat): Promise<VideoFormat> {
+    // Await the async sizeFormat call
+    i.filesizeP = await sizeFormat(i.filesize);
     return i;
 }
-function MapAudioFormat(i: any) {
+
+/**
+ * Maps raw format object properties to a more specific AudioFormat structure. Marked as async for consistency, resolves immediately.
+ * Calls async `sizeFormat`.
+ *
+ * @param i The raw format object.
+ * @returns A Promise resolving with the mapped AudioFormat object.
+ */
+async function MapAudioFormat(i: any): Promise<AudioFormat> {
+    // Await the async sizeFormat call
+    const filesizeP = await sizeFormat(i.filesize);
     return {
         filesize: i.filesize as number,
-        filesizeP: sizeFormat(i.filesize) as string,
+        filesizeP: filesizeP as string, // Use awaited result
         asr: parseFloat(i.asr) as number,
         format_note: i.format_note as string,
         tbr: parseFloat(i.tbr) as number,
@@ -97,10 +302,20 @@ function MapAudioFormat(i: any) {
         format: i.format as string,
     };
 }
-function MapVideoFormat(i: any) {
+
+/**
+ * Maps raw format object properties to a more specific VideoFormat structure. Marked as async for consistency, resolves immediately.
+ * Calls async `sizeFormat`.
+ *
+ * @param i The raw format object.
+ * @returns A Promise resolving with the mapped VideoFormat object.
+ */
+async function MapVideoFormat(i: any): Promise<VideoFormat> {
+    // Await the async sizeFormat call
+    const filesizeP = await sizeFormat(i.filesize);
     return {
         filesize: i.filesize as number,
-        filesizeP: sizeFormat(i.filesize) as string,
+        filesizeP: filesizeP as string, // Use awaited result
         format_note: i.format_note as string,
         fps: parseFloat(i.fps) as number,
         height: parseFloat(i.height) as number,
@@ -118,7 +333,16 @@ function MapVideoFormat(i: any) {
         format: i.format as string,
     };
 }
-function MapManifest(i: any) {
+
+/**
+ * Maps raw format object properties to a simplified Manifest structure. Marked as async for consistency, resolves immediately.
+ *
+ * @param i The raw format object.
+ * @returns A Promise resolving with the mapped Manifest object.
+ */
+async function MapManifest(i: any): Promise<any> {
+    // All operations are synchronous property access and parsing.
+    // Marked async for consistency, resolves immediately.
     return {
         url: i.url as string,
         manifest_url: i.manifest_url as string,
@@ -135,40 +359,80 @@ function MapManifest(i: any) {
         format: i.format as string,
     };
 }
-export default async function Engine({ query, useTor = false, verbose = false }) {
-    let torProcess: any = null;
+
+/**
+ * Filters format objects based on their format_note property using async function syntax.
+ * Although the filtering logic is synchronous, this function is defined as async
+ * for consistency with a codebase using async/await. It resolves immediately.
+ *
+ * @param formats An array of format objects to filter.
+ * @returns A Promise resolving with a new array containing only the formats that do not include "DRC" or "HDR" in their format_note.
+ */
+async function FilterFormats(formats: any[]): Promise<any[]> {
+    // Filtering operation is synchronous.
+    // The 'async' keyword here makes the function return a Promise resolving immediately.
+    return formats.filter(i => {
+        return !i.format_note?.includes("DRC") && !i.format_note?.includes("HDR"); // Added optional chaining
+    });
+}
+
+/**
+ * Executes the yt-dlx process to extract video metadata and formats, optionally using Tor.
+ * Processes the output to categorize and structure format information using async/await.
+ *
+ * @param options - The engine options.
+ * @param options.query The YouTube video URL or ID.
+ * @param [options.useTor=false] Whether to attempt to use Tor for the request.
+ * @param [options.verbose=false] Whether to enable verbose logging.
+ * @returns A Promise that resolves with an EngineOutput object containing categorized format data and metadata, or null if the yt-dlx executable is not found.
+ */
+export default async function Engine({ query, useTor = false, verbose = false }: { query: string; useTor?: boolean; verbose?: boolean }): Promise<EngineOutput | null> {
+    let torProcess: ChildProcess | null = null;
+
+    // Await the executable paths locator
     const located = await getLocatedPaths();
     const ytDlxPath = located["yt-dlx"];
     const ffmpegPath = located["ffmpeg"];
+
     if (!ytDlxPath) {
         console.error(colors.red("@error:"), "yt-dlx executable path not found.");
         return null;
     }
+
+    // Optionally start Tor and await its bootstrap
     if (useTor) {
         try {
             if (verbose) console.log(colors.green("@info:"), "Attempting to start Tor and wait for bootstrap...");
-            torProcess = await startTor(ytDlxPath, verbose);
+            torProcess = await startTor(ytDlxPath, verbose); // Await the startTor function
             if (verbose) console.log(colors.green("@info:"), `Tor is ready for ${process.platform === "win32" ? "Windows" : "Linux"}.`);
         } catch (error) {
             console.error(colors.red("@error:"), "Failed to start Tor:", error);
-            useTor = false;
+            useTor = false; // Disable Tor if startup failed
         }
     }
-    var AudioLow: any = {};
-    var AudioHigh: any = {};
-    var VideoLow: any = {};
-    var VideoHigh: any = {};
-    var ManifestLow: any = {};
-    var ManifestHigh: any = {};
-    var AudioLowDRC: any = {};
-    var AudioHighDRC: any = {};
-    var VideoLowHDR: any = {};
-    var VideoHighHDR: any = {};
+
+    // Initialize objects to hold categorized formats
+    var AudioLow: { [key: string]: any } = {};
+    var AudioHigh: { [key: string]: any } = {};
+    var VideoLow: { [key: string]: any } = {};
+    var VideoHigh: { [key: string]: any } = {};
+    var ManifestLow: { [key: string]: any } = {};
+    var ManifestHigh: { [key: string]: any } = {};
+    var AudioLowDRC: { [key: string]: any } = {};
+    var AudioHighDRC: { [key: string]: any } = {};
+    var VideoLowHDR: { [key: string]: any } = {};
+    var VideoHighHDR: { [key: string]: any } = {};
+
+    // Initialize best format variables (will be populated later)
     var BestAudioLow: AudioFormat | any = null;
     var BestAudioHigh: AudioFormat | any = null;
     var BestVideoLow: VideoFormat | any = null;
     var BestVideoHigh: VideoFormat | any = null;
+
+    // Retry configuration for executing yt-dlx
     var config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
+
+    // Construct yt-dlx arguments
     const ytprobeArgs = [
         "--ytprobe",
         "--dump-single-json",
@@ -182,9 +446,12 @@ export default async function Engine({ query, useTor = false, verbose = false })
         "--user-agent",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
     ];
+
+    // Add Tor proxy and ffmpeg path arguments if applicable
     const ytprobeIndex = ytprobeArgs.indexOf("--ytprobe");
     const insertIndex = ytprobeIndex !== -1 ? ytprobeIndex + 1 : 1;
     const argsToInsert: string[] = [];
+
     if (useTor) {
         argsToInsert.push("--proxy", "socks5://127.0.0.1:9050");
         if (verbose) console.log(colors.green("@info:"), "Adding Tor proxy arguments.");
@@ -195,54 +462,87 @@ export default async function Engine({ query, useTor = false, verbose = false })
     } else {
         console.warn(colors.yellow("@warn:"), "ffmpeg executable path not found. yt-dlx may use its built-in downloader or fail for some formats.");
     }
+
     if (argsToInsert.length > 0) {
         ytprobeArgs.splice(insertIndex, 0, ...argsToInsert);
     }
+
+    // Execute yt-dlx with retry logic using await and promisify
     var metaCore = await retry(async () => {
-        return await promisify(execFile)(ytDlxPath, ytprobeArgs);
+        // promisify(execFile) converts the callback-based execFile to a Promise
+        return await promisify(execFile)(ytDlxPath, ytprobeArgs, { maxBuffer: 1024 * 1024 * 10 }); // Increased max buffer
     }, config);
-    if (torProcess) {
+
+    // If Tor process was started, kill it after the yt-dlx command finishes
+    if (torProcess && !torProcess.killed) {
         torProcess.kill();
         if (verbose) console.log(colors.green("@info:"), `Tor process terminated on ${process.platform === "win32" ? "Windows" : "Linux"}`);
     }
+
+    // Parse the JSON output from yt-dlx
+    // Replace 'yt-dlp' with 'yt-dlx' in the output string before parsing
     var i = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
+
+    // Process the extracted formats
     i.formats.forEach((tube: any) => {
         var rm = new Set(["storyboard", "Default"]);
+
+        // Handle Manifest formats (likely m3u8)
         if (!rm.has(tube.format_note) && tube.protocol === "m3u8_native" && tube.vbr) {
             if (!ManifestLow[tube.resolution] || tube.vbr < ManifestLow[tube.resolution].vbr) ManifestLow[tube.resolution] = tube;
             if (!ManifestHigh[tube.resolution] || tube.vbr > ManifestHigh[tube.resolution].vbr) ManifestHigh[tube.resolution] = tube;
         }
-        if (rm.has(tube.format_note) || tube.filesize === undefined || null) return;
-        if (tube.format_note.includes("DRC")) {
+
+        // Skip formats with specified notes or missing filesize
+        if (rm.has(tube.format_note) || tube.filesize === undefined || tube.filesize === null) return;
+
+        // Handle DRC and HDR formats
+        if (tube.format_note?.includes("DRC")) {
+            // Added optional chaining
             if (AudioLow[tube.resolution] && !AudioLowDRC[tube.resolution]) {
                 AudioLowDRC[tube.resolution] = AudioLow[tube.resolution];
             }
             if (AudioHigh[tube.resolution] && !AudioHighDRC[tube.resolution]) {
                 AudioHighDRC[tube.resolution] = AudioHigh[tube.resolution];
             }
-            AudioLowDRC[tube.format_note] = tube;
-            AudioHighDRC[tube.format_note] = tube;
-        } else if (tube.format_note.includes("HDR")) {
+            // Note: Original logic overwrites with the current tube based on format_note key,
+            // which seems to only store the *last* DRC/HDR format encountered for a given note.
+            // Preserving original logic's key usage (format_note).
+            AudioLowDRC[tube.format_note] = tube; // Keying by format_note
+            AudioHighDRC[tube.format_note] = tube; // Keying by format_note
+        } else if (tube.format_note?.includes("HDR")) {
+            // Added optional chaining
+            // Keying by format_note and comparing by filesize
             if (!VideoLowHDR[tube.format_note] || tube.filesize < VideoLowHDR[tube.format_note].filesize) VideoLowHDR[tube.format_note] = tube;
             if (!VideoHighHDR[tube.format_note] || tube.filesize > VideoHighHDR[tube.format_note].filesize) VideoHighHDR[tube.format_note] = tube;
         }
+
+        // Handle standard audio and video formats
         var prevLowVideo = VideoLow[tube.format_note];
         var prevHighVideo = VideoHigh[tube.format_note];
         var prevLowAudio = AudioLow[tube.format_note];
         var prevHighAudio = AudioHigh[tube.format_note];
+
         switch (true) {
-            case tube.format_note.includes("p"):
+            case tube.format_note?.includes("p"): // Video format (e.g., 1080p, 720p)
+                // Keying by format_note and comparing by filesize
                 if (!prevLowVideo || tube.filesize < prevLowVideo.filesize) VideoLow[tube.format_note] = tube;
                 if (!prevHighVideo || tube.filesize > prevHighVideo.filesize) VideoHigh[tube.format_note] = tube;
                 break;
-            default:
+            default: // Audio format
+                // Keying by format_note and comparing by filesize
                 if (!prevLowAudio || tube.filesize < prevLowAudio.filesize) AudioLow[tube.format_note] = tube;
                 if (!prevHighAudio || tube.filesize > prevHighAudio.filesize) AudioHigh[tube.format_note] = tube;
                 break;
         }
     });
-    (Object.values(AudioLow) as AudioFormat[]).forEach((audio: AudioFormat) => {
-        if (audio.filesize !== null) {
+
+    // Determine Best Audio/Video formats based on filesize
+    // Iterate over the values collected in the loops above
+    (Object.values(AudioLow) as any[]).forEach((audio: any) => {
+        // Looping over collected audio formats (could be partial structures)
+        if (audio.filesize !== null && audio.filesize !== undefined) {
+            // Comparing based on filesize to find overall lowest and highest filesize audio
             switch (true) {
                 case !BestAudioLow || audio.filesize < BestAudioLow.filesize:
                     BestAudioLow = audio;
@@ -255,8 +555,11 @@ export default async function Engine({ query, useTor = false, verbose = false })
             }
         }
     });
-    (Object.values(VideoLow) as VideoFormat[]).forEach((video: VideoFormat) => {
-        if (video.filesize !== null) {
+
+    (Object.values(VideoLow) as any[]).forEach((video: any) => {
+        // Looping over collected video formats
+        if (video.filesize !== null && video.filesize !== undefined) {
+            // Comparing based on filesize to find overall lowest and highest filesize video
             switch (true) {
                 case !BestVideoLow || video.filesize < BestVideoLow.filesize:
                     BestVideoLow = video;
@@ -269,38 +572,41 @@ export default async function Engine({ query, useTor = false, verbose = false })
             }
         }
     });
-    function FilterFormats(formats: any[]) {
-        return formats.filter(i => {
-            return !i.format_note.includes("DRC") && !i.format_note.includes("HDR");
-        });
-    }
+
+    // Construct the final payload object using awaited results from mapping and cleaning functions
     var payLoad: EngineOutput = {
-        BestAudioLow: (() => {
-            var i = BestAudioLow || ({} as AudioFormat);
-            return CleanAudioFormat(i);
+        // Use async IIFEs to await cleaning for the best formats
+        BestAudioLow: await (async () => {
+            var i = BestAudioLow || ({} as AudioFormat); // Use the found best format or an empty object
+            return await CleanAudioFormat(i); // Await the cleaning
         })(),
-        BestAudioHigh: (() => {
-            var i = BestAudioHigh || ({} as AudioFormat);
-            return CleanAudioFormat(i);
+        BestAudioHigh: await (async () => {
+            var i = BestAudioHigh || ({} as AudioFormat); // Use the found best format or an empty object
+            return await CleanAudioFormat(i); // Await the cleaning
         })(),
-        BestVideoLow: (() => {
-            var i = BestVideoLow || ({} as VideoFormat);
-            return CeanVideoFormat(i);
+        BestVideoLow: await (async () => {
+            var i = BestVideoLow || ({} as VideoFormat); // Use the found best format or an empty object
+            return await CeanVideoFormat(i); // Await the cleaning
         })(),
-        BestVideoHigh: (() => {
-            var i = BestVideoHigh || ({} as VideoFormat);
-            return CeanVideoFormat(i);
+        BestVideoHigh: await (async () => {
+            var i = BestVideoHigh || ({} as VideoFormat); // Use the found best format or an empty object
+            return await CeanVideoFormat(i); // Await the cleaning
         })(),
-        AudioLowDRC: Object.values(AudioLowDRC).map(i => MapAudioFormat(i)),
-        AudioHighDRC: Object.values(AudioHighDRC).map(i => MapAudioFormat(i)),
-        AudioLow: FilterFormats(Object.values(AudioLow)).map(i => MapAudioFormat(i)),
-        AudioHigh: FilterFormats(Object.values(AudioHigh)).map(i => MapAudioFormat(i)),
-        VideoLowHDR: Object.values(VideoLowHDR).map(i => MapVideoFormat(i)),
-        VideoHighHDR: Object.values(VideoHighHDR).map(i => MapVideoFormat(i)),
-        VideoLow: FilterFormats(Object.values(VideoLow)).map(i => MapVideoFormat(i)),
-        VideoHigh: FilterFormats(Object.values(VideoHigh)).map(i => MapVideoFormat(i)),
-        ManifestLow: Object.values(ManifestLow).map(i => MapManifest(i)),
-        ManifestHigh: Object.values(ManifestHigh).map(i => MapManifest(i)),
+
+        // Use Promise.all to await mapping for arrays of formats
+        // Await FilterFormats first, then map with awaited Map*Format, then await Promise.all
+        AudioLowDRC: await Promise.all(Object.values(AudioLowDRC).map(async i => await MapAudioFormat(i))),
+        AudioHighDRC: await Promise.all(Object.values(AudioHighDRC).map(async i => await MapAudioFormat(i))),
+        AudioLow: await Promise.all((await FilterFormats(Object.values(AudioLow))).map(async i => await MapAudioFormat(i))),
+        AudioHigh: await Promise.all((await FilterFormats(Object.values(AudioHigh))).map(async i => await MapAudioFormat(i))),
+        VideoLowHDR: await Promise.all(Object.values(VideoLowHDR).map(async i => await MapVideoFormat(i))),
+        VideoHighHDR: await Promise.all(Object.values(VideoHighHDR).map(async i => await MapVideoFormat(i))),
+        VideoLow: await Promise.all((await FilterFormats(Object.values(VideoLow))).map(async i => await MapVideoFormat(i))),
+        VideoHigh: await Promise.all((await FilterFormats(Object.values(VideoHigh))).map(async i => await MapVideoFormat(i))),
+        ManifestLow: await Promise.all(Object.values(ManifestLow).map(async i => await MapManifest(i))),
+        ManifestHigh: await Promise.all(Object.values(ManifestHigh).map(async i => await MapManifest(i))),
+
+        // Metadata extraction remains synchronous property access
         metaData: {
             id: i.id as string,
             title: i.title as string,
@@ -327,5 +633,6 @@ export default async function Engine({ query, useTor = false, verbose = false })
             channel_follower_count: i.channel_follower_count as number,
         },
     };
+
     return payLoad;
 }

@@ -1,76 +1,104 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
-import { Client } from "youtubei";
-import { EventEmitter } from "events";
-const ZodSchema = z.object({ channelLink: z.string().min(2) });
+import { Client } from "youtubei"; // Assuming 'youtubei' provides a 'Client' class
+// import { EventEmitter } from "events"; // Remove EventEmitter import as we are refactoring to async/await
+
+// Define the Zod schema for input validation
+const ZodSchema = z.object({ channelLink: z.string().min(2) }); // Mandatory channel link/ID, min 2 characters
+
 /**
- * @shortdesc Fetches data for a single YouTube channel.
+ * @shortdesc Fetches data for a single YouTube channel using async/await instead of events.
  *
- * @description This function retrieves detailed information about a specific YouTube channel using its link or ID. It utilizes the 'youtubei' library to interact with the YouTube API.
+ * @description This function retrieves detailed information about a specific YouTube channel using its link or ID. It utilizes the 'youtubei' library to interact with the YouTube API via async/await.
  *
- * The function requires the link or ID of the YouTube channel you want to fetch data for.
+ * The function requires the link or ID of the YouTube channel you want to fetch data for and returns a Promise that resolves with the channel data or rejects with an error. The resolved data is the raw object returned by the underlying `youtubei` library's `getChannel` method.
  *
- * It supports the following configuration options:
- * - **channelLink:** A string representing the link or ID of the YouTube channel. This is a mandatory parameter.
+ * @param options - An object containing the configuration options validated by ZodSchema.
+ * @param {string} options.channelLink - The link or ID of the YouTube channel. **Required**, minimum length is 2 characters.
  *
- * The function returns an EventEmitter instance that emits events during the process:
- * - `"data"`: Emitted when the channel data is successfully fetched. The emitted data is an object containing detailed information about the channel.
- * - `"error"`: Emitted when an error occurs during any stage of the process, such as argument validation or failure to fetch channel data. The emitted data is the error message.
- *
- * @param {object} options - An object containing the configuration options.
- * @param {string} options.channelLink - The link or ID of the YouTube channel. **Required**.
- *
- * @returns {EventEmitter} An EventEmitter instance for handling events during channel data fetching.
+ * @returns {Promise<any>} A Promise that resolves with the raw channel data object upon success.
+ * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if fetching channel data fails (e.g., channel not found or API error), or if other unexpected errors occur.
  *
  * @example
- * // 1. Fetch data for a channel using its link
- * YouTubeDLX.Search.Channel.Single({ channelLink: "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA" })
- * .on("data", (data) => console.log("Channel Data:", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 1. Fetch data for a channel using its link with async/await with try...catch
+ * const channelLink = "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA"; // Replace with a real channel link or ID
+ * try {
+ * const channelData = await YouTubeDLX.Search.Channel.Single({ channelLink });
+ * console.log("Channel Data:", channelData); // channelData is the raw object from youtubei
+ * console.log("Channel Name:", channelData.name); // Access properties based on youtubei's Channel object structure
+ * } catch (error) {
+ * console.error("Error fetching channel data:", error);
+ * }
  *
  * @example
- * // 2. Fetch data for a channel using its ID
- * YouTubeDLX.Search.Channel.Single({ channelLink: "UC-9-kyTW8ZkZNSB7LxqIENA" })
- * .on("data", (data) => console.log("Channel Data:", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 2. Handle missing required 'channelLink' parameter with async/await
+ * try {
+ * const channelData = await YouTubeDLX.Search.Channel.Single({} as any);
+ * console.log("Channel Data:", channelData); // This line won't be reached
+ * } catch (error) {
+ * console.error("Expected Error (missing channelLink):", error.message); // Catches the thrown ZodError
+ * }
  *
  * @example
- * // 3. Missing required 'channelLink' parameter (will result in an error)
- * YouTubeDLX.Search.Channel.Single({} as any)
- * .on("error", (error) => console.error("Expected Error (missing channelLink):", error));
+ * // 3. Handle invalid 'channelLink' parameter (e.g., too short) with async/await
+ * const invalidLink = "ab";
+ * try {
+ * const channelData = await YouTubeDLX.Search.Channel.Single({ channelLink: invalidLink });
+ * console.log("Channel Data:", channelData); // This line won't be reached
+ * } catch (error) {
+ * console.error("Expected Error (invalid channelLink length):", error.message); // Catches the thrown ZodError
+ * }
  *
  * @example
- * // 4. Invalid 'channelLink' parameter (e.g., too short - will result in an error - Zod validation)
- * YouTubeDLX.Search.Channel.Single({ channelLink: "ab" })
- * .on("error", (error) => console.error("Expected Error (invalid channelLink length):", error));
+ * // 4. Handle channel not found or unable to fetch data with async/await
+ * // Replace with a real channel link/ID that is known to be non-existent or inaccessible
+ * const nonExistentChannelLink = "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID";
+ * try {
+ * const channelData = await YouTubeDLX.Search.Channel.Single({ channelLink: nonExistentChannelLink });
+ * console.log("Channel Data:", channelData); // This line won't be reached
+ * } catch (error) {
+ * console.error("Expected Error (channel not found):", error.message); // Catches the thrown error
+ * }
  *
- * @example
- * // 5. Channel not found or unable to fetch data for the provided link
- * // Note: This scenario depends on the 'youtubei' library's getChannel method behavior for invalid/non-existent links.
- * // The error emitted would be: "@error: Unable to fetch channel data for the provided link."
- * YouTubeDLX.Search.Channel.Single({ channelLink: "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID" })
- * .on("error", (error) => console.error("Expected Error (channel not found):", error));
- *
+ * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
-export default function channel_data({ channelLink }: z.infer<typeof ZodSchema>): EventEmitter {
-    const emitter = new EventEmitter();
-    (async () => {
-        try {
-            ZodSchema.parse({ channelLink });
-            const youtube = new Client();
-            const channelData: any = await youtube.getChannel(channelLink);
-            if (!channelData) {
-                emitter.emit("error", `${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
-                return;
-            }
-            emitter.emit("data", channelData);
-        } catch (error) {
-            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        } finally {
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+export default async function channel_data({ channelLink }: z.infer<typeof ZodSchema>): Promise<any> {
+    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
+    try {
+        // Perform Zod schema validation on the provided options. This call is synchronous.
+        // It will throw a ZodError if validation fails based on the defined schema.
+        ZodSchema.parse({ channelLink });
+
+        // Initialize youtubei client
+        const youtube = new Client(); // Assuming Client constructor is synchronous
+
+        // Perform the asynchronous call to get channel data by link or ID
+        // Assuming youtube.getChannel returns a Promise<Channel | null>
+        const channelData: any = await youtube.getChannel(channelLink);
+
+        // Check if channel data was successfully retrieved
+        if (!channelData) {
+            // If getChannel returns null or undefined, throw an error
+            throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
         }
-    })();
-    return emitter;
+
+        // If successful, return the raw channel data object. The async function wraps this in a resolved Promise.
+        return channelData;
+    } catch (error: any) {
+        // Catch any errors that occurred during the process (Zod validation, getChannel failure).
+        // Format the error message based on the error type and re-throw it to reject the main function's Promise.
+        if (error instanceof ZodError) {
+            // Handle Zod validation errors by formatting the error details.
+            throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        } else if (error instanceof Error) {
+            // Re-throw standard Error objects with their existing message.
+            throw new Error(`${colors.red("@error:")} ${error.message}`);
+        } else {
+            // Handle any other unexpected error types by converting them to a string.
+            throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        }
+    } finally {
+        // This block executes after the try block successfully returns or the catch block throws.
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+    }
 }

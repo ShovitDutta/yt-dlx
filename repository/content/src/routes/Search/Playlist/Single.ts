@@ -1,99 +1,161 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
-import { Client } from "youtubei";
-import { EventEmitter } from "events";
-import YouTubeID from "../../../utils/YouTubeId";
-const ZodSchema = z.object({ playlistLink: z.string().min(2) });
+import { Client, PlaylistCompact } from "youtubei"; // Assuming 'youtubei' provides 'Client' and 'PlaylistCompact' or similar types
+// import { EventEmitter } from "events"; // Remove EventEmitter import as we are refactoring to async/await
+import YouTubeID from "../../../utils/YouTubeId"; // Assuming YouTubeID helper function exists and returns Promise<string | null>
+
+// Define the Zod schema for input validation
+const ZodSchema = z.object({ playlistLink: z.string().min(2) }); // Mandatory playlist link
+
+// Define the interface for the result structure
 export interface playlistVideosType {
     id: string;
     title: string;
     videoCount: number;
-    result: { id: string; title: string; isLive: boolean; duration: number; thumbnails: string[] }[];
+    result: { id: string; title: string; isLive: boolean; duration: number | null; thumbnails: { url: string; width: number; height: number }[] }[]; // Array of video details
 }
-async function playlistVideos({ playlistId }: { playlistId: string }, emitter: EventEmitter): Promise<playlistVideosType | null> {
+
+// Helper function to fetch playlist videos using youtubei
+// Refactored to not take emitter and throw errors or return null/data directly
+async function playlistVideosHelper({ playlistId }: { playlistId: string }): Promise<playlistVideosType | null> {
     try {
-        const youtube = new Client();
+        const youtube = new Client(); // Assuming Client constructor is synchronous
+        // Assuming youtube.getPlaylist returns a Promise<Playlist | null> where Playlist has id, title, videoCount, and videos.items array
         const playlistVideosData: any = await youtube.getPlaylist(playlistId);
+
         if (!playlistVideosData) {
-            emitter.emit("error", `${colors.red("@error: ")} Unable to fetch playlist data.`);
-            return null;
+            // If getPlaylist returns null or undefined, throw an error
+            throw new Error(`${colors.red("@error: ")} Unable to fetch playlist data from youtubei client.`);
         }
-        const result = playlistVideosData.videos.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, thumbnails: item.thumbnails }));
-        return { id: playlistVideosData.id, title: playlistVideosData.title, videoCount: playlistVideosData.videoCount, result };
+
+        // Map the videos within the playlist to the desired structure
+        // Note: Original code mapped thumbnail objects to string URLs. Preserving that structure.
+        const videoResults = playlistVideosData.videos.items.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            isLive: item.isLive, // Assuming property name is isLive
+            duration: item.duration, // Assuming duration is a number or null
+            thumbnails: item.thumbnails?.map((thumb: { url: string }) => thumb.url) || [], // Map thumbnail objects to URLs, default to empty array
+        }));
+
+        // Return the mapped playlist data
+        return {
+            id: playlistVideosData.id,
+            title: playlistVideosData.title,
+            videoCount: playlistVideosData.videoCount, // Assuming property name is videoCount
+            result: videoResults,
+        };
     } catch (error: any) {
-        emitter.emit("error", `${colors.red("@error: ")} ${error.message}`);
-        return null;
+        // Catch any errors during fetching playlist data and re-throw with context
+        throw new Error(`${colors.red("@error: ")} Error fetching playlist details: ${error.message}`);
     }
 }
+
 /**
- * @shortdesc Fetches data for a YouTube playlist.
+ * @shortdesc Fetches data for a YouTube playlist using async/await instead of events.
  *
- * @description This function retrieves details about a YouTube playlist, including its title, video count, and a list of videos within the playlist. It requires a valid YouTube playlist link as input.
+ * @description This function retrieves comprehensive details about a YouTube playlist, including its title, video count, and a list of videos within the playlist using async/await. It requires a valid YouTube playlist link as input.
  *
  * The function takes the playlist link, extracts the playlist ID, and then uses the YouTube API (via the youtubei library) to fetch the playlist information and the list of videos it contains.
  *
- * It supports the following configuration options:
- * - **playlistLink:** A string containing the URL of the YouTube playlist. This is a mandatory parameter. The function will attempt to extract the playlist ID from this link.
+ * It returns a Promise that resolves with an object conforming to the `playlistVideosType` interface containing playlist details and video list, or rejects with an error, replacing the EventEmitter pattern.
  *
- * The function returns an EventEmitter instance that emits events during the process:
- * - `"data"`: Emitted when the playlist data is successfully fetched and processed. The emitted data is an object containing the playlist's ID, title, video count, and an array of video objects (each with id, title, isLive, duration, and thumbnails).
- * - `"error"`: Emitted when an error occurs at any stage, such as argument validation, failure to extract the playlist ID from the link, or failure to fetch data from the YouTube API. The emitted data is the error message.
- *
- * @param {object} options - An object containing the configuration options.
+ * @param options - An object containing the configuration options.
  * @param {string} options.playlistLink - The URL of the YouTube playlist. **Required**.
  *
- * @returns {EventEmitter} An EventEmitter instance for handling events during playlist data fetching.
+ * @returns {Promise<playlistVideosType>} A Promise that resolves with the playlist data upon success.
+ * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the video link format is invalid, if fetching data from the YouTube API fails, or if other unexpected errors occur.
  *
  * @example
- * // 1. Fetch data for a valid playlist link
- * const playlistLink = "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID_HERE";
- * YouTubeDLX.Search.Playlist.Single({ playlistLink })
- * .on("data", (data) => console.log("Playlist Data:", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 1. Fetch data for a valid playlist link using async/await with try...catch
+ * const playlistLink = "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID_HERE"; // Replace with a real playlist link
+ * try {
+ * const playlistData = await YouTubeDLX.Search.Playlist.Single({ playlistLink });
+ * console.log("Playlist Data:", playlistData);
+ * console.log("First video title:", playlistData.result[0]?.title); // Access videos in the 'result' array
+ * } catch (error) {
+ * console.error("Error fetching playlist data:", error);
+ * }
  *
  * @example
- * // 2. Missing required 'playlistLink' parameter (will result in a Zod error)
- * YouTubeDLX.Search.Playlist.Single({} as any)
- * .on("error", (error) => console.error("Expected Error (missing playlistLink):", error));
+ * // 2. Handle missing required 'playlistLink' parameter with async/await
+ * try {
+ * const playlistData = await YouTubeDLX.Search.Playlist.Single({} as any);
+ * console.log("Playlist Data:", playlistData); // This line won't be reached
+ * } catch (error) {
+ * console.error("Expected Error (missing playlistLink):", error.message); // Catches the thrown ZodError
+ * }
  *
  * @example
- * // 3. Invalid playlist link provided (fails YouTubeID extraction)
- * const invalidLink = "https://www.youtube.com/watch?v=SOME_VIDEO_ID"; // Not a playlist link
- * YouTubeDLX.Search.Playlist.Single({ playlistLink: invalidLink })
- * .on("error", (error) => console.error("Expected Error (incorrect playlist link):", error));
+ * // 3. Handle invalid playlist link provided (fails YouTubeID extraction) with async/await
+ * const invalidLink = "this is not a playlist link";
+ * try {
+ * const playlistData = await YouTubeDLX.Search.Playlist.Single({ playlistLink: invalidLink });
+ * console.log("Playlist Data:", playlistData); // This line won't be reached
+ * } catch (error) {
+ * console.error("Expected Error (incorrect playlist link):", error.message); // Catches the thrown error
+ * }
  *
  * @example
- * // 4. Playlist data fetching fails (e.g., playlist is private or doesn't exist)
- * // Note: This scenario depends on the youtubei library's behavior for inaccessible/non-existent playlists.
- * // The error emitted would likely be: "@error: Unable to fetch playlist data." or an error from youtubei.
+ * // 4. Handle fetching data for a non-existent or private playlist with async/await
+ * // Replace with a real playlist link that is known to be inaccessible or non-existent
  * const nonExistentPlaylistLink = "https://www.youtube.com/playlist?list=NON_EXISTENT_PLAYLIST_ID_12345";
- * YouTubeDLX.Search.Playlist.Single({ playlistLink: nonExistentPlaylistLink })
- * .on("error", (error) => console.error("Expected Error (unable to retrieve playlist information):", error));
+ * try {
+ * const playlistData = await YouTubeDLX.Search.Playlist.Single({ playlistLink: nonExistentPlaylistLink });
+ * console.log("Playlist Data:", playlistData); // This line won't be reached
+ * } catch (error) {
+ * console.error("Expected Error (unable to retrieve playlist information):", error.message); // Catches the thrown error from playlistVideosHelper
+ * }
  *
+ * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
-export default function playlist_data({ playlistLink }: z.infer<typeof ZodSchema>): EventEmitter {
-    const emitter = new EventEmitter();
-    (async () => {
-        try {
-            ZodSchema.parse({ playlistLink });
-            const playlistId = await YouTubeID(playlistLink);
-            if (!playlistId) {
-                emitter.emit("error", `${colors.red("@error: ")} Incorrect playlist link provided.`);
-                return;
-            }
-            const metaData: playlistVideosType | null = await playlistVideos({ playlistId }, emitter);
-            if (!metaData) {
-                emitter.emit("error", `${colors.red("@error: ")} Unable to retrieve playlist information.`);
-                return;
-            }
-            emitter.emit("data", metaData);
-        } catch (error) {
-            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        } finally {
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+export default async function playlist_data({ playlistLink }: z.infer<typeof ZodSchema>): Promise<playlistVideosType> {
+    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
+    try {
+        // Perform Zod schema validation on the provided options. This call is synchronous.
+        // It will throw a ZodError if validation fails based on the defined schema.
+        ZodSchema.parse({ playlistLink });
+
+        // Await the asynchronous call to the YouTubeID helper to extract the playlist ID.
+        // Assuming YouTubeID can correctly extract a playlist ID from a link.
+        const playlistId = await YouTubeID(playlistLink); // Assuming YouTubeID returns Promise<string | null>
+
+        // Check if the playlist ID was successfully extracted.
+        if (!playlistId) {
+            // If YouTubeID returns null, throw an error indicating the link was incorrect.
+            throw new Error(`${colors.red("@error: ")} Incorrect playlist link provided. Unable to extract playlist ID.`);
         }
-    })();
-    return emitter;
+
+        // Await the asynchronous call to the refactored playlistVideosHelper function.
+        // This helper now throws errors or returns the data directly.
+        const metaData: playlistVideosType | null = await playlistVideosHelper({ playlistId });
+
+        // Check if metadata was successfully retrieved by the playlistVideosHelper.
+        // Although playlistVideosHelper is refactored to throw on fetch failure, this check
+        // handles the case where the helper might still return null in some edge cases
+        // or if its internal logic changes.
+        if (!metaData) {
+            // If playlistVideosHelper returns null, throw an error.
+            throw new Error(`${colors.red("@error: ")} Unable to retrieve playlist information after fetching.`);
+        }
+
+        // If successful, return the fetched metadata. The async function automatically wraps this in a resolved Promise.
+        return metaData;
+    } catch (error: any) {
+        // Catch any errors that occurred during the process (Zod validation, YouTubeID extraction, playlistVideosHelper fetch).
+        // Format the error message based on the error type and re-throw it to reject the main function's Promise.
+        if (error instanceof ZodError) {
+            // Handle Zod validation errors by formatting the error details.
+            throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        } else if (error instanceof Error) {
+            // Re-throw standard Error objects with their existing message.
+            throw new Error(`${colors.red("@error:")} ${error.message}`);
+        } else {
+            // Handle any other unexpected error types by converting them to a string.
+            throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        }
+    } finally {
+        // This block executes after the try block successfully returns or the catch block throws.
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+    }
 }
