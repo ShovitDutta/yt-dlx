@@ -3,33 +3,52 @@ import dotenv from "dotenv";
 import colors from "colors";
 console.clear();
 dotenv.config();
+function runAudioHighest(options: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const stream = YouTubeDLX.Audio.Highest(options);
+        let handled = false;
+        stream
+            .on("data", data => {
+                console.log(colors.italic.green("@data:"), data);
+                handled = true;
+            })
+            .on("stream", streamData => {
+                console.log(colors.italic.green("@stream:"), streamData);
+                handled = true;
+            })
+            .on("metadata", metadata => {
+                console.log(colors.italic.green("@metadata:"), metadata);
+                handled = true;
+            })
+            .on("error", error => {
+                console.error(colors.italic.red("@error:"), error);
+                reject(error);
+            })
+            .on("end", () => {
+                if (!handled) {
+                    console.log(colors.yellow("@info:"), "No data emitted for this case.");
+                }
+                resolve();
+            });
+    });
+}
 (async () => {
-    console.log(colors.bold.blue("@info"), "AudioHighest: (1): Download and process highest quality audio with only the query and filter");
-    YouTubeDLX.Audio.Highest({ query: "test song", filter: "bassboost" })
-        .on("data", data => console.log(colors.italic.green("@data:"), data))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
-    console.log(colors.bold.blue("@info"), "AudioHighest: (2): Download and process highest quality audio with query, filter, and verbose output enabled");
-    YouTubeDLX.Audio.Highest({ query: "test song", filter: "bassboost", verbose: true })
-        .on("data", data => console.log(colors.italic.green("@data:"), data))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
-    console.log(colors.bold.blue("@info"), "AudioHighest: (3): Download and process highest quality audio with query, filter, and custom output folder");
-    YouTubeDLX.Audio.Highest({ query: "test song", filter: "bassboost", output: "output" })
-        .on("data", data => console.log(colors.italic.green("@data:"), data))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
-    console.log(colors.bold.blue("@info"), "AudioHighest: (4): Stream highest quality audio with query and stream enabled");
-    YouTubeDLX.Audio.Highest({ query: "test song", stream: true })
-        .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
-    console.log(colors.bold.blue("@info"), "AudioHighest: (5): Download and process highest quality audio with query, filter, and metadata output enabled");
-    YouTubeDLX.Audio.Highest({ query: "test song", filter: "bassboost", metadata: true })
-        .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
-    console.log(colors.bold.blue("@info"), "AudioHighest: (6): Download and process highest quality audio with query, filter, stream, and metadata");
-    YouTubeDLX.Audio.Highest({ query: "test song", filter: "bassboost", stream: true, metadata: true })
-        .on("data", data => console.log(colors.italic.green("@data:"), data))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
-    console.log(colors.bold.blue("@info"), "AudioHighest: (7): Download and process highest quality audio with all parameters");
-    YouTubeDLX.Audio.Highest({ query: "test song", output: "output", filter: "bassboost", stream: true, verbose: true, metadata: true })
-        .on("data", data => console.log(colors.italic.green("@data:"), data))
-        .on("error", error => console.error(colors.italic.red("@error:"), error));
+    const query = "test song";
+    const testCases = [
+        { label: "1", options: { query, filter: "bassboost" } },
+        { label: "2", options: { query, filter: "bassboost", verbose: true } },
+        { label: "3", options: { query, filter: "bassboost", output: "output" } },
+        { label: "4", options: { query, stream: true } },
+        { label: "5", options: { query, filter: "bassboost", metadata: true } },
+        { label: "6", options: { query, filter: "bassboost", stream: true, metadata: true } },
+        { label: "7", options: { query, output: "output", filter: "bassboost", stream: true, verbose: true, metadata: true } },
+    ];
+    for (const testCase of testCases) {
+        try {
+            console.log(colors.bold.blue("@info"), `AudioHighest: (${testCase.label}): Running with options`, testCase.options);
+            await runAudioHighest(testCase.options);
+        } catch (error) {
+            console.error(colors.red("@error:"), `Test case (${testCase.label}) failed:`, error);
+        }
+    }
 })();
