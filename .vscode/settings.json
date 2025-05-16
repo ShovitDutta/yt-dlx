@@ -1,34 +1,19 @@
 {
     "files.exclude": {
-        "**/ios": false,
-        "**/.hg": false,
-        "**/out": false,
-        "**/venv": false,
-        "**/.svn": false,
-        "**/.git": false,
-        "**/.expo": false,
-        "**/.next": false,
-        "**/dist": false,
-        "**/.venv": false,
-        "**/build": false,
-        "**/android": false,
-        "**/Thumbs.db": false,
-        "**/.DS_Store": false,
-        "**/node_modules": false
-    },
-    "zencoder.enableRepoIndexing": true,
-    "editor.formatOnSave": true,
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescriptreact]": {},
-    "[jsonc]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    },
-    "[html]": {
-        "editor.defaultFormatter": "vscode.html-language-features"
-    },
-    "[css]": {
-        "editor.defaultFormatter": "vscode.css-language-features"
+        "**/ios": true,
+        "**/.hg": true,
+        "**/out": true,
+        "**/venv": true,
+        "**/.svn": true,
+        "**/.git": true,
+        "**/.expo": true,
+        "**/.next": true,
+        "**/dist": true,
+        "**/.venv": true,
+        "**/build": true,
+        "**/android": true,
+        "**/Thumbs.db": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true
     }
 }
