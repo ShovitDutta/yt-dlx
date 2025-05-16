@@ -1,8 +1,15 @@
 {
+    "license": "Apache-2.0",
     "author": {
         "name": "Shovit Dutta",
         "email": "shovitdutta1@gmail.com"
     },
+    "description": "Effortless Audio-Video Downloader And Streamer!",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yt-dlx/yt-dlx.git"
+    },
+    "homepage": "https://yt-dlx-shovit.koyeb.src",
     "scripts": {
         "dev": "next dev --turbopack",
         "build": "next build",
