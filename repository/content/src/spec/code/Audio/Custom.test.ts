@@ -33,16 +33,14 @@ function runAudioCustom(options: any): Promise<void> {
     });
 }
 (async () => {
-    const query = "test song";
-    const resolution = "high";
     const testCases = [
-        { label: "1", options: { query, resolution } },
-        { label: "2", options: { query, resolution, verbose: true } },
-        { label: "3", options: { query, resolution, output: "output" } },
-        { label: "4", options: { query, resolution, stream: true } },
-        { label: "5", options: { query, resolution, filter: "bassboost" } },
-        { label: "6", options: { query, resolution, metadata: true } },
-        { label: "7", options: { query, resolution, output: "output", stream: true, filter: "echo", verbose: true, metadata: true } },
+        { label: "1", options: { query: "4k Dolby Nature Scene", resolution: "high" } },
+        { label: "2", options: { query: "4k Dolby Nature Scene", resolution: "high", verbose: true } },
+        { label: "3", options: { query: "4k Dolby Nature Scene", resolution: "high", output: "output" } },
+        { label: "4", options: { query: "4k Dolby Nature Scene", resolution: "high", stream: true } },
+        { label: "5", options: { query: "4k Dolby Nature Scene", resolution: "high", filter: "bassboost" } },
+        { label: "6", options: { query: "4k Dolby Nature Scene", resolution: "high", metadata: true } },
+        { label: "7", options: { query: "4k Dolby Nature Scene", resolution: "high", output: "output", stream: true, filter: "echo", verbose: true, metadata: true } },
     ];
     for (const testCase of testCases) {
         try {

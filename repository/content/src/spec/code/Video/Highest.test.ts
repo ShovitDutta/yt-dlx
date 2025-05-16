@@ -34,13 +34,13 @@ function runVideoHighest(options: any): Promise<void> {
 }
 (async () => {
     const testCases = [
-        { label: "1", options: { query: "test video" } },
-        { label: "2", options: { query: "testvideo", filter: "grayscale" } },
-        { label: "3", options: { query: "test video", stream: true } },
-        { label: "4", options: { query: "test video", verbose: true } },
-        { label: "5", options: { query: "test video", metadata: true } },
-        { label: "6", options: { query: "test video", filter: "grayscale", stream: true, metadata: true } },
-        { label: "7", options: { query: "test video", output: "output", filter: "grayscale", stream: true, verbose: true, metadata: true } },
+        { label: "1", options: { query: "4k Dolby Nature Scene" } },
+        { label: "2", options: { query: "4k Dolby Nature Scene", filter: "grayscale" } },
+        { label: "3", options: { query: "4k Dolby Nature Scene", stream: true } },
+        { label: "4", options: { query: "4k Dolby Nature Scene", verbose: true } },
+        { label: "5", options: { query: "4k Dolby Nature Scene", metadata: true } },
+        { label: "6", options: { query: "4k Dolby Nature Scene", filter: "grayscale", stream: true, metadata: true } },
+        { label: "7", options: { query: "4k Dolby Nature Scene", output: "output", filter: "grayscale", stream: true, verbose: true, metadata: true } },
     ];
     for (const testCase of testCases) {
         try {

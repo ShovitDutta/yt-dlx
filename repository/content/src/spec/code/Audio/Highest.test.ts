@@ -33,15 +33,14 @@ function runAudioHighest(options: any): Promise<void> {
     });
 }
 (async () => {
-    const query = "test song";
     const testCases = [
-        { label: "1", options: { query, filter: "bassboost" } },
-        { label: "2", options: { query, filter: "bassboost", verbose: true } },
-        { label: "3", options: { query, filter: "bassboost", output: "output" } },
-        { label: "4", options: { query, stream: true } },
-        { label: "5", options: { query, filter: "bassboost", metadata: true } },
-        { label: "6", options: { query, filter: "bassboost", stream: true, metadata: true } },
-        { label: "7", options: { query, output: "output", filter: "bassboost", stream: true, verbose: true, metadata: true } },
+        { label: "1", options: { query: "4k Dolby Nature Scene", filter: "bassboost" } },
+        { label: "2", options: { query: "4k Dolby Nature Scene", filter: "bassboost", verbose: true } },
+        { label: "3", options: { query: "4k Dolby Nature Scene", filter: "bassboost", output: "output" } },
+        { label: "4", options: { query: "4k Dolby Nature Scene", stream: true } },
+        { label: "5", options: { query: "4k Dolby Nature Scene", filter: "bassboost", metadata: true } },
+        { label: "6", options: { query: "4k Dolby Nature Scene", filter: "bassboost", stream: true, metadata: true } },
+        { label: "7", options: { query: "4k Dolby Nature Scene", output: "output", filter: "bassboost", stream: true, verbose: true, metadata: true } },
     ];
     for (const testCase of testCases) {
         try {

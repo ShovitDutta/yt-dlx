@@ -33,17 +33,15 @@ function runAudioVideoCustom(options: any): Promise<void> {
     });
 }
 (async () => {
-    const query = "test song";
-    const resolution = "720p";
     const filter = "grayscale";
     const testCases = [
-        { label: "1", options: { query, resolution, filter } },
-        { label: "2", options: { query, resolution, filter, verbose: true } },
-        { label: "3", options: { query, resolution, filter, output: "output" } },
-        { label: "4", options: { query, resolution, stream: true } },
-        { label: "5", options: { query, resolution, filter, metadata: true } },
-        { label: "6", options: { query, resolution, filter, stream: true, metadata: true } },
-        { label: "7", options: { query, resolution, output: "output", filter, stream: true, verbose: true, metadata: true } },
+        { label: "1", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale" } },
+        { label: "2", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale", verbose: true } },
+        { label: "3", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale", output: "output" } },
+        { label: "4", options: { query: "4k Dolby Nature Scene", resolution: "1080p", stream: true } },
+        { label: "5", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale", metadata: true } },
+        { label: "6", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale", stream: true, metadata: true } },
+        { label: "7", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale", output: "output", stream: true, verbose: true, metadata: true } },
     ];
     for (const testCase of testCases) {
         try {

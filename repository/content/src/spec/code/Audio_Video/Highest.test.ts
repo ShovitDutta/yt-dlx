@@ -33,7 +33,7 @@ function runAudioVideoHighest(options: any): Promise<void> {
     });
 }
 (async () => {
-    const query = "test song";
+    const query = "4k Dolby Nature Scene";
     const filter = "grayscale";
     const testCases = [
         { label: "1", options: { query, filter } },

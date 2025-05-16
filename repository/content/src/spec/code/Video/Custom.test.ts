@@ -34,13 +34,13 @@ function runVideoCustom(options: any): Promise<void> {
 }
 (async () => {
     const testCases = [
-        { label: "1", options: { query: "test video", resolution: "720p" } },
-        { label: "2", options: { query: "test video", resolution: "1080p", filter: "grayscale" } },
-        { label: "3", options: { query: "test video", resolution: "480p", stream: true } },
-        { label: "4", options: { query: "test video", resolution: "720p", verbose: true } },
-        { label: "5", options: { query: "test video", resolution: "1080p", metadata: true } },
-        { label: "6", options: { query: "test video", resolution: "720p", filter: "grayscale", stream: true, metadata: true } },
-        { label: "7", options: { query: "test video", output: "output", resolution: "720p", filter: "grayscale", stream: true, verbose: true, metadata: true } },
+        { label: "1", options: { query: "4k Dolby Nature Scene", resolution: "720p" } },
+        { label: "2", options: { query: "4k Dolby Nature Scene", resolution: "1080p", filter: "grayscale" } },
+        { label: "3", options: { query: "4k Dolby Nature Scene", resolution: "480p", stream: true } },
+        { label: "4", options: { query: "4k Dolby Nature Scene", resolution: "720p", verbose: true } },
+        { label: "5", options: { query: "4k Dolby Nature Scene", resolution: "1080p", metadata: true } },
+        { label: "6", options: { query: "4k Dolby Nature Scene", resolution: "720p", filter: "grayscale", stream: true, metadata: true } },
+        { label: "7", options: { query: "4k Dolby Nature Scene", output: "output", resolution: "720p", filter: "grayscale", stream: true, verbose: true, metadata: true } },
     ];
     for (const testCase of testCases) {
         try {
