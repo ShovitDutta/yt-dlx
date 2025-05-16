@@ -144,11 +144,19 @@ export default function watch_history(options: z.infer<typeof ZodSchema>): Event
                     if (result.data?.Videos && result.data.Videos.length > 1) result.data.Videos.splice(1);
                     break;
                 case "old-to-new":
-                    if (result.data?.Shorts) result.data.Shorts.sort((a, b) => a.videoId.localeCompare(b.videoId));
+                    if (result.data?.Shorts)
+                        result.data.Shorts.sort((a, b) => {
+                            if (!a.videoId || !b.videoId) return 0;
+                            return a.videoId.localeCompare(b.videoId);
+                        });
                     if (result.data?.Videos) result.data.Videos.sort((a, b) => a.videoId.localeCompare(b.videoId));
                     break;
                 case "new-to-old":
-                    if (result.data?.Shorts) result.data.Shorts.sort((a, b) => b.videoId.localeCompare(a.videoId));
+                    if (result.data?.Shorts)
+                        result.data.Shorts.sort((a, b) => {
+                            if (!a.videoId || !b.videoId) return 0;
+                            return b.videoId.localeCompare(a.videoId);
+                        });
                     if (result.data?.Videos) result.data.Videos.sort((a, b) => b.videoId.localeCompare(a.videoId));
                     break;
             }
