@@ -1,20 +1,15 @@
 import express from "express";
+import * as path from "path";
 import YouTubeDLX from "..";
-import path from "path";
-
-const port = 3000;
-const server = express();
-server.use(express.json());
-
+const Test_Server = express();
+Test_Server.use(express.json());
 function wrapEmitter(emitter, eventType = "data") {
     return new Promise((resolve, reject) => {
         emitter.on(eventType, resolve);
         emitter.on("error", reject);
     });
 }
-
-// Account Routes
-server.get("/api/Account/HomeFeed", async (req: any, res: any) => {
+Test_Server.get("/api/Account/HomeFeed", async (req: any, res: any) => {
     try {
         const options = { cookies: req.query.YouTubeDLX_COOKIES, verbose: req.query.verbose, sort: req.query.sort };
         const emitter = YouTubeDLX.Account.HomeFeed(options);
@@ -24,8 +19,7 @@ server.get("/api/Account/HomeFeed", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Account/SubscriptionsFeed", async (req: any, res: any) => {
+Test_Server.get("/api/Account/SubscriptionsFeed", async (req: any, res: any) => {
     try {
         const options = { cookies: req.query.YouTubeDLX_COOKIES, verbose: req.query.verbose };
         const emitter = YouTubeDLX.Account.SubscriptionsFeed(options);
@@ -35,8 +29,7 @@ server.get("/api/Account/SubscriptionsFeed", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Account/UnseenNotifications", async (req: any, res: any) => {
+Test_Server.get("/api/Account/UnseenNotifications", async (req: any, res: any) => {
     try {
         const options = { cookies: req.query.YouTubeDLX_COOKIES, verbose: req.query.verbose };
         const emitter = YouTubeDLX.Account.UnseenNotifications(options);
@@ -46,8 +39,7 @@ server.get("/api/Account/UnseenNotifications", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Account/History", async (req: any, res: any) => {
+Test_Server.get("/api/Account/History", async (req: any, res: any) => {
     try {
         const options = { cookies: req.query.YouTubeDLX_COOKIES, verbose: req.query.verbose, sort: req.query.sort };
         const emitter = YouTubeDLX.Account.History(options);
@@ -57,9 +49,7 @@ server.get("/api/Account/History", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-// Search Routes
-server.get("/api/Search/Channel/Single", async (req: any, res: any) => {
+Test_Server.get("/api/Search/Channel/Single", async (req: any, res: any) => {
     try {
         const options = { channelLink: req.query.channelLink };
         const emitter = YouTubeDLX.Search.Channel.Single(options);
@@ -69,8 +59,7 @@ server.get("/api/Search/Channel/Single", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Search/Channel/Multiple", async (req: any, res: any) => {
+Test_Server.get("/api/Search/Channel/Multiple", async (req: any, res: any) => {
     try {
         const options = { query: req.query.query };
         const emitter = YouTubeDLX.Search.Channel.Multiple(options);
@@ -80,8 +69,7 @@ server.get("/api/Search/Channel/Multiple", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Search/Video/Single", async (req: any, res: any) => {
+Test_Server.get("/api/Search/Video/Single", async (req: any, res: any) => {
     try {
         const options = { videoLink: req.query.videoLink };
         const emitter = YouTubeDLX.Search.Video.Single(options);
@@ -91,8 +79,7 @@ server.get("/api/Search/Video/Single", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Search/Video/Multiple", async (req: any, res: any) => {
+Test_Server.get("/api/Search/Video/Multiple", async (req: any, res: any) => {
     try {
         const options = { query: req.query.query };
         const emitter = YouTubeDLX.Search.Video.Multiple(options);
@@ -102,8 +89,7 @@ server.get("/api/Search/Video/Multiple", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Search/Playlist/Single", async (req: any, res: any) => {
+Test_Server.get("/api/Search/Playlist/Single", async (req: any, res: any) => {
     try {
         const options = { playlistLink: req.query.playlistLink };
         const emitter = YouTubeDLX.Search.Playlist.Single(options);
@@ -113,8 +99,7 @@ server.get("/api/Search/Playlist/Single", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Search/Playlist/Multiple", async (req: any, res: any) => {
+Test_Server.get("/api/Search/Playlist/Multiple", async (req: any, res: any) => {
     try {
         const options = { playlistLink: req.query.query };
         const emitter = YouTubeDLX.Search.Playlist.Multiple(options);
@@ -124,9 +109,7 @@ server.get("/api/Search/Playlist/Multiple", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-// Misc Routes
-server.get("/api/Misc/System/Help", async (req: any, res: any) => {
+Test_Server.get("/api/Misc/System/Help", async (req: any, res: any) => {
     try {
         const helpUrl = await YouTubeDLX.Misc.System.Help();
         res.json({ helpUrl });
@@ -134,8 +117,7 @@ server.get("/api/Misc/System/Help", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Misc/Video/Extract", async (req: any, res: any) => {
+Test_Server.get("/api/Misc/Video/Extract", async (req: any, res: any) => {
     try {
         const options = { query: req.query.query, verbose: req.query.verbose, useTor: req.query.useTor };
         const emitter = YouTubeDLX.Misc.Video.Extract(options);
@@ -145,8 +127,7 @@ server.get("/api/Misc/Video/Extract", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Misc/Video/Formats", async (req: any, res: any) => {
+Test_Server.get("/api/Misc/Video/Formats", async (req: any, res: any) => {
     try {
         const options = { query: req.query.query, verbose: req.query.verbose };
         const emitter = YouTubeDLX.Misc.Video.Formats(options);
@@ -156,8 +137,7 @@ server.get("/api/Misc/Video/Formats", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Misc/Video/Comments", async (req: any, res: any) => {
+Test_Server.get("/api/Misc/Video/Comments", async (req: any, res: any) => {
     try {
         const options = { query: req.query.query, verbose: req.query.verbose };
         const emitter = YouTubeDLX.Misc.Video.Comments(options);
@@ -167,8 +147,7 @@ server.get("/api/Misc/Video/Comments", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Misc/Video/Transcript", async (req: any, res: any) => {
+Test_Server.get("/api/Misc/Video/Transcript", async (req: any, res: any) => {
     try {
         const options = { videoLink: req.query.videoLink, verbose: req.query.verbose };
         const emitter = YouTubeDLX.Misc.Video.Transcript(options);
@@ -178,8 +157,7 @@ server.get("/api/Misc/Video/Transcript", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Misc/Video/Related", async (req: any, res: any) => {
+Test_Server.get("/api/Misc/Video/Related", async (req: any, res: any) => {
     try {
         const options = { videoId: req.query.videoId };
         const emitter = YouTubeDLX.Misc.Video.Related(options);
@@ -189,9 +167,7 @@ server.get("/api/Misc/Video/Related", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-// Video Routes
-server.get("/api/Video/Custom", async (req: any, res: any) => {
+Test_Server.get("/api/Video/Custom", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -217,8 +193,7 @@ server.get("/api/Video/Custom", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Video/Highest", async (req: any, res: any) => {
+Test_Server.get("/api/Video/Highest", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -243,8 +218,7 @@ server.get("/api/Video/Highest", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Video/Lowest", async (req: any, res: any) => {
+Test_Server.get("/api/Video/Lowest", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -269,9 +243,7 @@ server.get("/api/Video/Lowest", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-// Audio Routes
-server.get("/api/Audio/Custom", async (req: any, res: any) => {
+Test_Server.get("/api/Audio/Custom", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -297,8 +269,7 @@ server.get("/api/Audio/Custom", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Audio/Highest", async (req: any, res: any) => {
+Test_Server.get("/api/Audio/Highest", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -323,8 +294,7 @@ server.get("/api/Audio/Highest", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Audio/Lowest", async (req: any, res: any) => {
+Test_Server.get("/api/Audio/Lowest", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -349,9 +319,7 @@ server.get("/api/Audio/Lowest", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-// Audio_Video Routes
-server.get("/api/Audio_Video/Custom", async (req: any, res: any) => {
+Test_Server.get("/api/Audio_Video/Custom", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -377,8 +345,7 @@ server.get("/api/Audio_Video/Custom", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Audio_Video/Highest", async (req: any, res: any) => {
+Test_Server.get("/api/Audio_Video/Highest", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -403,8 +370,7 @@ server.get("/api/Audio_Video/Highest", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.get("/api/Audio_Video/Lowest", async (req: any, res: any) => {
+Test_Server.get("/api/Audio_Video/Lowest", async (req: any, res: any) => {
     try {
         const options = {
             query: req.query.query,
@@ -429,5 +395,4 @@ server.get("/api/Audio_Video/Lowest", async (req: any, res: any) => {
         res.status(500).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
-
-server.listen(port, () => console.log(`Server running on port ${port}`));
+Test_Server.listen(3000, () => console.log(`Server running on port 3000`));

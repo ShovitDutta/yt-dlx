@@ -4,7 +4,7 @@ import colors from "colors";
 import YouTubeDLX from "..";
 console.clear();
 dotenv.config();
-async function Account_Tests() {
+(async () => {
     async function HomeFeed() {
         console.log(colors.bold.blue("@info"), "HomeFeed: (1): Fetch home feed with only the cookies");
         YouTubeDLX.Account.HomeFeed({ cookies: env.YouTubeDLX_COOKIES as string })
@@ -93,8 +93,8 @@ async function Account_Tests() {
     await SubscriptionsFeed();
     await UnseenNotifications();
     await WatchHistory();
-}
-async function Search_Tests() {
+})();
+(async () => {
     async function ChannelData() {
         console.log(colors.bold.blue("@info"), "ChannelData: (1): Fetch channel data with only the channel link");
         YouTubeDLX.Search.Channel.Single({ channelLink: "https://www.youtube.com/c/testchannel" })
@@ -183,8 +183,8 @@ async function Search_Tests() {
     await SearchPlaylists();
     await SearchVideos();
     await VideoData();
-}
-async function Info_Tests() {
+})();
+(async () => {
     async function Extract() {
         console.log(colors.bold.blue("@info"), "Extract: (1): Extract video data with only the query");
         YouTubeDLX.Misc.Video.Extract({ query: "test video" })
@@ -260,8 +260,8 @@ async function Info_Tests() {
     await ListFormats();
     await VideoComments();
     await VideoTranscript();
-}
-async function Video_Tests() {
+})();
+(async () => {
     async function VideoCustom() {
         console.log(colors.bold.blue("@info"), "VideoCustom: (1): Process a video with only the query and resolution");
         YouTubeDLX.Video.Custom({ query: "test video", resolution: "720p" })
@@ -366,8 +366,8 @@ async function Video_Tests() {
     await VideoCustom();
     await VideoHighest();
     await VideoLowest();
-}
-async function Audio_Tests() {
+})();
+(async () => {
     async function AudioCustom() {
         console.log(colors.bold.blue("@info"), "AudioCustom: (1): Download and process audio with only the query and resolution");
         YouTubeDLX.Audio.Custom({ query: "test song", resolution: "high" })
@@ -464,110 +464,104 @@ async function Audio_Tests() {
     await AudioCustom();
     await AudioHighest();
     await AudioLowest();
-}
-async function Audio_Video_Tests() {
-    async function AudioVideoCustom() {
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (1): Download and process audio and video with only the query, resolution, and filter");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale" })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (2): Download and process audio and video with query, resolution, filter, and verbose output enabled");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", verbose: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (3): Download and process audio and video with query, resolution, and custom output folder");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", output: "output" })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (4): Stream audio and video with query, resolution, and stream enabled");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", stream: true })
-            .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (5): Download and process audio and video with query, resolution, filter, and metadata output enabled");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", metadata: true })
-            .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (6): Download and process audio and video with query, resolution, filter, stream, and metadata");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", stream: true, metadata: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoCustom: (7): Download and process audio and video with all parameters");
-        YouTubeDLX.Audio_Video.Custom({ query: "test song", output: "output", resolution: "720p", filter: "grayscale", stream: true, verbose: true, metadata: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-    }
-
-    async function AudioVideoHighest() {
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (1): Download and process highest quality audio and video with only the query and filter");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale" })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (2): Download and process highest quality audio and video with query, filter, and verbose output enabled");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", verbose: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (3): Download and process highest quality audio and video with query, filter, and custom output folder");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", output: "output" })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (4): Stream highest quality audio and video with query, filter, and stream enabled");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", stream: true })
-            .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (5): Download and process highest quality audio and video with query, filter, and metadata output enabled");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", metadata: true })
-            .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (6): Download and process highest quality audio and video with query, filter, stream, and metadata");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", stream: true, metadata: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoHighest: (7): Download and process highest quality audio and video with all parameters");
-        YouTubeDLX.Audio_Video.Highest({ query: "test song", output: "output", filter: "grayscale", stream: true, verbose: true, metadata: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-    }
-
-    async function AudioVideoLowest() {
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (1): Download and process lowest quality audio and video with only the query and filter");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale" })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (2): Download and process lowest quality audio and video with query, filter, and verbose output enabled");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", verbose: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (3): Download and process lowest quality audio and video with query, filter, and custom output folder");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", output: "output" })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (4): Stream lowest quality audio and video with query, filter, and stream enabled");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", stream: true })
-            .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (5): Download and process lowest quality audio and video with query, filter, and metadata output enabled");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", metadata: true })
-            .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (6): Download and process lowest quality audio and video with query, filter, stream, and metadata");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", stream: true, metadata: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-        console.log(colors.bold.blue("@info"), "AudioVideoLowest: (7): Download and process lowest quality audio and video with all parameters");
-        YouTubeDLX.Audio_Video.Lowest({ query: "test song", output: "output", filter: "grayscale", stream: true, verbose: true, metadata: true })
-            .on("data", data => console.log(colors.italic.green("@data:"), data))
-            .on("error", error => console.error(colors.italic.red("@error:"), error));
-    }
-
-    await AudioVideoCustom();
-    await AudioVideoHighest();
-    await AudioVideoLowest();
-}
+})();
 (async () => {
-    await Account_Tests();
-    await Search_Tests();
-    await Info_Tests();
-    await Audio_Tests();
-    await Video_Tests();
-    await Audio_Video_Tests();
+    async function Audio_Video_Tests() {
+        async function AudioVideoCustom() {
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (1): Download and process audio and video with only the query, resolution, and filter");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale" })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (2): Download and process audio and video with query, resolution, filter, and verbose output enabled");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", verbose: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (3): Download and process audio and video with query, resolution, and custom output folder");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", output: "output" })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (4): Stream audio and video with query, resolution, and stream enabled");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", stream: true })
+                .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (5): Download and process audio and video with query, resolution, filter, and metadata output enabled");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", metadata: true })
+                .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (6): Download and process audio and video with query, resolution, filter, stream, and metadata");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", resolution: "720p", filter: "grayscale", stream: true, metadata: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoCustom: (7): Download and process audio and video with all parameters");
+            YouTubeDLX.Audio_Video.Custom({ query: "test song", output: "output", resolution: "720p", filter: "grayscale", stream: true, verbose: true, metadata: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+        }
+
+        async function AudioVideoHighest() {
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (1): Download and process highest quality audio and video with only the query and filter");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale" })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (2): Download and process highest quality audio and video with query, filter, and verbose output enabled");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", verbose: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (3): Download and process highest quality audio and video with query, filter, and custom output folder");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", output: "output" })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (4): Stream highest quality audio and video with query, filter, and stream enabled");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", stream: true })
+                .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (5): Download and process highest quality audio and video with query, filter, and metadata output enabled");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", metadata: true })
+                .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (6): Download and process highest quality audio and video with query, filter, stream, and metadata");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", filter: "grayscale", stream: true, metadata: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoHighest: (7): Download and process highest quality audio and video with all parameters");
+            YouTubeDLX.Audio_Video.Highest({ query: "test song", output: "output", filter: "grayscale", stream: true, verbose: true, metadata: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+        }
+
+        async function AudioVideoLowest() {
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (1): Download and process lowest quality audio and video with only the query and filter");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale" })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (2): Download and process lowest quality audio and video with query, filter, and verbose output enabled");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", verbose: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (3): Download and process lowest quality audio and video with query, filter, and custom output folder");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", output: "output" })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (4): Stream lowest quality audio and video with query, filter, and stream enabled");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", stream: true })
+                .on("stream", streamData => console.log(colors.italic.green("@stream:"), streamData))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (5): Download and process lowest quality audio and video with query, filter, and metadata output enabled");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", metadata: true })
+                .on("metadata", metadata => console.log(colors.italic.green("@metadata:"), metadata))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (6): Download and process lowest quality audio and video with query, filter, stream, and metadata");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", filter: "grayscale", stream: true, metadata: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+            console.log(colors.bold.blue("@info"), "AudioVideoLowest: (7): Download and process lowest quality audio and video with all parameters");
+            YouTubeDLX.Audio_Video.Lowest({ query: "test song", output: "output", filter: "grayscale", stream: true, verbose: true, metadata: true })
+                .on("data", data => console.log(colors.italic.green("@data:"), data))
+                .on("error", error => console.error(colors.italic.red("@error:"), error));
+        }
+
+        await AudioVideoCustom();
+        await AudioVideoHighest();
+        await AudioVideoLowest();
+    }
 })();
