@@ -5,7 +5,6 @@ import sys
 import json
 import argparse
 import subprocess
-
 def find_bundled_file(relative_bundle_path):
     if getattr(sys, "frozen", False):
         base_path = sys._MEIPASS
@@ -13,16 +12,15 @@ def find_bundled_file(relative_bundle_path):
         base_path = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(base_path, relative_bundle_path.replace("/", os.sep))
     if not getattr(sys, "frozen", False) and not os.path.exists(file_path):
-         alt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", relative_bundle_path.replace("/", os.sep))
-         if os.path.exists(alt_path):
-             file_path = alt_path
-         else:
-             return None
+        alt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", relative_bundle_path.replace("/", os.sep))
+        if os.path.exists(alt_path):
+            file_path = alt_path
+        else:
+            return None
     if os.path.exists(file_path):
         return file_path
     else:
         return None
-
 def run_executable(executable_name_without_ext, executable_path, args):
     if not executable_path:
         print(f"Error: {executable_name_without_ext} not found in bundle.", file=sys.stderr)
@@ -32,10 +30,10 @@ def run_executable(executable_name_without_ext, executable_path, args):
     try:
         if is_ytprobe:
             result = subprocess.run(
-                command, # Execute ytprobe.exe directly
+                command,
                 capture_output=True,
-                text=True, # Capture as text (assuming its output is text)
-                check=False # Don't raise exception for non-zero exit codes
+                text=True,
+                check=False
             )
             modified_stdout = re.sub(r"yt-dlp", "yt-dlx", result.stdout, flags=re.IGNORECASE)
             modified_stderr = re.sub(r"yt-dlp", "yt-dlx", result.stderr, flags=re.IGNORECASE)
@@ -44,10 +42,10 @@ def run_executable(executable_name_without_ext, executable_path, args):
             sys.exit(result.returncode)
         else:
             result = subprocess.run(
-                command, # Execute tor.exe directly
-                stdout=None, # Use parent process stdout
-                stderr=None, # Use parent process stderr
-                check=False # Don't raise exception for non-zero exit codes
+                command,
+                stdout=None,
+                stderr=None,
+                check=False
             )
             sys.exit(result.returncode)
     except FileNotFoundError:
@@ -62,7 +60,6 @@ def run_executable(executable_name_without_ext, executable_path, args):
     except Exception as e:
         print(f"An unexpected error occurred while running \"{' '.join(command)}\": {e}", file=sys.stderr)
         sys.exit(1)
-
 def main():
     parser = argparse.ArgumentParser(description="yt-dlx: YouTube downloader utility with bundled executables")
     parser.add_argument("--tor", nargs=argparse.REMAINDER, help="Run tor with the arguments...")
@@ -88,7 +85,7 @@ def main():
             "tor": tor_path if tor_path else "Not found in bundle",
             "torrc": torrc_path if torrc_path else "Not found in bundle",
             "ytprobe": ytprobe_path if ytprobe_path else "Not found in bundle",
-             "Running Python Executable": sys.executable
+            "Running Python Executable": sys.executable
         }
         print(json.dumps(paths_info, indent=2))
 if __name__ == "__main__":
