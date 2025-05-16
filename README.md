@@ -45,8 +45,8 @@ You can install yt-dlx using any package manager of your choice:
 
 ## Usage 🚀
 
-YT-DLX is straightforward and hassle-free. Detailed usage instructions and additional information can be found on the [yt-dlx Website](https://yt-dlx-shovit.koyeb.app/), ensuring a smooth experience
-for all users.
+YT-DLX is straightforward and hassle-free. Detailed usage instructions and additional information can be found on the [yt-dlx documentation website](https://yt-dlx.vercel.app/), ensuring a smooth
+experience for all users.
 
 ## Contribute 🤝
 
