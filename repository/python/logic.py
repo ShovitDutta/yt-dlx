@@ -5,6 +5,7 @@ import sys
 import json
 import argparse
 import subprocess
+
 def find_bundled_file(relative_bundle_path):
     if getattr(sys, "frozen", False):
         base_path = sys._MEIPASS
@@ -21,6 +22,7 @@ def find_bundled_file(relative_bundle_path):
         return file_path
     else:
         return None
+
 def run_executable(executable_name_without_ext, executable_path, args):
     if not executable_path:
         print(f"Error: {executable_name_without_ext} not found in bundle.", file=sys.stderr)
@@ -60,33 +62,51 @@ def run_executable(executable_name_without_ext, executable_path, args):
     except Exception as e:
         print(f"An unexpected error occurred while running \"{' '.join(command)}\": {e}", file=sys.stderr)
         sys.exit(1)
+
 def main():
     parser = argparse.ArgumentParser(description="yt-dlx: YouTube downloader utility with bundled executables")
     parser.add_argument("--tor", nargs=argparse.REMAINDER, help="Run tor with the arguments...")
     parser.add_argument("--ytprobe", nargs=argparse.REMAINDER, help="Run ytprobe with the arguments...")
     args = parser.parse_args()
+
     if sys.platform == "win32":
-        tor_path = find_bundled_file("context/windows/tor.exe")
-        torrc_path = find_bundled_file("context/windows/torrc")
+        tor_path = find_bundled_file("context/windows/TorBrowser/tor/tor.exe")
+        tor_data_dir = find_bundled_file("context/windows/TorBrowser/data")
         ytprobe_path = find_bundled_file("context/windows/ytprobe.exe")
     else:
-        tor_path = find_bundled_file("context/linux/tor.bin")
-        torrc_path = find_bundled_file("context/linux/torrc")
+        tor_path = find_bundled_file("context/linux/TorBrowser/tor/tor")
+        tor_data_dir = find_bundled_file("context/linux/TorBrowser/data")
         ytprobe_path = find_bundled_file("context/linux/ytprobe.bin")
+
     if args.tor is not None:
-        tor_args = args.tor
-        if torrc_path:
-            tor_args = ["--config-file", torrc_path] + tor_args
-        run_executable("tor", tor_path, tor_args)
+        if not tor_path:
+            print("Error: Bundled Tor executable not found in expected location.", file=sys.stderr)
+            sys.exit(1)
+        if not tor_data_dir:
+            print("Error: Bundled Tor Data directory not found in expected location.", file=sys.stderr)
+            sys.exit(1)
+        tor_subprocess_args = []
+        tor_subprocess_args.extend(["--DataDirectory", tor_data_dir])
+        bundled_torrc_filename = "torrc"
+        bundled_torrc_full_path = os.path.join(tor_data_dir, bundled_torrc_filename)
+        if os.path.exists(bundled_torrc_full_path):
+            tor_subprocess_args.extend(["--config-file", bundled_torrc_full_path])
+        else:
+            print(f"Warning: Bundled torrc not found at expected location: {bundled_torrc_full_path}", file=sys.stderr)
+        tor_subprocess_args.extend(args.tor)
+        run_executable("tor", tor_path, tor_subprocess_args)
     elif args.ytprobe is not None:
         run_executable("ytprobe", ytprobe_path, args.ytprobe)
     else:
         paths_info = {
-            "tor": tor_path if tor_path else "Not found in bundle",
-            "torrc": torrc_path if torrc_path else "Not found in bundle",
+            "tor_executable": tor_path if tor_path else "Not found in bundle",
+            "tor_data_directory": tor_data_dir if tor_data_dir else "Not found in bundle",
             "ytprobe": ytprobe_path if ytprobe_path else "Not found in bundle",
+            "bundled_torrc_win": find_bundled_file("context/windows/TorBrowser/data/torrc") if sys.platform == "win32" else "N/A on this platform",
+            "bundled_torrc_linux": find_bundled_file("context/linux/TorBrowser/data/torrc") if sys.platform != "win32" else "N/A on this platform",
             "Running Python Executable": sys.executable
         }
         print(json.dumps(paths_info, indent=2))
+
 if __name__ == "__main__":
     main()

@@ -79,7 +79,7 @@ const main = async () => {
         binaries = [
             {
                 name: "yt-dlx.bin",
-                url: "https://drive.usercontent.google.com/download?id=1BSInjS-Zfj1zhjfyr27clZ8OuSCX7pEy&export=download&authuser=0",
+                url: "",
             },
             {
                 name: "ffmpeg.bin",
@@ -94,7 +94,7 @@ const main = async () => {
         binaries = [
             {
                 name: "yt-dlx.exe",
-                url: "https://drive.usercontent.google.com/download?id=1-3qW3iGz1SqxO4zjKEaJtBjBJNswLOHq&export=download&authuser=0&confirm=t&uuid=4a76f769-5832-4b87-944d-30230f64a485&at=ALoNOgmTnShUg2BEdxd2tzywkbNr%3A1747192910877",
+                url: "",
             },
             {
                 name: "ffmpeg.exe",
