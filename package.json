@@ -15,6 +15,7 @@
         "========================================================================== binders": "==========================================================================",
         "make": "yarn run renew && yarn run build",
         "npm": "cd repository/content && yarn publish",
+        "preinstall": "yarn global add rimraf expo-cli",
         "format": "prettier --write . && prettier --check .",
         "build": "yarn run document:build && yarn run content:build && yarn run desktop:build",
         "clean": "yarn run content:clean && yarn run document:clean && yarn run mobile:clean && yarn run desktop:clean",
@@ -66,6 +67,5 @@
     },
     "dependencies": {
         "prettier": "^3.5.3"
-    },
-    "version": "0.0.0"
+    }
 }
