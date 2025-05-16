@@ -1,4 +1,4 @@
-# code 2: logic.py (Corrected run_executable function)
+# code 2: logic.py
 import os
 import re
 import sys
