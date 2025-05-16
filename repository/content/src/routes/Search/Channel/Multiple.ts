@@ -1,102 +1,103 @@
 import colors from "colors";
-import { Client } from "youtubei"; // Assuming 'youtubei' provides a 'Client' class
 import { z, ZodError } from "zod";
-// import { EventEmitter } from "events"; // Remove EventEmitter import as we are refactoring to async/await
-
-// Define the Zod schema for input validation
-const ZodSchema = z.object({ query: z.string().min(2) }); // Mandatory query, min 2 characters
-
-// Define the interface for the channel search result items
+import { Client } from "youtubei";
+import { EventEmitter } from "events";
+const ZodSchema = z.object({ query: z.string().min(2) });
 export interface channelSearchType {
     id: string;
     name: string;
-    subscriberCount: number | null; // Subscriber count can be null
-    description: string | null; // Description can be null
-    thumbnails: { url: string; width: number; height: number }[]; // Assuming thumbnail structure
+    subscriberCount: number;
+    description: string;
+    thumbnails: string[];
 }
-
-// Helper function to search for channels using youtubei
-// Refactored to not take emitter and throw errors or return array directly
-async function searchChannelsHelper({ query }: { query: string }): Promise<channelSearchType[]> {
+async function searchChannels({ query }: { query: string }): Promise<channelSearchType[]> {
     try {
-        const youtube = new Client(); // Assuming Client constructor is synchronous
-        // Assuming Youtube returns a Promise<SearchResults> where SearchResults has an 'items' array of channel objects
+        const youtube = new Client();
         const searchResults = await youtube.search(query, { type: "channel" });
-
-        // Map the search results to the desired channelSearchType structure
-        const result: channelSearchType[] = searchResults.items
-            .filter((item: any) => item.type === "channel") // Ensure only channel items are processed
-            .map((item: any) => ({
-                id: item.id,
-                name: item.name, // Assuming property name is 'name'
-                subscriberCount: item.subscriberCount || null, // Assuming subscriberCount is a number or null
-                description: item.description || null, // Assuming description is a string or null
-                thumbnails:
-                    item.thumbnails?.map((thumb: { url: string; width: number; height: number }) => ({
-                        // Map thumbnail objects
-                        url: thumb.url,
-                        width: thumb.width,
-                        height: thumb.height,
-                    })) || [], // Default to empty array if thumbnails missing
-                // Note: Original interface included 'description' which might be null/undefined
-                // Note: Original interface mapped thumbnails to string[] but youtubei provides objects, mapping to object array for clarity.
-            }));
-
-        return result; // Return the array of channels
+        const result: channelSearchType[] = searchResults.items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            subscriberCount: item.subscriberCount,
+            description: item.description,
+            thumbnails: item.thumbnails,
+        }));
+        return result;
     } catch (error: any) {
-        // Catch any errors during the search and re-throw with context
-        // Removed console.error and returning empty array from original helper
-        throw new Error(`${colors.red("@error: ")} Youtube failed: ${error.message}`);
+        console.error(colors.red("@error: ") + error.message);
+        return [];
     }
 }
-
 /**
- * @shortdesc Searches for YouTube channels based on a query using async/await instead of events.
+ * @shortdesc Searches for YouTube channels based on a query.
  *
- * @description This function searches YouTube for channels matching the provided query string using async/await. It returns a Promise that will resolve with the search results or reject with an error if the search fails or no channels are found.
+ * @description This function searches YouTube for channels matching the provided query string. It returns an EventEmitter that will emit the search results or an error if the search fails or no channels are found.
  *
- * The function requires a search query and returns a Promise that resolves with an array of channel objects, or rejects with an error.
+ * The function requires a search query.
  *
- * @param options - An object containing the configuration options.
+ * It supports the following configuration options:
+ * - **query:** A string representing the search query for channels. This is a mandatory parameter and must be at least 2 characters long.
+ *
+ * The function returns an EventEmitter instance that emits events during the search process:
+ * - `"data"`: Emitted when the channel search is successful and results are found. The emitted data is an array of objects, where each object represents a channel and includes its `id`, `name`, `subscriberCount`, `description`, and `thumbnails`.
+ * - `"error"`: Emitted when an error occurs, such as a missing or invalid query, a search failure, or if no channels are found for the query. The emitted data is the error message.
+ *
+ * @param {object} options - An object containing the configuration options.
  * @param {string} options.query - The search query for channels. **Required**. Minimum length is 2 characters.
  *
- * @returns {Promise<channelSearchType[]>} A Promise that resolves with an array of channel objects upon success.
- * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the search request fails, or if no channels are found for the query.
+ * @returns {EventEmitter} An EventEmitter instance for handling events during the channel search.
+ *
+ * @example
+ * // 1. Search for channels with a query
+ * YouTubeDLX.Search.Channel.Multiple({ query: "programming tutorials" })
+ * .on("data", (channels) => {
+ * console.log("Found channels:");
+ * channels.forEach(channel => console.log(`- ${channel.name} (${channel.id})`));
+ * })
+ * .on("error", (error) => console.error("Error searching channels:", error));
+ *
+ * @example
+ * // 2. Missing required 'query' parameter (will result in an error)
+ * YouTubeDLX.Search.Channel.Multiple({} as any)
+ * .on("error", (error) => console.error("Expected Error (missing query):", error));
+ *
+ * @example
+ * // 3. Query parameter is too short (will result in a Zod error)
+ * YouTubeDLX.Search.Channel.Multiple({ query: "a" })
+ * .on("error", (error) => console.error("Expected Error (query too short):", error));
+ *
+ * @example
+ * // 4. Query returns no channels
+ * // Note: This scenario depends on the search results from the youtubei library.
+ * // You can simulate by providing a query unlikely to match any channels.
+ * YouTubeDLX.Search.Channel.Multiple({ query: "asdfghjklzxcvbnm1234567890qwer" })
+ * .on("error", (error) => console.error("Expected Error (no channels found):", error)); // Emits "@error: No channels found for the provided query."
+ *
+ * @example
+ * // 5. Internal searchChannels function throws an error
+ * // Note: This scenario depends on internal issues with the youtubei library or network.
+ * // The error emitted would be: "@error: Engine error: ..." or "@error: An unexpected error occurred: ..."
+ * // YouTubeDLX.Search.Channel.Multiple({ query: "valid query but search fails internally" })
+ * // .on("error", (error) => console.error("Expected Error (internal search failure):", error));
+ *
  */
-export default async function search_channels({ query }: z.infer<typeof ZodSchema>): Promise<channelSearchType[]> {
-    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
-    try {
-        // Perform Zod schema validation on the provided options. This call is synchronous.
-        // It will throw a ZodError if validation fails based on the defined schema.
-        ZodSchema.parse({ query });
-
-        // Await the asynchronous call to the refactored searchChannelsHelper function.
-        // This helper now throws errors or returns the array directly.
-        const channels: channelSearchType[] = await searchChannelsHelper({ query });
-
-        // Check if the search returned any results.
-        if (!channels || channels.length === 0) {
-            // If no channels were found, throw an error.
-            throw new Error(`${colors.red("@error: ")} No channels found for the provided query.`);
+export default function search_channels({ query }: z.infer<typeof ZodSchema>): EventEmitter {
+    const emitter = new EventEmitter();
+    (async () => {
+        try {
+            ZodSchema.parse({ query });
+            const channels = await searchChannels({ query });
+            if (!channels || channels.length === 0) {
+                emitter.emit("error", `${colors.red("@error: ")} No channels found for the provided query.`);
+                return;
+            }
+            emitter.emit("data", channels);
+        } catch (error) {
+            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
+            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        } finally {
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         }
-
-        // If successful and channels are found, return the array of channels. The async function wraps this in a resolved Promise.
-        return channels;
-    } catch (error: any) {
-        // Catch any errors that occurred during the process (Zod validation, search failure, no results).
-        // Format the error message based on the error type and re-throw it to reject the main function's Promise.
-        if (error instanceof ZodError) {
-            // Handle Zod validation errors by formatting the error details.
-            throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-        } else if (error instanceof Error) {
-            // Re-throw standard Error objects with their existing message.
-            throw new Error(`${colors.red("@error:")} ${error.message}`);
-        } else {
-            // Handle any other unexpected error types by converting them to a string.
-            throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        }
-    } finally {
-        // This block executes after the try block successfully returns or the catch block throws.
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-    }
+    })();
+    return emitter;
 }

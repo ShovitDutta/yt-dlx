@@ -1,3 +1,4 @@
+import progbar from "./utils/progbar";
 import YouTubeID from "./utils/YouTubeId";
 import help from "./routes/Misc/System/Help";
 import AudioLowest from "./routes/Audio/Lowest";
@@ -24,171 +25,55 @@ import search_channels from "./routes/Search/Channel/Multiple";
 import search_playlists from "./routes/Search/Playlist/Multiple";
 import subscriptions_feed from "./routes/Account/SubscriptionsFeed";
 import unseen_notifications from "./routes/Account/UnseenNotifications";
-
-/**
- * A collection of functions and utilities for interacting with YouTube data
- * and downloading audio/video, refactored to use async/await internally.
- */
 var YouTubeDLX = {
-    /**
-     * Functions for downloading audio streams.
-     */
     Audio: {
-        /**
-         * Downloads audio stream with custom options.
-         */
-        Custom: AudioCustom,
-        /**
-         * Downloads the lowest quality audio stream.
-         */
-        Lowest: AudioLowest,
-        /**
-         * Downloads the highest quality audio stream.
-         */
-        Highest: AudioHighest,
+        Custom: AudioCustom, // YouTubeDLX.Audio.Custom
+        Lowest: AudioLowest, // YouTubeDLX.Audio.Lowest
+        Highest: AudioHighest, // YouTubeDLX.Audio.Highest
     },
-    /**
-     * Functions for downloading video streams (without audio).
-     */
     Video: {
-        /**
-         * Downloads video stream with custom options.
-         */
-        Custom: VideoCustom,
-        /**
-         * Downloads the lowest quality video stream.
-         */
-        Lowest: VideoLowest,
-        /**
-         * Downloads the highest quality video stream.
-         */
-        Highest: VideoHighest,
+        Custom: VideoCustom, // YouTubeDLX.Video.Custom
+        Lowest: VideoLowest, // YouTubeDLX.Video.Lowest
+        Highest: VideoHighest, // YouTubeDLX.Video.Highest
     },
-    /**
-     * Functions for downloading combined audio/video streams.
-     */
     Audio_Video: {
-        /**
-         * Downloads combined audio/video stream with custom options.
-         */
-        Custom: AudioVideoCustom,
-        /**
-         * Downloads the lowest quality combined audio/video stream.
-         */
-        Lowest: AudioVideoLowest,
-        /**
-         * Downloads the highest quality combined audio/video stream.
-         */
-        Highest: AudioVideoHighest,
+        Custom: AudioVideoCustom, // YouTubeDLX.Audio_Video.Custom
+        Lowest: AudioVideoLowest, // YouTubeDLX.Audio_Video.Lowest
+        Highest: AudioVideoHighest, // YouTubeDLX.Audio_Video.Highest
     },
-    /**
-     * Functions for searching YouTube content.
-     */
     Search: {
-        /**
-         * Functions for searching YouTube channels.
-         */
         Channel: {
-            /**
-             * Retrieves data for a single YouTube channel.
-             */
-            Single: channel_data,
-            /**
-             * Searches for multiple YouTube channels.
-             */
-            Multiple: search_channels,
+            Single: channel_data, // YouTubeDLX.Search.Channel.Single
+            Multiple: search_channels, // YouTubeDLX.Search.Channel.Multiple
         },
-        /**
-         * Functions for searching YouTube playlists.
-         */
         Playlist: {
-            /**
-             * Retrieves data for a single YouTube playlist.
-             */
-            Single: playlist_data,
-            /**
-             * Searches for multiple YouTube playlists.
-             */
-            Multiple: search_playlists,
+            Single: playlist_data, // YouTubeDLX.Search.Playlist.Single
+            Multiple: search_playlists, // YouTubeDLX.Search.Playlist.Multiple
         },
-        /**
-         * Functions for searching YouTube videos.
-         */
         Video: {
-            /**
-             * Retrieves data for a single YouTube video.
-             */
-            Single: video_data,
-            /**
-             * Searches for multiple YouTube videos.
-             */
-            Multiple: search_videos,
+            Single: video_data, // YouTubeDLX.Search.Video.Single
+            Multiple: search_videos, // YouTubeDLX.Search.Video.Multiple
         },
     },
-    /**
-     * Functions for accessing YouTube account data (requires authentication).
-     */
     Account: {
-        /**
-         * Retrieves the user's home feed.
-         */
-        HomeFeed: home_feed,
-        /**
-         * Retrieves the user's watch history.
-         */
-        History: watch_history,
-        /**
-         * Retrieves the user's subscriptions feed.
-         */
-        SubscriptionsFeed: subscriptions_feed,
-        /**
-         * Retrieves the user's unseen notifications.
-         */
-        UnseenNotifications: unseen_notifications,
+        HomeFeed: home_feed, // YouTubeDLX.Account.HomeFeed
+        History: watch_history, // YouTubeDLX.Account.History
+        SubscriptionsFeed: subscriptions_feed, // YouTubeDLX.Account.SubscriptionsFeed
+        UnseenNotifications: unseen_notifications, // YouTubeDLX.Account.UnseenNotifications
     },
-    /**
-     * Miscellaneous utility functions.
-     */
     Misc: {
-        /**
-         * System-level utilities.
-         */
         System: {
-            /**
-             * Displays help information.
-             */
-            Help: help,
+            Help: help, // YouTubeDLX.Misc.System.Help
+            ProgressBar: progbar, // YouTubeDLX.Misc.System.ProgressBar
         },
-        /**
-         * Video-related utilities.
-         */
         Video: {
-            /**
-             * Extracts the YouTube video ID from a URL.
-             */
-            GetId: YouTubeID,
-            /**
-             * Extracts data from a video page.
-             */
-            Extract: extract,
-            /**
-             * Lists available formats for a video.
-             */
-            Formats: list_formats,
-            /**
-             * Retrieves related videos for a given video.
-             */
-            Related: related_videos,
-            /**
-             * Retrieves comments for a video.
-             */
-            Comments: video_comments,
-            /**
-             * Retrieves the transcript for a video.
-             */
-            Transcript: video_transcript,
+            GetId: YouTubeID, // YouTubeDLX.Misc.Video.GetId
+            Extract: extract, // YouTubeDLX.Misc.Video.Extract
+            Formats: list_formats, // YouTubeDLX.Misc.Video.Formats
+            Related: related_videos, // YouTubeDLX.Misc.Video.Related
+            Comments: video_comments, // YouTubeDLX.Video.Misc.Comments
+            Transcript: video_transcript, // YouTubeDLX.Misc.Video.Transcript
         },
     },
 };
-
 export default YouTubeDLX;

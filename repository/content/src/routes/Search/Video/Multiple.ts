@@ -1,144 +1,191 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
-import { Client, Video } from "youtubei"; // Assuming 'youtubei' provides a 'Client' class and a 'Video' type or similar structure
-// import { EventEmitter } from "events"; // Remove EventEmitter import as we are refactoring to async/await
-
-// Define the Zod schema for input validation
+import { Client } from "youtubei";
+import { EventEmitter } from "events";
 const ZodSchema = z.object({
-    query: z.string().min(2), // Mandatory query, min 2 characters
-    minViews: z.number().optional(), // Optional minimum view count
-    maxViews: z.number().optional(), // Optional maximum view count
-    verbose: z.boolean().optional(), // Optional verbose logging flag
-    orderBy: z.enum(["relevance", "viewCount", "rating", "date"]).optional(), // Optional sorting order
+    query: z.string().min(2),
+    minViews: z.number().optional(),
+    maxViews: z.number().optional(),
+    verbose: z.boolean().optional(),
+    orderBy: z.enum(["relevance", "viewCount", "rating", "date"]).optional(),
 });
-
-// Define the interface for the video data structure returned by the search
-export interface SearchVideoResult {
-    id: string;
-    title: string;
-    isLive: boolean;
-    duration: number | null; // duration might be null for live streams or unlisted videos
-    viewCount: number | null; // viewCount might be null
-    uploadDate: string | null; // uploadDate might be null
-    channelid: string | undefined; // Channel ID might be optional
-    thumbnails: { url: string; width: number; height: number }[]; // Assuming thumbnail structure
-    description: string | null; // Description might be null
-    channelname: string | undefined; // Channel name might be optional
-}
-
 /**
- * @shortdesc Searches for YouTube videos with filtering and sorting options using async/await instead of events.
+ * @shortdesc Searches for YouTube videos with filtering and sorting options.
  *
- * @description This function performs a video search on YouTube based on a provided query using async/await. It allows filtering results by minimum and maximum view counts and sorting the results by view count or upload date.
+ * @description This function performs a video search on YouTube based on a provided query. It allows filtering results by minimum and maximum view counts and sorting the results by view count or upload date.
  *
- * The function requires a search query and returns a Promise that resolves with an array of video objects matching the criteria, or rejects with an error.
+ * The function requires a search query.
  *
- * @param options - An object containing the configuration options validated by ZodSchema.
+ * It supports the following configuration options:
+ * - **query:** A string representing the search term for videos. This is a mandatory parameter and must be at least 2 characters long.
+ * - **minViews:** An optional number specifying the minimum view count a video must have to be included in the results.
+ * - **maxViews:** An optional number specifying the maximum view count a video can have to be included in the results.
+ * - **verbose:** An optional boolean value that, if true, enables detailed logging to the console during the search and processing.
+ * - **orderBy:** An optional string specifying how the search results should be sorted. Available options are:
+ * - `"relevance"`: (Handled by the underlying search library, explicit sorting by this function is not applied).
+ * - `"viewCount"`: Sorts videos by view count in descending order (highest view count first).
+ * - `"rating"`: (Handled by the underlying search library, explicit sorting by this function is not applied).
+ * - `"date"`: Sorts videos by upload date in descending order (newest first).
+ * If no `orderBy` is specified, results are typically ordered by relevance by the underlying search library.
+ *
+ * The function returns an EventEmitter instance that emits events during the process:
+ * - `"data"`: Emitted when the search is successful and results are processed. The emitted data is an array of video objects matching the criteria.
+ * - `"error"`: Emitted when an error occurs during any stage, such as argument validation, search request failure, or if no videos are found matching the specified criteria. The emitted data is the error message.
+ *
+ * @param {object} options - An object containing the configuration options.
  * @param {string} options.query - The search term. **Required**, min 2 characters.
  * @param {number} [options.minViews] - Minimum view count filter.
  * @param {number} [options.maxViews] - Maximum view count filter.
  * @param {boolean} [options.verbose=false] - Enable verbose logging.
- * @param {("relevance" | "viewCount" | "rating" | "date")} [options.orderBy] - Specify the sorting order. Implemented sorts are by `viewCount` (desc) and `date` (desc). "relevance" and "rating" sorting are handled by the underlying search library.
+ * @param {("relevance" | "viewCount" | "rating" | "date")} [options.orderBy] - Specify the sorting order. Implemented sorts are by `viewCount` (desc) and `date` (desc).
  *
- * @returns {Promise<SearchVideoResult[]>} A Promise that resolves with an array of video objects upon success.
- * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the search request fails, or if no videos are found matching the specified criteria after filtering/sorting.
+ * @returns {EventEmitter} An EventEmitter instance for handling events during the video search.
+ *
+ * @example
+ * // 1. Basic video search
+ * YouTubeDLX.Search.Video.Multiple({ query: "programming tutorials" })
+ * .on("data", (videos) => console.log("Found videos:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 2. Search with verbose logging
+ * YouTubeDLX.Search.Video.Multiple({ query: "cats compilation", verbose: true })
+ * .on("data", (videos) => console.log("Found videos:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 3. Search and filter by minimum views
+ * YouTubeDLX.Search.Video.Multiple({ query: "popular songs", minViews: 1000000 })
+ * .on("data", (videos) => console.log("Videos with over 1M views:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 4. Search and filter by maximum views
+ * YouTubeDLX.Search.Video.Multiple({ query: "new channels", maxViews: 1000 })
+ * .on("data", (videos) => console.log("Videos with under 1k views:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 5. Search and filter by a range of views
+ * YouTubeDLX.Search.Video.Multiple({ query: "gaming highlights", minViews: 50000, maxViews: 500000 })
+ * .on("data", (videos) => console.log("Videos with views between 50k and 500k:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 6. Search and sort by view count (highest first)
+ * YouTubeDLX.Search.Video.Multiple({ query: "funny moments", orderBy: "viewCount" })
+ * .on("data", (videos) => console.log("Videos sorted by view count:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 7. Search and sort by date (newest first)
+ * YouTubeDLX.Search.Video.Multiple({ query: "latest news", orderBy: "date" })
+ * .on("data", (videos) => console.log("Videos sorted by date:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 8. Search, filter by minimum views, and sort by view count
+ * YouTubeDLX.Search.Video.Multiple({ query: "viral videos", minViews: 10000000, orderBy: "viewCount" })
+ * .on("data", (videos) => console.log("Viral videos sorted by view count:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 9. Search, filter by maximum views, and sort by date
+ * YouTubeDLX.Search.Video.Multiple({ query: "recent uploads", maxViews: 5000, orderBy: "date" })
+ * .on("data", (videos) => console.log("Recent uploads with few views, sorted by date:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 10. Search, filter by view range, and sort by date
+ * YouTubeDLX.Search.Video.Multiple({ query: "documentaries", minViews: 10000, maxViews: 1000000, orderBy: "date" })
+ * .on("data", (videos) => console.log("Documentaries within view range, sorted by date:", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 11. Search with verbose logging, filter by view range, and sort by view count
+ * YouTubeDLX.Search.Video.Multiple({ query: "music videos", verbose: true, minViews: 500000, maxViews: 5000000, orderBy: "viewCount" })
+ * .on("data", (videos) => console.log("Music videos (verbose, filtered, sorted):", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 12. Search with orderBy set to "relevance" (note: explicit sorting by this function is not applied)
+ * YouTubeDLX.Search.Video.Multiple({ query: "how to knit", orderBy: "relevance" })
+ * .on("data", (videos) => console.log("Videos sorted by relevance (default):", videos))
+ * .on("error", (error) => console.error("Error:", error));
+ *
+ * @example
+ * // 13. Missing required 'query' parameter (will result in an error)
+ * YouTubeDLX.Search.Video.Multiple({} as any)
+ * .on("error", (error) => console.error("Expected Error (missing query):", error));
+ *
+ * @example
+ * // 14. 'query' parameter too short (will result in an error - Zod validation)
+ * YouTubeDLX.Search.Video.Multiple({ query: "a" })
+ * .on("error", (error) => console.error("Expected Error (query too short):", error));
+ *
+ * @example
+ * // 15. Invalid 'orderBy' value (will result in an error - Zod validation)
+ * YouTubeDLX.Search.Video.Multiple({ query: "test", orderBy: "popular" as any })
+ * .on("error", (error) => console.error("Expected Error (invalid orderBy):", error));
+ *
+ * @example
+ * // 16. Search query returns no results from the YouTube API
+ * // Note: This depends on the underlying search API's response.
+ * YouTubeDLX.Search.Video.Multiple({ query: "a query that should return no results 12345abcde" })
+ * .on("data", (videos) => console.log("Search returned no videos:", videos)), // Might return empty array
+ * .on("error", (error) => console.error("Error:", error)); // Or might emit error if API fails
+ *
+ * @example
+ * // 17. Search returns results, but none match the view count filters
+ * YouTubeDLX.Search.Video.Multiple({ query: "short video", minViews: 1000000000 })
+ * .on("data", (videos) => console.log("Videos after extreme filtering:", videos)) // Will likely be empty
+ * .on("error", (error) => console.error("Expected Error (no videos after filter):", error)); // Emits if video list is empty after filtering
+ *
+ * @example
+ * // 18. Underlying YouTube API search fails
+ * // Note: This is an internal error scenario, difficult to trigger via simple example.
+ * // The error emitted would be related to the search request failure.
+ * // YouTubeDLX.Search.Video.Multiple({ query: "test" })
+ * // .on("error", (error) => console.error("Expected Error (search API failed):", error));
+ *
  */
-export default async function search_videos({ query, minViews, maxViews, orderBy, verbose }: z.infer<typeof ZodSchema>): Promise<SearchVideoResult[]> {
-    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
-    try {
-        // Perform Zod schema validation on the provided options. This call is synchronous.
-        // It will throw a ZodError if validation fails based on the defined schema.
-        ZodSchema.parse({ query, minViews, maxViews, orderBy, verbose });
-
-        // Initialize youtubei client
-        const youtube = new Client(); // Assuming Client constructor is synchronous
-
-        // Perform the asynchronous search
-        // Assuming Youtube returns a Promise<SearchResults> where SearchResults has an 'items' array of video objects
-        const searchResults = await youtube.search(query, { type: "video" });
-
-        // Map the search results to the desired SearchVideoResult structure
-        let videos: SearchVideoResult[] = searchResults.items
-            .filter((item: any) => item.type === "video") // Ensure only video items are processed
-            .map((item: any) => ({
+export default function search_videos({ query, minViews, maxViews, orderBy, verbose }: z.infer<typeof ZodSchema>): EventEmitter {
+    const emitter = new EventEmitter();
+    (async () => {
+        try {
+            ZodSchema.parse({ query, minViews, maxViews, orderBy, verbose });
+            const youtube = new Client();
+            const searchResults = await youtube.search(query, { type: "video" });
+            let videos = searchResults.items.map((item: any) => ({
                 id: item.id,
                 title: item.title,
-                isLive: item.isLive, // Assuming property name is isLive
-                duration: item.duration, // Assuming duration is a number or null
-                viewCount: item.viewCount, // Assuming viewCount is a number or null
-                uploadDate: item.uploadDate, // Assuming uploadDate is a string or null
-                channelid: item.channel?.id, // Optional chaining for channel properties
-                thumbnails:
-                    item.thumbnails?.map((thumb: { url: string; width: number; height: number }) => ({
-                        // Map thumbnail objects
-                        url: thumb.url,
-                        width: thumb.width,
-                        height: thumb.height,
-                    })) || [], // Default to empty array if thumbnails missing
-                description: item.description || null, // Default to null if description missing
-                channelname: item.channel?.name, // Optional chaining for channel properties
-                // Note: Original singleVideoType included 'tags' and 'likeCount', but search results
-                // typically don't include these. Mapping only available properties.
+                isLive: item.isLive,
+                duration: item.duration,
+                viewCount: item.viewCount,
+                uploadDate: item.uploadDate,
+                channelid: item.channel?.id,
+                thumbnails: item.thumbnails,
+                description: item.description,
+                channelname: item.channel?.name,
             }));
-
-        // Apply view count filters if provided
-        if (minViews !== undefined) {
-            videos = videos.filter(video => video.viewCount !== null && video.viewCount >= minViews);
-        }
-        if (maxViews !== undefined) {
-            videos = videos.filter(video => video.viewCount !== null && video.viewCount <= maxViews);
-        }
-
-        // Apply sorting if orderBy is specified
-        if (orderBy) {
-            if (orderBy === "viewCount") {
-                // Sort by view count descending, handling potential nulls by putting them at the end
-                videos.sort((a, b) => {
-                    if (a.viewCount === null && b.viewCount === null) return 0;
-                    if (a.viewCount === null) return 1; // nulls after non-nulls
-                    if (b.viewCount === null) return -1; // non-nulls before nulls
-                    return b.viewCount - a.viewCount; // Sort descending for non-nulls
-                });
-            } else if (orderBy === "date") {
-                // Sort by date descending, handling potential nulls by putting them at the end
-                videos.sort((a, b) => {
-                    // Attempt to parse dates or treat nulls/invalid dates carefully
-                    const dateA = a.uploadDate ? new Date(a.uploadDate).getTime() : NaN;
-                    const dateB = b.uploadDate ? new Date(b.uploadDate).getTime() : NaN;
-
-                    if (isNaN(dateA) && isNaN(dateB)) return 0;
-                    if (isNaN(dateA)) return 1; // Invalid dates/nulls after valid dates
-                    if (isNaN(dateB)) return -1; // Valid dates before invalid dates/nulls
-
-                    return dateB - dateA; // Sort descending for valid dates
-                });
+            if (minViews !== undefined) videos = videos.filter(video => video.viewCount >= minViews);
+            if (maxViews !== undefined) videos = videos.filter(video => video.viewCount <= maxViews);
+            if (orderBy) {
+                if (orderBy === "viewCount") videos.sort((a, b) => b.viewCount - a.viewCount);
+                else if (orderBy === "date") videos.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
             }
-            // "relevance" and "rating" are typically handled by the search query itself
+            if (videos.length === 0) {
+                emitter.emit("error", `${colors.red("@error: ")} No videos found with the given criteria.`);
+                return;
+            }
+            emitter.emit("data", videos);
+        } catch (error) {
+            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
+            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
+        } finally {
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         }
-
-        // Check if any videos remain after filtering/sorting
-        if (videos.length === 0) {
-            // If no videos match criteria or were found initially and filtered out, throw an error.
-            throw new Error(`${colors.red("@error: ")} No videos found matching the given criteria.`);
-        }
-
-        // If successful and videos are found, return the array of videos. The async function wraps this in a resolved Promise.
-        return videos;
-    } catch (error: any) {
-        // Catch any errors that occurred during the process (Zod validation, search request, filtering/sorting issues).
-        // Format the error message based on the error type and re-throw it to reject the main function's Promise.
-        if (error instanceof ZodError) {
-            // Handle Zod validation errors by formatting the error details.
-            throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-        } else if (error instanceof Error) {
-            // Re-throw standard Error objects with their existing message.
-            throw new Error(`${colors.red("@error:")} ${error.message}`);
-        } else {
-            // Handle any other unexpected error types by converting them to a string.
-            throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        }
-    } finally {
-        // This block executes after the try block successfully returns or the catch block throws.
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-    }
+    })();
+    return emitter;
 }

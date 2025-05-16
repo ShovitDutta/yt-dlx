@@ -1,43 +1,52 @@
 import colors from "colors";
-// import { EventEmitter } from "events"; // Remove EventEmitter import as we are refactoring to async/await
-
+import { EventEmitter } from "events";
 /**
- * @shortdesc Provides help information for yt-dlx using async/await instead of events.
+ * @shortdesc Provides help information for yt-dlx.
  *
- * @description This function outputs a thank you message to the console and returns a Promise that resolves with the URL to the official yt-dlx documentation website. It serves as a simple way for users to find where to get help and more information about the library.
+ * @description This function outputs a thank you message to the console and provides a link to the official yt-dlx documentation website via an emitted event. It serves as a simple way for users to find where to get help and more information about the library.
  *
  * The function does not require any input parameters.
  *
- * It returns a Promise that resolves with the help documentation URL string upon successful execution, or rejects with an error.
+ * It supports no configuration options directly via parameters.
  *
- * @returns {Promise<string>} A Promise that resolves with the help documentation URL.
- * @throws {Error} Throws a formatted error if an unexpected error occurs during execution.
+ * The function returns an EventEmitter instance that emits events during the process:
+ * - `"data"`: Emitted upon successful execution, providing the URL to the help documentation. The emitted data is a string containing the help URL.
+ * - `"error"`: Emitted if an unexpected error occurs during the execution of the function. The emitted data is the error message.
+ *
+ * @returns {EventEmitter} An EventEmitter instance for handling events.
+ *
+ * @example
+ * // 1. Get help information and the documentation URL
+ * YouTubeDLX.Misc.System.Help()
+ * .on("data", (helpUrl) => console.log("Help URL:", helpUrl))
+ * .on("error", (error) => console.error("Error:", error));
+ * // Note: This function also prints information directly to the console.
+ *
+ * @example
+ * // 2. Handling potential errors during help function execution
+ * // While unlikely for this simple function, error handling is still possible.
+ * YouTubeDLX.Misc.System.Help()
+ * .on("data", (helpUrl) => console.log("Help information retrieved:", helpUrl))
+ * .on("error", (error) => console.error("An error occurred while trying to get help:", error));
+ *
  */
-export default async function help(): Promise<string> {
-    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
-    try {
-        // Print the thank you message to the console, as in the original function.
-        console.log(colors.green("@info:"), "❣️ Thank you for using", colors.green("yt-dlx."), "Consider", colors.green("🌟starring"), "the GitHub repo", colors.green("https://github.com/yt-dlx\n"));
-
-        // Define the help URL.
-        const helpUrl = "https://yt-dlx-shovit.koyeb.app";
-
-        // Return the help URL. The async function automatically wraps this in a resolved Promise.
-        // Also print the help URL to the console, as implied by the original emitter.emit("data")
-        console.log(colors.bold.white(`@help: visit ${helpUrl}`));
-        return helpUrl;
-    } catch (error: any) {
-        // Catch any unexpected errors during this simple function's execution.
-        // Format the error message and re-throw it to reject the main function's Promise.
-        // While unlikely for this function, this structure maintains consistency.
-        throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-        // There is no finally block needed as the original function's finally block only contained the console log,
-        // which is now part of the core logic or handled by the individual function's finally block if they have one.
-        // However, for consistency with other refactored functions that *did* have a common finally log,
-        // I could add it back here if the user wanted a consistent message across all functions.
-        // But based on this specific 'help' function's original implementation, the primary log is inside the try block.
-        // Let's add the common log back in finally for consistency with the other refactored functions' pattern.
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-    }
+export default function help(): EventEmitter {
+    const emitter = new EventEmitter();
+    (async () => {
+        try {
+            console.log(
+                colors.green("@info:"),
+                "❣️ Thank you for using",
+                colors.green("yt-dlx."),
+                "Consider",
+                colors.green("🌟starring"),
+                "the GitHub repo",
+                colors.green("https://github.com/yt-dlx\n"),
+            );
+            emitter.emit("data", colors.bold.white(`@help: visit https://yt-dlx-shovit.koyeb.app`));
+        } catch (error) {
+            emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    })();
+    return emitter;
 }
