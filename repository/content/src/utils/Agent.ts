@@ -116,10 +116,10 @@ export default async function Agent({ query, useTor = false, verbose = false }: 
             console.log(colors.green("@info:"), "preparing payload for", video.title);
 
             // Construct the URL for the Engine using the found video ID.
-            // Note: The format `https://www.youtube.com/watch?v=$${video.id}` seems non-standard
+            // Note: The format `https://www.youtube.com/watch?v=${video.id}` seems non-standard
             // for typical yt-dlp/yt-dlx usage which usually expects the original YouTube URL or ID.
             // Preserving the original structure with correct string interpolation.
-            url = `https://www.youtube.com/watch?v=$${video.id}`;
+            url = `https://www.youtube.com/watch?v=${video.id}`;
         } catch (error: any) {
             // Catch and re-throw errors specifically from the search operation
             throw new Error(`${colors.red("@error: ")} Error during video search: ${error.message}`);
@@ -138,7 +138,7 @@ export default async function Agent({ query, useTor = false, verbose = false }: 
 
         // Construct the URL for the Engine using the video ID.
         // Note: Preserving the potentially non-standard URL format from the original code.
-        url = `https://www.youtube.com/watch?v=$${TubeBody.id}`;
+        url = `https://www.youtube.com/watch?v=${TubeBody.id}`;
     }
 
     // Finally, call and await the Engine function with the determined URL and options
