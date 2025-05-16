@@ -1,4 +1,3 @@
-import progbar from "./utils/progbar";
 import YouTubeID from "./utils/YouTubeId";
 import help from "./routes/Misc/System/Help";
 import AudioLowest from "./routes/Audio/Lowest";
@@ -159,10 +158,6 @@ var YouTubeDLX = {
              * Displays help information.
              */
             Help: help,
-            /**
-             * Provides a progress bar utility.
-             */
-            ProgressBar: progbar,
         },
         /**
          * Video-related utilities.

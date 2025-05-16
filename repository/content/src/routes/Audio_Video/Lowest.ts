@@ -4,6 +4,7 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Agent from "../../utils/Agent";
+import progbar from "../../utils/progbar";
 import * as fsPromises from "fs/promises";
 import { locator } from "../../utils/locator";
 
@@ -66,8 +67,8 @@ type AudioVideoLowestResult = MetadataResult | StreamResult | DownloadResult;
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine fails to retrieve data, if required metadata or formats are missing, if directory creation fails, if FFmpeg/FFprobe executables are not found, or if FFmpeg encounters an error during processing.
  */
 export default async function AudioVideoLowest({ query, stream, verbose, output, metadata, useTor, filter }: z.infer<typeof ZodSchema>): Promise<AudioVideoLowestResult> {
-    // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
     try {
+        let startTime: [number, number] | undefined;
         // Perform initial validation checks before Zod parse for clearer messages on common requirement errors.
         if (!query) {
             throw new Error(`${colors.red("@error:")} The 'query' parameter is always required.`);
@@ -253,8 +254,8 @@ export default async function AudioVideoLowest({ query, stream, verbose, output,
                     resolve({ filename: outputPath, ffmpeg: instance });
                 });
                 // Listen for FFmpeg 'progress' events (optional logging if verbose).
-                instance.on("progress", progress => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg progress:", progress);
+                instance.on("progress", async progress => {
+                    if (verbose && startTime !== undefined) await progbar({ percent: progress.percent ?? 0, baseTime: startTime });
                 });
                 // Listen for FFmpeg 'error' events.
                 instance.on("error", (error, stdout, stderr) => {
@@ -277,8 +278,8 @@ export default async function AudioVideoLowest({ query, stream, verbose, output,
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg command:", commandLine);
                 });
                 // Listener for FFmpeg 'progress' events (optional logging if verbose).
-                instance.on("progress", progress => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg progress:", progress);
+                instance.on("progress", async progress => {
+                    if (verbose && startTime !== undefined) await progbar({ percent: progress.percent ?? 0, baseTime: startTime });
                 });
                 // Listener for FFmpeg 'error' events.
                 instance.on("error", (error, stdout, stderr) => {

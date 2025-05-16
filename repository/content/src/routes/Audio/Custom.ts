@@ -4,6 +4,7 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
+import progbar from "../../utils/progbar";
 import * as fsPromises from "fs/promises";
 import { locator } from "../../utils/locator";
 const ZodSchema = z.object({
@@ -56,6 +57,7 @@ type AudioCustomResult = MetadataResult | StreamResult | DownloadResult;
  */
 export default async function AudioCustom({ query, output, useTor, stream, filter, verbose, metadata, resolution }: z.infer<typeof ZodSchema>): Promise<AudioCustomResult> {
     try {
+        let startTime: [number, number] | undefined;
         if (!query) throw new Error(`${colors.red("@error:")} The 'query' parameter is required.`);
         if (metadata) {
             if (stream) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used when 'metadata' is true.`);
@@ -141,8 +143,8 @@ export default async function AudioCustom({ query, output, useTor, stream, filte
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg command:", commandLine);
                     resolve({ filename: outputPath, ffmpeg: instance });
                 });
-                instance.on("progress", progress => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg progress:", progress);
+                instance.on("progress", async progress => {
+                    if (verbose && startTime !== undefined) await progbar({ percent: progress.percent ?? 0, baseTime: startTime });
                 });
                 instance.on("error", (error, stdout, stderr) => {
                     reject(new Error(`${colors.red("@error:")} FFmpeg error during stream setup: ${error.message}\nStdout: ${stdout}\nStderr: ${stderr}`));
@@ -155,8 +157,8 @@ export default async function AudioCustom({ query, output, useTor, stream, filte
                 instance.on("start", commandLine => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg command:", commandLine);
                 });
-                instance.on("progress", progress => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg progress:", progress);
+                instance.on("progress", async progress => {
+                    if (verbose && startTime !== undefined) await progbar({ percent: progress.percent ?? 0, baseTime: startTime });
                 });
                 instance.on("error", (error, stdout, stderr) => {
                     reject(new Error(`${colors.red("@error:")} FFmpeg error during download: ${error.message}\nStdout: ${stdout}\nStderr: ${stderr}`));
