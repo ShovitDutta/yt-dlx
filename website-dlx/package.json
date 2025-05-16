@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "ws:start": "node server.mjs --production",
+        "ws:start": "node launch.mjs --production",
         "dev": "next dev --turbopack",
-        "ws:dev": "node server.mjs",
+        "ws:dev": "node launch.mjs",
         "build": "next build",
         "start": "next start",
         "lint": "next lint"
