@@ -69,38 +69,6 @@ async function relatedVideosHelper({ videoId }: { videoId: string }): Promise<re
  *
  * @returns {Promise<relatedVideosType[]>} A Promise that resolves with an array of related video objects upon successful fetching.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if fetching video data or related videos fails (e.g., video not found, API error), or if no related videos are found for the provided ID.
- *
- * @example
- * // 1. Fetch related videos for a valid video ID using async/await with try...catch
- * const videoId = "dQw4w9WgXcQ"; // Replace with a real video ID
- * try {
- * const relatedVideos = await YouTubeDLX.Misc.Video.Related({ videoId });
- * console.log("Related Videos:", relatedVideos);
- * relatedVideos.forEach(video => console.log(`- ${video.title} (${video.id})`));
- * } catch (error) {
- * console.error("Error fetching related videos:", error);
- * }
- *
- * @example
- * // 2. Handle missing required 'videoId' parameter with async/await
- * try {
- * const relatedVideos = await YouTubeDLX.Misc.Video.Related({} as any);
- * console.log("Related Videos:", relatedVideos); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing videoId):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 3. Handle 'videoId' that might not exist or has no public related videos with async/await
- * const videoId = "nonexistentvideoid123"; // Replace with a video ID unlikely to have related videos
- * try {
- * const relatedVideos = await YouTubeDLX.Misc.Video.Related({ videoId });
- * console.log("Related Videos:", relatedVideos); // This line won't be reached if the error is caught
- * } catch (error) {
- * console.error("Expected Error (no related videos found):", error.message); // Catches the thrown error from the main function
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function related_videos({ videoId }: z.infer<typeof ZodSchema>): Promise<relatedVideosType[]> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

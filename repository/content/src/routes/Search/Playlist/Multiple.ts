@@ -58,48 +58,6 @@ async function searchPlaylistsHelper({ query }: { query: string }): Promise<sear
  *
  * @returns {Promise<searchPlaylistsType>} A Promise that resolves with the data of the first found playlist upon success.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the input is detected as a playlist ID, if no playlists are found for the query, or if there is an internal search or data retrieval issue.
- *
- * @example
- * // 1. Search for playlists using a query string with async/await with try...catch
- * const query = "lofi hip hop";
- * try {
- * const firstPlaylist = await YouTubeDLX.Search.Playlist.Multiple({ playlistLink: query });
- * console.log("First Playlist Found:", firstPlaylist);
- * } catch (error) {
- * console.error("Error during playlist search:", error);
- * }
- *
- * @example
- * // 2. Provide a query that is too short (will result in a Zod error)
- * const query = "a";
- * try {
- * const firstPlaylist = await YouTubeDLX.Search.Playlist.Multiple({ playlistLink: query });
- * console.log("First Playlist Found:", firstPlaylist); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (short query):", error.message); // Catches the thrown error
- * }
- *
- * @example
- * // 3. Provide a playlist URL or ID instead of a search query (will result in an error)
- * const playlistLink = "https://www.youtube.com/playlist?list=SOME_PLAYLIST_ID"; // Assuming this is detected as a playlist ID/link
- * try {
- * const firstPlaylist = await YouTubeDLX.Search.Playlist.Multiple({ playlistLink });
- * console.log("First Playlist Found:", firstPlaylist); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (input is playlist link):", error.message); // Catches the thrown error
- * }
- *
- * @example
- * // 4. Provide a query that yields no playlist results
- * const query = "a query with no playlist results 12345xyz";
- * try {
- * const firstPlaylist = await YouTubeDLX.Search.Playlist.Multiple({ playlistLink: query });
- * console.log("First Playlist Found:", firstPlaylist); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (no playlists found):", error.message); // Catches the thrown error
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function search_playlists({ playlistLink }: z.infer<typeof ZodSchema>): Promise<searchPlaylistsType> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

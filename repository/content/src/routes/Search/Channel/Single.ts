@@ -18,49 +18,6 @@ const ZodSchema = z.object({ channelLink: z.string().min(2) }); // Mandatory cha
  *
  * @returns {Promise<any>} A Promise that resolves with the raw channel data object upon success.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if fetching channel data fails (e.g., channel not found or API error), or if other unexpected errors occur.
- *
- * @example
- * // 1. Fetch data for a channel using its link with async/await with try...catch
- * const channelLink = "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA"; // Replace with a real channel link or ID
- * try {
- * const channelData = await YouTubeDLX.Search.Channel.Single({ channelLink });
- * console.log("Channel Data:", channelData); // channelData is the raw object from youtubei
- * console.log("Channel Name:", channelData.name); // Access properties based on youtubei's Channel object structure
- * } catch (error) {
- * console.error("Error fetching channel data:", error);
- * }
- *
- * @example
- * // 2. Handle missing required 'channelLink' parameter with async/await
- * try {
- * const channelData = await YouTubeDLX.Search.Channel.Single({} as any);
- * console.log("Channel Data:", channelData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing channelLink):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 3. Handle invalid 'channelLink' parameter (e.g., too short) with async/await
- * const invalidLink = "ab";
- * try {
- * const channelData = await YouTubeDLX.Search.Channel.Single({ channelLink: invalidLink });
- * console.log("Channel Data:", channelData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (invalid channelLink length):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 4. Handle channel not found or unable to fetch data with async/await
- * // Replace with a real channel link/ID that is known to be non-existent or inaccessible
- * const nonExistentChannelLink = "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID";
- * try {
- * const channelData = await YouTubeDLX.Search.Channel.Single({ channelLink: nonExistentChannelLink });
- * console.log("Channel Data:", channelData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (channel not found):", error.message); // Catches the thrown error
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function channel_data({ channelLink }: z.infer<typeof ZodSchema>): Promise<any> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

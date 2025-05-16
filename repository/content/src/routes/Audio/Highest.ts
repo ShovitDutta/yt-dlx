@@ -61,51 +61,6 @@ type AudioHighestResult = MetadataResult | StreamResult | DownloadResult;
  * - If `stream` is true (and `metadata` is false): Resolves with a `StreamResult` object when FFmpeg starts.
  * - If downloading (neither `metadata` nor `stream` is true): Resolves with the `DownloadResult` string (the output file path) when FFmpeg finishes successfully.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine fails to retrieve data, if required metadata or formats are missing, if directory creation fails, if FFmpeg/FFprobe executables are not found, or if FFmpeg encounters an error during processing.
- *
- * @example
- * // 1. Download the highest quality audio using async/await syntax with try...catch
- * const query = "some video or query";
- * try {
- * const outputPath = await YouTubeDLX.Audio.Highest({ query });
- * console.log("Download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during download:", error);
- * }
- *
- * @example
- * // 2. Stream the highest quality audio with verbose logging using async/await
- * const query = "another video or query";
- * try {
- * const streamInfo = await YouTubeDLX.Audio.Highest({ query, stream: true, verbose: true });
- * console.log("Stream available:", streamInfo.filename);
- * // Use streamInfo.ffmpeg instance for piping the audio stream, e.g., streamInfo.ffmpeg.pipe(myWritableStream);
- * // Remember to handle the end and error events on the ffmpeg instance for stream cleanup if necessary.
- * } catch (error) {
- * console.error("Error during streaming setup:", error);
- * }
- *
- * @example
- * // 3. Fetch only metadata for the highest quality audio using async/await
- * const query = "metadata test";
- * try {
- * const metadata = await YouTubeDLX.Audio.Highest({ query, metadata: true });
- * console.log("Metadata:", metadata);
- * console.log("Highest audio format details:", metadata.AudioHighF);
- * } catch (error) {
- * console.error("Error fetching metadata:", error);
- * }
- *
- * @example
- * // 4. Download highest quality audio with a filter and custom output directory using async/await
- * const query = "video with filter";
- * try {
- * const outputPath = await YouTubeDLX.Audio.Highest({ query, output: "./filtered_audio_out", filter: "bassboost" });
- * console.log("Filtered download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during filtered download:", error);
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function AudioHighest({ query, output, useTor, stream, filter, metadata, verbose }: z.infer<typeof ZodSchema>): Promise<AudioHighestResult> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

@@ -2,7 +2,6 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
-
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(), sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 interface TubeResponse<T> {
     data?: T;

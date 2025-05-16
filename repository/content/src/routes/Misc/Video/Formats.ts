@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 // import { EventEmitter } from "events"; // Removed EventEmitter import as we are refactoring to async/await
 import Tuber from "../../../utils/Agent"; // Assuming Tuber is refactored and returns Promise<EngineOutput | null> or throws
-import type EngineOutput from "../../../interfaces/EngineOutput"; // Assuming EngineOutput is imported
+import { EngineOutput } from "../../../utils/Engine";
 
 // Define the Zod schema for input validation
 const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() }); // Mandatory query, min 2 characters, optional verbose
@@ -42,48 +42,6 @@ export interface VideoFormatsResult {
  *
  * @returns {Promise<VideoFormatsResult>} A Promise that resolves with an object containing categorized format details upon successful fetching.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine response is null/undefined, or if other unexpected errors occur.
- *
- * @example
- * // 1. List formats for a video using a query with async/await with try...catch
- * const query = "your search query or url"; // Replace with a real query or URL
- * try {
- * const formatsData = await YouTubeDLX.Misc.Video.Formats({ query });
- * console.log("Available Formats:", formatsData);
- * console.log("Manifest High formats:", formatsData.ManifestHigh); // Example of accessing specific category
- * } catch (error) {
- * console.error("Error listing formats:", error);
- * }
- *
- * @example
- * // 2. List formats for a video with verbose logging using async/await
- * const query = "another video query"; // Replace
- * try {
- * const formatsData = await YouTubeDLX.Misc.Video.Formats({ query, verbose: true });
- * console.log("Available Formats (Verbose):", formatsData);
- * } catch (error) {
- * console.error("Error listing formats (Verbose):", error);
- * }
- *
- * @example
- * // 3. Handle missing required 'query' parameter with async/await
- * try {
- * const formatsData = await YouTubeDLX.Misc.Video.Formats({} as any);
- * console.log("Available Formats:", formatsData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing query):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 4. Handle query that results in no engine data
- * const query = "a query that should not return any data 1a2b3c4d5e";
- * try {
- * const formatsData = await YouTubeDLX.Misc.Video.Formats({ query });
- * console.log("Available Formats:", formatsData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (no engine data):", error.message); // Catches the thrown error
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function list_formats({ query, verbose }: z.infer<typeof ZodSchema>): Promise<VideoFormatsResult> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

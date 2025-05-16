@@ -64,51 +64,6 @@ type VideoLowestResult = MetadataResult | StreamResult | DownloadResult;
  * - If `stream` is true (and `metadata` is false): Resolves with a `StreamResult` object when FFmpeg starts.
  * - If downloading (neither `metadata` nor `stream` is true): Resolves with the `DownloadResult` string (the output file path) when FFmpeg finishes successfully.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine fails to retrieve data, if required metadata or formats are missing, if directory creation fails, if FFmpeg/FFprobe executables are not found, or if FFmpeg encounters an error during processing.
- *
- * @example
- * // 1. Download the lowest quality video using async/await syntax with try...catch
- * const query = "some video query";
- * try {
- * const outputPath = await YouTubeDLX.Video.Lowest({ query });
- * console.log("Download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during download:", error);
- * }
- *
- * @example
- * // 2. Stream the lowest quality video with verbose logging using async/await
- * const query = "another video query";
- * try {
- * const streamInfo = await YouTubeDLX.Video.Lowest({ query, stream: true, verbose: true });
- * console.log("Stream available:", streamInfo.filename);
- * // Use streamInfo.ffmpeg for piping, e.g., streamInfo.ffmpeg.pipe(myWritableStream);
- * // Remember to handle the end and error events on the ffmpeg instance for stream cleanup if necessary.
- * } catch (error) {
- * console.error("Error during streaming setup:", error);
- * }
- *
- * @example
- * // 3. Fetch only metadata for the lowest quality video using async/await
- * const query = "metadata test";
- * try {
- * const metadata = await YouTubeDLX.Video.Lowest({ query, metadata: true });
- * console.log("Metadata:", metadata);
- * console.log("Lowest video format details:", metadata.BestVideoLow);
- * } catch (error) {
- * console.error("Error fetching metadata:", error);
- * }
- *
- * @example
- * // 4. Download lowest quality video with a filter and custom output directory using async/await
- * const query = "video with filter";
- * try {
- * const outputPath = await YouTubeDLX.Video.Lowest({ query, output: "./filtered_videos_out", filter: "grayscale" });
- * console.log("Filtered download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during filtered download:", error);
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function VideoLowest({ query, stream, verbose, output, metadata, useTor, filter }: z.infer<typeof ZodSchema>): Promise<VideoLowestResult> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

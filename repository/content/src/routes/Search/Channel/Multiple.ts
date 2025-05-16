@@ -62,48 +62,6 @@ async function searchChannelsHelper({ query }: { query: string }): Promise<chann
  *
  * @returns {Promise<channelSearchType[]>} A Promise that resolves with an array of channel objects upon success.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the search request fails, or if no channels are found for the query.
- *
- * @example
- * // 1. Search for channels with a query using async/await with try...catch
- * const query = "programming tutorials";
- * try {
- * const channels = await YouTubeDLX.Search.Channel.Multiple({ query });
- * console.log("Found channels:");
- * channels.forEach(channel => console.log(`- ${channel.name} (${channel.id})`));
- * } catch (error) {
- * console.error("Error searching channels:", error);
- * }
- *
- * @example
- * // 2. Handle missing required 'query' parameter with async/await
- * try {
- * const channels = await YouTubeDLX.Search.Channel.Multiple({} as any);
- * console.log("Found channels:", channels); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing query):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 3. Handle query parameter that is too short with async/await
- * const query = "a";
- * try {
- * const channels = await YouTubeDLX.Search.Channel.Multiple({ query });
- * console.log("Found channels:", channels); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (query too short):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 4. Handle query that returns no channels with async/await
- * const query = "asdfghjklzxcvbnm1234567890qwer"; // Query unlikely to match channels
- * try {
- * const channels = await YouTubeDLX.Search.Channel.Multiple({ query });
- * console.log("Found channels:", channels); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (no channels found):", error.message); // Catches the thrown error
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function search_channels({ query }: z.infer<typeof ZodSchema>): Promise<channelSearchType[]> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

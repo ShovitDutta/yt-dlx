@@ -42,48 +42,6 @@ export interface SearchVideoResult {
  *
  * @returns {Promise<SearchVideoResult[]>} A Promise that resolves with an array of video objects upon success.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the search request fails, or if no videos are found matching the specified criteria after filtering/sorting.
- *
- * @example
- * // 1. Basic video search using async/await with try...catch
- * const query = "programming tutorials";
- * try {
- * const videos = await YouTubeDLX.Search.Video.Multiple({ query });
- * console.log("Found videos:", videos);
- * } catch (error) {
- * console.error("Error during search:", error);
- * }
- *
- * @example
- * // 2. Search and filter by minimum views with async/await
- * const query = "popular songs";
- * try {
- * const videos = await YouTubeDLX.Search.Video.Multiple({ query, minViews: 1000000 });
- * console.log("Videos with over 1M views:", videos);
- * } catch (error) {
- * console.error("Error during search:", error);
- * }
- *
- * @example
- * // 3. Search and sort by view count (highest first) with async/await
- * const query = "funny moments";
- * try {
- * const videos = await YouTubeDLX.Search.Video.Multiple({ query, orderBy: "viewCount" });
- * console.log("Videos sorted by view count:", videos);
- * } catch (error) {
- * console.error("Error during search:", error);
- * }
- *
- * @example
- * // 4. Handle search query that returns no results or results filtered out
- * const query = "a query that should return no videos 12345xyz";
- * try {
- * const videos = await YouTubeDLX.Search.Video.Multiple({ query, minViews: 1000000000 });
- * console.log("Videos found (should be empty):", videos);
- * } catch (error) {
- * console.error("Expected Error (no videos found):", error.message); // Catches the thrown error
- * }
- *
- * // Other examples can be adapted similarly from the original event-based examples
  */
 export default async function search_videos({ query, minViews, maxViews, orderBy, verbose }: z.infer<typeof ZodSchema>): Promise<SearchVideoResult[]> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

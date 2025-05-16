@@ -67,49 +67,6 @@ async function getVideoTranscriptHelper({ videoId }: { videoId: string }): Promi
  *
  * @returns {Promise<VideoTranscriptType[]>} A Promise that resolves with an array of transcript segments upon successful fetching.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if providing an incorrect video link (unable to extract ID), if fetching the transcript fails (e.g., no transcript available or API error), or if other unexpected errors occur.
- *
- * @example
- * // 1. Fetch transcript for a valid video link using async/await with try...catch
- * const videoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; // Replace with a real video link
- * try {
- * const transcript = await YouTubeDLX.Misc.Video.Transcript({ videoLink });
- * console.log("Video Transcript:", transcript);
- * if (transcript.length > 0) console.log("First segment:", transcript[0].text);
- * } catch (error) {
- * console.error("Error fetching transcript:", error);
- * }
- *
- * @example
- * // 2. Handle missing required 'videoLink' parameter with async/await
- * try {
- * const transcript = await YouTubeDLX.Misc.Video.Transcript({} as any);
- * console.log("Video Transcript:", transcript); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing videoLink):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 3. Handle invalid 'videoLink' format (fails YouTubeID extraction) with async/await
- * const invalidLink = "this is not a video link";
- * try {
- * const transcript = await YouTubeDLX.Misc.Video.Transcript({ videoLink: invalidLink });
- * console.log("Video Transcript:", transcript); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (incorrect video link):", error.message); // Catches the thrown error
- * }
- *
- * @example
- * // 4. Handle video link for a video without a transcript with async/await
- * // Replace with a video link for a video known to not have a transcript.
- * const noTranscriptLink = "https://www.youtube.com/watch?v=VIDEO_ID_WITHOUT_TRANSCRIPT";
- * try {
- * const transcript = await YouTubeDLX.Misc.Video.Transcript({ videoLink: noTranscriptLink });
- * console.log("Video Transcript:", transcript); // This line won't be reached if the error is caught
- * } catch (error) {
- * console.error("Expected Error (no transcript available):", error.message); // Catches the thrown error from the main function
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function video_transcript({ videoLink }: z.infer<typeof ZodSchema>): Promise<VideoTranscriptType[]> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

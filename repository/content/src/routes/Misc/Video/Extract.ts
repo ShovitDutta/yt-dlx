@@ -227,55 +227,6 @@ export interface VideoExtractionResult {
  *
  * @returns {Promise<VideoExtractionResult>} A Promise that resolves with a comprehensive object containing video details, formats, comments (if available), and transcript (if available).
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the initial metadata/format retrieval fails, or if critical processing errors occur. Errors fetching comments or the transcript will be logged (if verbose) and result in those fields being `null` in the returned object.
- *
- * @example
- * // 1. Extract information for a video using a query with async/await with try...catch
- * const query = "your search query or url"; // Replace with a real query or URL
- * try {
- * const videoData = await YouTubeDLX.Misc.Video.Extract({ query });
- * console.log("Video Data:", videoData);
- * console.log("Video Title:", videoData.meta_data.title);
- * console.log("Available Formats:", videoData.ManifestHigh); // Example of accessing formats
- * if (videoData.comments) console.log("Number of comments:", videoData.comments.length);
- * if (videoData.transcript) console.log("Transcript available:", videoData.transcript.length > 0);
- * } catch (error) {
- * console.error("Error during extraction:", error);
- * }
- *
- * @example
- * // 2. Extract information using a query and enable verbose logging with async/await
- * const query = "another video query"; // Replace
- * try {
- * const videoData = await YouTubeDLX.Misc.Video.Extract({ query, verbose: true });
- * console.log("Video Data (Verbose):", videoData);
- * } catch (error) {
- * console.error("Error during extraction (Verbose):", error);
- * }
- *
- * @example
- * // 3. Handle query that results in no initial video data
- * const query = "a query that should not return any videos 1a2b3c4d5e";
- * try {
- * const videoData = await YouTubeDLX.Misc.Video.Extract({ query });
- * console.log("Video Data:", videoData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (no initial video data):", error.message); // Catches the thrown error
- * }
- *
- * @example
- * // 4. Handle video where comments or transcript fetching fails (but initial data is okay)
- * // Replace with a query/URL for a video that might have issues with comments/transcript
- * const query = "video with disabled comments or no transcript";
- * try {
- * const videoData = await YouTubeDLX.Misc.Video.Extract({ query, verbose: true });
- * console.log("Video Data (comments null?):", videoData.comments === null);
- * console.log("Video Data (transcript null?):", videoData.transcript === null);
- * // Errors during comments/transcript fetching are logged if verbose, but the main promise resolves.
- * } catch (error) {
- * console.error("Error during extraction:", error); // Only catches errors before or during metadata fetch
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<VideoExtractionResult> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

@@ -122,48 +122,6 @@ async function fetchVideoCommentsHelper({ query, verbose }: z.infer<typeof ZodSc
  *
  * @returns {Promise<CommentType[]>} A Promise that resolves with an array of comment objects upon successful fetching.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if no video is found for the query, if no comments are found for the video, or if internal library errors occur during search or fetching.
- *
- * @example
- * // 1. Fetch comments for a video by search query using async/await with try...catch
- * const query = "video title or topic";
- * try {
- * const comments = await YouTubeDLX.Misc.Video.Comments({ query });
- * console.log("Comments:", comments);
- * } catch (error) {
- * console.error("Error fetching comments:", error);
- * }
- *
- * @example
- * // 2. Fetch comments for a video by search query with verbose logging using async/await
- * const query = "another video query";
- * try {
- * const comments = await YouTubeDLX.Misc.Video.Comments({ query, verbose: true });
- * console.log("Comments (Verbose):", comments);
- * } catch (error) {
- * console.error("Error fetching comments:", error);
- * }
- *
- * @example
- * // 3. Handle missing required 'query' parameter with async/await
- * try {
- * const comments = await YouTubeDLX.Misc.Video.Comments({} as any);
- * console.log("Comments:", comments); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing query):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 4. Handle query that finds no videos or videos with no comments
- * // Replace with a query unlikely to return videos, or a video known to have no comments.
- * const query = "a query with no videos or comments 1a2b3c4d5e";
- * try {
- * const comments = await YouTubeDLX.Misc.Video.Comments({ query });
- * console.log("Comments:", comments); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (no videos or comments found):", error.message); // Catches the thrown error from the main function
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function video_comments(options: z.infer<typeof ZodSchema>): Promise<CommentType[]> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

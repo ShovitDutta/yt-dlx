@@ -70,48 +70,6 @@ export async function singleVideo({ videoId }: { videoId: string }): Promise<sin
  *
  * @returns {Promise<singleVideoType>} A Promise that resolves with the video data upon success.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the video link format is invalid, if fetching data from the YouTube API fails, or if other unexpected errors occur.
- *
- * @example
- * // 1. Fetch data for a valid YouTube video link using async/await with try...catch
- * const videoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
- * try {
- * const videoData = await YouTubeDLX.Search.Video.Single({ videoLink });
- * console.log("Video Data:", videoData);
- * } catch (error) {
- * console.error("Error fetching video data:", error);
- * }
- *
- * @example
- * // 2. Fetch data using a shortened YouTube link with async/await
- * const videoLink = "https://youtu.be/dQw4w9WgXcQ";
- * try {
- * const videoData = await YouTubeDLX.Search.Video.Single({ videoLink });
- * console.log("Video Data:", videoData);
- * } catch (error) {
- * console.error("Error fetching video data:", error);
- * }
- *
- * @example
- * // 3. Handle invalid video link format with async/await
- * const videoLink = "this is not a youtube link";
- * try {
- * const videoData = await YouTubeDLX.Search.Video.Single({ videoLink });
- * console.log("Video Data:", videoData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (incorrect video link):", error.message); // Catches the thrown error
- * }
- *
- * @example
- * // 4. Handle fetching data for a non-existent or private video with async/await
- * const videoLink = "https://www.youtube.com/watch?v=nonexistentvideo123"; // Assuming this link represents a non-existent video
- * try {
- * const videoData = await YouTubeDLX.Search.Video.Single({ videoLink });
- * console.log("Video Data:", videoData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (unable to fetch video data):", error.message); // Catches the thrown error from singleVideo
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function video_data({ videoLink }: z.infer<typeof ZodSchema>): Promise<singleVideoType> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

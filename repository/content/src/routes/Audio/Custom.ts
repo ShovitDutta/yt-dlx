@@ -6,8 +6,6 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import * as fsPromises from "fs/promises";
 import { locator } from "../../utils/locator";
-
-// Define the Zod schema for input validation
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -20,20 +18,17 @@ const ZodSchema = z.object({
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
-
-// Define types for the possible return values based on flags
 type MetadataResult = {
     metaData: any;
     BestAudioLow: any;
     BestAudioHigh: any;
     AudioLowDRC: any;
     AudioHighDRC: any;
-    filename: string; // Cleaned filename based on title
+    filename: string;
 };
-
 type StreamResult = {
-    filename: string; // Output path used as filename for streaming
-    ffmpeg: ffmpeg.FfmpegCommand; // The FFmpeg instance for piping/handling the stream
+    filename: string;
+    ffmpeg: ffmpeg.FfmpegCommand;
 };
 
 type DownloadResult = string; // The output file path
@@ -43,7 +38,6 @@ type AudioCustomResult = MetadataResult | StreamResult | DownloadResult;
 
 /**
  * @shortdesc Downloads, streams, or fetches metadata for audio from YouTube with custom options using async/await instead of events.
- *
  * @description This function allows you to download, stream, or fetch metadata for audio from YouTube based on a search query or video URL using async/await.
  * It provides extensive customization options, including specifying the audio resolution, applying various audio filters, saving the output to a specified directory, using Tor for anonymity, enabling verbose logging, streaming the output, or simply fetching the metadata.
  * The function returns a Promise that resolves with the result of the operation (metadata object, stream info object, or output file path) or rejects with an error, replacing the EventEmitter pattern.
@@ -63,38 +57,6 @@ type AudioCustomResult = MetadataResult | StreamResult | DownloadResult;
  * - If `stream` is true (and `metadata` is false): Resolves with a `StreamResult` object when FFmpeg starts.
  * - If downloading (neither `metadata` nor `stream` is true): Resolves with the `DownloadResult` string (the output file path) when FFmpeg finishes successfully.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine fails to retrieve data, if required metadata or formats are missing, if directory creation fails, if FFmpeg/FFprobe executables are not found, or if FFmpeg encounters an error during processing.
- *
- * @example
- * // 1. Download audio with a specific resolution using async/await
- * try {
- * const outputPath = await YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high" });
- * console.log("Download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during download:", error);
- * }
- *
- * @example
- * // 2. Stream audio with a specific resolution using async/await
- * try {
- * const streamInfo = await YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "low", stream: true });
- * console.log("Stream available:", streamInfo.filename);
- * // You can use streamInfo.ffmpeg instance for piping
- * // Example: streamInfo.ffmpeg.pipe(writableStream);
- * // Remember to handle the end and error events on the ffmpeg instance if needed for stream cleanup.
- * } catch (error) {
- * console.error("Error during streaming setup:", error);
- * }
- *
- * @example
- * // 3. Fetch only metadata for a video using async/await
- * try {
- * const metadata = await YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", metadata: true });
- * console.log("Metadata:", metadata);
- * console.log("Suggested filename:", metadata.filename);
- * } catch (error) {
- * console.error("Error fetching metadata:", error);
- * }
- * // Other examples can be adapted similarly from the original event-based examples
  */
 export default async function AudioCustom({ query, output, useTor, stream, filter, verbose, metadata, resolution }: z.infer<typeof ZodSchema>): Promise<AudioCustomResult> {
     // Refactored to use async/await and return a Promise directly

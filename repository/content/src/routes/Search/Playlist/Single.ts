@@ -65,49 +65,6 @@ async function playlistVideosHelper({ playlistId }: { playlistId: string }): Pro
  *
  * @returns {Promise<playlistVideosType>} A Promise that resolves with the playlist data upon success.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the video link format is invalid, if fetching data from the YouTube API fails, or if other unexpected errors occur.
- *
- * @example
- * // 1. Fetch data for a valid playlist link using async/await with try...catch
- * const playlistLink = "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID_HERE"; // Replace with a real playlist link
- * try {
- * const playlistData = await YouTubeDLX.Search.Playlist.Single({ playlistLink });
- * console.log("Playlist Data:", playlistData);
- * console.log("First video title:", playlistData.result[0]?.title); // Access videos in the 'result' array
- * } catch (error) {
- * console.error("Error fetching playlist data:", error);
- * }
- *
- * @example
- * // 2. Handle missing required 'playlistLink' parameter with async/await
- * try {
- * const playlistData = await YouTubeDLX.Search.Playlist.Single({} as any);
- * console.log("Playlist Data:", playlistData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (missing playlistLink):", error.message); // Catches the thrown ZodError
- * }
- *
- * @example
- * // 3. Handle invalid playlist link provided (fails YouTubeID extraction) with async/await
- * const invalidLink = "this is not a playlist link";
- * try {
- * const playlistData = await YouTubeDLX.Search.Playlist.Single({ playlistLink: invalidLink });
- * console.log("Playlist Data:", playlistData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (incorrect playlist link):", error.message); // Catches the thrown error
- * }
- *
- * @example
- * // 4. Handle fetching data for a non-existent or private playlist with async/await
- * // Replace with a real playlist link that is known to be inaccessible or non-existent
- * const nonExistentPlaylistLink = "https://www.youtube.com/playlist?list=NON_EXISTENT_PLAYLIST_ID_12345";
- * try {
- * const playlistData = await YouTubeDLX.Search.Playlist.Single({ playlistLink: nonExistentPlaylistLink });
- * console.log("Playlist Data:", playlistData); // This line won't be reached
- * } catch (error) {
- * console.error("Expected Error (unable to retrieve playlist information):", error.message); // Catches the thrown error from playlistVideosHelper
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function playlist_data({ playlistLink }: z.infer<typeof ZodSchema>): Promise<playlistVideosType> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

@@ -68,55 +68,6 @@ type VideoCustomResult = MetadataResult | StreamResult | DownloadResult;
  * - If `stream` is true (and `metadata` is false): Resolves with a `StreamResult` object when FFmpeg starts.
  * - If downloading (neither `metadata` nor `stream` is true): Resolves with the `DownloadResult` string (the output file path) when FFmpeg finishes successfully.
  * @throws {Error} Throws a formatted error if argument validation fails (ZodError), if the engine fails to retrieve data, if required metadata or formats are missing, if directory creation fails, if FFmpeg/FFprobe executables are not found, or if FFmpeg encounters an error during processing.
- *
- * @example
- * // 1. Download video with a specific resolution using async/await syntax with try...catch
- * const query = "some video query";
- * const resolution = "720p";
- * try {
- * const outputPath = await YouTubeDLX.Video.Custom({ query, resolution });
- * console.log("Download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during download:", error);
- * }
- *
- * @example
- * // 2. Stream video with a specific resolution and verbose logging using async/await
- * const query = "another video query";
- * const resolution = "1080p";
- * try {
- * const streamInfo = await YouTubeDLX.Video.Custom({ query, resolution, stream: true, verbose: true });
- * console.log("Stream available:", streamInfo.filename);
- * // Use streamInfo.ffmpeg instance for piping, e.g., streamInfo.ffmpeg.pipe(myWritableStream);
- * // Remember to handle the end and error events on the ffmpeg instance for stream cleanup if necessary.
- * } catch (error) {
- * console.error("Error during streaming setup:", error);
- * }
- *
- * @example
- * // 3. Fetch only metadata for a video using async/await
- * const query = "metadata test";
- * const resolution = "720p"; // Resolution is still required by schema even for metadata
- * try {
- * const metadata = await YouTubeDLX.Video.Custom({ query, resolution, metadata: true });
- * console.log("Metadata:", metadata);
- * console.log("Metadata for 720p video:", metadata.ManifestHigh?.find(f => typeof f.format === 'string' && f.format.includes('720')));
- * } catch (error) {
- * console.error("Error fetching metadata:", error);
- * }
- *
- * @example
- * // 4. Download video with a filter and custom output directory using async/await
- * const query = "video with filter";
- * const resolution = "1080p";
- * try {
- * const outputPath = await YouTubeDLX.Video.Custom({ query, resolution, output: "./filtered_videos_out", filter: "grayscale" });
- * console.log("Filtered download finished:", outputPath);
- * } catch (error) {
- * console.error("Error during filtered download:", error);
- * }
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function VideoCustom({ query, stream, useTor, filter, output, verbose, metadata, resolution }: z.infer<typeof ZodSchema>): Promise<VideoCustomResult> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.

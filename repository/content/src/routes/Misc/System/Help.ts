@@ -12,22 +12,6 @@ import colors from "colors";
  *
  * @returns {Promise<string>} A Promise that resolves with the help documentation URL.
  * @throws {Error} Throws a formatted error if an unexpected error occurs during execution.
- *
- * @example
- * // 1. Get help information and the documentation URL using async/await with try...catch
- * try {
- * const helpUrl = await YouTubeDLX.Misc.System.Help();
- * console.log("Help URL:", helpUrl);
- * } catch (error) {
- * console.error("An error occurred while trying to get help:", error);
- * }
- * // Note: This function also prints information directly to the console.
- *
- * @example
- * // 2. Basic call without explicit error handling (errors will propagate)
- * // await YouTubeDLX.Misc.System.Help().then(helpUrl => console.log("Help URL:", helpUrl));
- *
- * // Note: Original examples using .on(...) are replaced by standard Promise handling (.then/.catch or await with try/catch).
  */
 export default async function help(): Promise<string> {
     // Refactored to use async/await and return a Promise directly, replacing EventEmitter pattern.
