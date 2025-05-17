@@ -12,14 +12,15 @@
     },
     "homepage": "https://yt-dlx-shovit.koyeb.src",
     "scripts": {
-        "ws:start": "tsup && node out/routes/launch.js --production",
-        "ws:dev": "tsup && node out/routes/launch.js",
+        "ws:start": "tsup && node launch.js --production",
+        "ws:dev": "tsup && node launch.js",
         "dev": "next dev --turbopack",
         "build": "next build",
         "start": "next start",
         "lint": "next lint"
     },
     "dependencies": {
+        "colors": "^1.4.0",
         "next": "15.3.2",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",

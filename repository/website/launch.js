@@ -22,10 +22,11 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// routes/launch.ts
+// launch.ts
 var import_next = __toESM(require("next"));
 var import_node_os = __toESM(require("os"));
 var import_node_fs = __toESM(require("fs"));
+var import_colors = __toESM(require("colors"));
 var import_node_path = __toESM(require("path"));
 var import_socket = require("socket.io");
 var import_node_http = require("http");
@@ -42,11 +43,7 @@ function getNetworkAddress() {
   for (const name in interfaces) {
     const interfaceInfo = interfaces[name];
     if (!interfaceInfo) continue;
-    for (const { address, family, internal } of interfaceInfo) {
-      if (family === "IPv4" && !internal) {
-        return address;
-      }
-    }
+    for (const { address, family, internal } of interfaceInfo) if (family === "IPv4" && !internal) return address;
   }
   return null;
 }
@@ -60,87 +57,37 @@ function getNextVersion() {
     return "unknown";
   }
 }
-var bright = "\x1B[1m";
-var green = "\x1B[32m";
-var reset = "\x1B[0m";
-var bold = "\x1B[1m";
-var dim = "\x1B[2m";
-var socketHandlerFiles = [];
-var routesDir = import_node_path.default.join(__dirname, "routes");
-function findSocketHandlerFiles(directory) {
-  if (!import_node_fs.default.existsSync(directory)) {
-    console.warn(`Socket routes directory not found at ${directory}. Skipping automatic route loading.`);
-    return;
-  }
-  const entries = import_node_fs.default.readdirSync(directory, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = import_node_path.default.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      findSocketHandlerFiles(fullPath);
-    } else if (entry.isFile() && entry.name.endsWith(".js")) {
-      console.log(`Found potential socket handler file: ${fullPath}`);
-      socketHandlerFiles.push(fullPath);
-    }
-  }
-}
-function applySocketHandlers(socket) {
-  if (socketHandlerFiles.length === 0) {
-    console.warn("No socket handler files were found to apply.");
-    return;
-  }
-  for (const filePath of socketHandlerFiles) {
-    try {
-      const handlerModule = require(filePath);
-      const setupFunction = typeof handlerModule === "function" ? handlerModule : handlerModule.default;
-      if (typeof setupFunction === "function") {
-        setupFunction(socket);
-      } else {
-        console.warn(`File ${filePath} does not export a function as default or module.exports.`);
-      }
-    } catch (error) {
-      console.error(`Error loading or applying socket handlers from ${filePath}:`, error);
-    }
-  }
-}
-function addIoRoutes(io) {
-  findSocketHandlerFiles(routesDir);
-  console.log(`Discovered ${socketHandlerFiles.length} potential socket handler files.`);
-  io.on("connection", (socket) => {
-    console.log(green, "Socket Connected:", reset, socket.id);
-    console.log(green, "Socket Handshake URL:", reset, socket.handshake.url);
-    console.log(green, "Socket Handshake Time:", reset, socket.handshake.time);
-    console.log(green, "Socket Handshake Host:", reset, socket.handshake.headers.host);
-    applySocketHandlers(socket);
-    socket.on("disconnect", (reason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
-  });
-  console.log("Socket.IO connection handler established. Loading routes dynamically on connection.");
-}
 app.prepare().then(() => {
   const httpServer = (0, import_node_http.createServer)(handler);
   const io = new import_socket.Server(httpServer);
-  addIoRoutes(io);
+  io.on("connection", (socket) => {
+    console.log(import_colors.default.green("Socket Connected:"), socket.id);
+    console.log(import_colors.default.green("Socket Handshake URL:"), socket.handshake.url);
+    console.log(import_colors.default.green("Socket Handshake Time:"), socket.handshake.time);
+    console.log(import_colors.default.green("Socket Handshake Host:"), socket.handshake.headers.host);
+    socket.on("message", (data) => console.log(`Received message from ${socket.id}:`, data));
+    socket.on("disconnect", (reason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
+  });
+  console.log("Socket.IO routes initialized.");
   const nextVersion = getNextVersion();
   const networkAddress = getNetworkAddress();
   console.log(`
- \xA0${bright}\u25B2${reset} ${bold}Next.js${reset} ${nextVersion} ${dev ? "(Custom Server, Turbopack)" : "(Custom Server, Production)"}`);
-  console.log(` \xA0${dim}-${reset} ${bold}Local:${reset} \xA0 \xA0 ${green}http://${hostname}:${port}${reset}`);
-  if (networkAddress) {
-    console.log(` \xA0${dim}-${reset} ${bold}Network:${reset} \xA0 ${green}http://${networkAddress}:${port}${reset}`);
-  } else {
-    console.log(` \xA0${dim}-${reset} ${bold}Network:${reset} \xA0 ${dim}unavailable${reset}`);
-  }
+  ${"\u25B2"} ${import_colors.default.bold("Next.js")} ${nextVersion} ${dev ? import_colors.default.dim("(Custom Server, Turbopack)") : import_colors.default.dim("(Custom Server, Production)")}`);
+  console.log(`  ${import_colors.default.dim("-")} ${import_colors.default.bold("Local:")}    ${import_colors.default.green(`http://${hostname}:${port}`)}`);
+  if (networkAddress) console.log(`  ${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")}  ${import_colors.default.green(`http://${networkAddress}:${port}`)}`);
+  else console.log(`  ${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")}  ${import_colors.default.dim("unavailable")}`);
   console.log("\n");
   httpServer.once("error", (err) => {
-    console.error(`HTTP server error:`, err);
+    console.error(import_colors.default.red(`HTTP server error:`), err);
     process.exit(1);
   }).listen(port, () => {
   });
 });
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
+  console.error(import_colors.default.red("Uncaught Exception:"), err);
   process.exit(1);
 });
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  console.error(import_colors.default.red("Unhandled Rejection at:"), promise, "reason:", reason);
   process.exit(1);
 });
