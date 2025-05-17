@@ -46,6 +46,205 @@ const ZodSchema = z.object({
         .optional(),
 });
 type AudioCustomOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Downloads or streams custom audio from YouTube videos/queries with options for resolution, filters, and output.
+ *
+ * @description This function allows fetching audio from a YouTube video identified by a query or URL.
+ * It uses an internal engine (`Tuber`) to retrieve video information and available audio formats,
+ * and then utilizes FFmpeg to process (optionally apply filters) and output the selected audio.
+ * The output can be either a downloadable file saved locally or a readable stream.
+ * The function also supports fetching only the video's metadata.
+ *
+ * It requires a valid search query or URL to identify the YouTube video.
+ * FFmpeg and FFprobe executables must be available in the system's PATH or locatable by the internal `locator` utility.
+ *
+ * The function supports the following configuration options:
+ * - **Query:** A string representing the Youtube query or URL. **Required**.
+ * - **Resolution:** Specifies the desired audio quality ("high", "medium", "low", "ultralow"). **Required**.
+ * - **Output:** An optional string specifying the directory path where the downloaded audio file should be saved. If not provided, the file is saved in the current working directory. Cannot be used with `stream`.
+ * - **Stream:** An optional boolean flag. If set to `true`, the function returns a Node.js Readable stream of the audio data instead of saving a file. Cannot be used with `output`. Defaults to `false`.
+ * - **Filter:** An optional string specifying an audio filter to apply using FFmpeg. Available filters include "echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed".
+ * - **UseTor:** An optional boolean flag to route requests through Tor. Defaults to `false`.
+ * - **Verbose:** An optional boolean value that, if true, enables detailed logging of the process, including FFmpeg commands. Defaults to `false`.
+ * - **Metadata:** An optional boolean flag. If set to `true`, the function will only fetch and return the video metadata without performing any download or streaming. Cannot be used with `stream`, `output`, `filter`, or `showProgress`. Defaults to `false`.
+ * - **ShowProgress:** An optional boolean flag to display a progress bar in the console during download or streaming. Defaults to `false`. Cannot be used with `metadata`.
+ *
+ * The function's return type depends on the provided options:
+ * - If `metadata` is `true`, it returns a Promise resolving to `{ metadata: object }` containing detailed video information.
+ * - If `stream` is `true` (and `metadata` is `false`), it returns a Promise resolving to `{ stream: Readable }` providing a stream of the audio data.
+ * - Otherwise (if `metadata` is `false` and `stream` is `false`), it returns a Promise resolving to `{ outputPath: string }` indicating the path to the downloaded file.
+ *
+ * FFmpeg is used internally, setting the output format to 'avi' and including the video thumbnail as a second input, potentially for embedding album art.
+ *
+ * @param {object} options - The configuration options for the audio fetching and processing.
+ * @param {string} options.query - The Youtube query or video URL. **Required**.
+ * @param {"high" | "medium" | "low" | "ultralow"} options.resolution - The desired audio resolution/quality. **Required**.
+ * @param {string} [options.output] - The directory path to save the downloaded file. Cannot be used with `stream`.
+ * @param {boolean} [options.stream=false] - If true, returns a Readable stream instead of saving a file. Cannot be used with `output`.
+ * @param {boolean} [options.useTor=false] - Use Tor for requests.
+ * @param {boolean} [options.verbose=false] - Enable verbose logging.
+ * @param {boolean} [options.metadata=false] - Fetch only metadata. Cannot be used with `stream`, `output`, `filter`, or `showProgress`.
+ * @param {boolean} [options.showProgress=false] - Display a progress bar. Cannot be used with `metadata`.
+ * @param {"echo" | "slow" | "speed" | "phaser" | "flanger" | "panning" | "reverse" | "vibrato" | "subboost" | "surround" | "bassboost" | "nightcore" | "superslow" | "vaporwave" | "superspeed"} [options.filter] - Apply an audio filter.
+ *
+ * @returns {Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }>} A promise resolving to an object containing either the metadata, the output file path, or a readable stream, depending on the options.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing required parameters, invalid enum values for resolution or filter).
+ * - Throws an `Error` if invalid option combinations are used (e.g., `metadata` with output/stream/filter/showProgress, `stream` with output).
+ * - Throws an `Error` if the internal engine (`Tuber`) fails to retrieve a response or metadata.
+ * - Throws an `Error` if FFmpeg or FFprobe executables are not found on the system.
+ * - Throws an `Error` if no audio data is found for the specified `resolution`.
+ * - Throws an `Error` if the audio URL or thumbnail URL is missing from the fetched data.
+ * - Throws an `Error` if the output directory cannot be created when `output` is specified and `stream` is false.
+ * - Throws an `Error` if an FFmpeg process error occurs during download or streaming.
+ * - Throws a generic `Error` for any other unexpected issues.
+ *
+ * @example
+ * // 1. Running Basic Download Example (defaults to saving in current directory, no filter, no verbose, no progress)
+ * try {
+ * const result = await AudioCustom({ query: "your search query or url", resolution: "high" });
+ * if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("Basic Download Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Running Download with Output and Filter Example
+ * try {
+ * const result = await AudioCustom({ query: "your search query or url", output: "./custom_downloads", filter: "bassboost", resolution: "medium" });
+ * if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Running Download with All Options Example (excluding incompatible 'metadata' and 'stream')
+ * try {
+ * const result = await AudioCustom({ query: "your search query or url", resolution: "low", output: "./full_downloads", useTor: true, verbose: true, filter: "echo", showProgress: true });
+ * if ("outputPath" in result) console.log("\nDownload with All Options finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Running Fetch Metadata Only Example
+ * try {
+ * const result = await AudioCustom({ query: "your search query or url", resolution: "high", metadata: true });
+ * if ("metadata" in result) console.log("Metadata Only:", result.metadata);
+ * } catch (error) {
+ * console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Running Basic Stream Example (pipes to a local file)
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioCustom({ query: "your search query or url", resolution: "low", stream: true });
+ * if ("stream" in result && result.stream) {
+ * console.log("Basic Streaming started. Piping to basic_stream.avi...");
+ * const outputStream = createWriteStream("basic_stream.avi");
+ * result.stream.pipe(outputStream);
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Basic Streaming finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Basic Stream error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Running Stream with Filter Example (pipes to a local file)
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioCustom({ query: "your search query or url", resolution: "medium", stream: true, filter: "vaporwave" });
+ * if ("stream" in result && result.stream) {
+ * console.log("Stream with Filter started. Piping to filtered_stream.avi...");
+ * const outputStream = createWriteStream("filtered_stream.avi");
+ * result.stream.pipe(outputStream);
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Stream with Filter finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Stream with Filter error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 7. Running Invalid Options Example (Metadata and Output used together - will throw Error)
+ * try {
+ * await AudioCustom({ query: "your search query or url", resolution: "high", metadata: true, output: "./should_fail_dir" });
+ * console.log("This should not be reached - Invalid Options Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 8. Running Zod Validation Error Example (Invalid Resolution - will throw ZodError)
+ * try {
+ * await AudioCustom({ query: "your search query or url", resolution: "superhigh" as any }); // Using 'as any' to simulate invalid input
+ * console.log("This should not be reached - Zod Validation Error Example.");
+ * } catch (error) {
+ * console.error("Expected Zod Error (Invalid Resolution):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 9. Example of Client Initialization Failure (e.g., Tuber fails to respond)
+ * // This scenario depends on the internal Tuber logic failing.
+ * // You would typically trigger this by providing a query that the engine cannot process or if the engine itself fails.
+ * // try {
+ * //    await AudioCustom({ query: "query-that-breaks-tuber", resolution: "high" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 10. Example of FFmpeg/FFprobe not found
+ * // This would occur if the ffmpeg/ffprobe executables are not in PATH and the locator fails.
+ * // try {
+ * //    // Ensure ffmpeg/ffprobe are not found in PATH
+ * //    await AudioCustom({ query: "your search query or url", resolution: "high" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (FFmpeg not found):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 11. Example of no audio data for specified resolution
+ * // This would occur if the Tuber engine doesn't return a format matching the requested resolution.
+ * // try {
+ * //    // Use a query/resolution combination known to fail
+ * //    await AudioCustom({ query: "some video", resolution: "ultralow" }); // Example, might not always fail
+ * // } catch (error) {
+ * //    console.error("Expected Error (No audio data):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 12. Example of FFmpeg processing error (during download or stream)
+ * // This can occur due to various reasons like network issues, invalid input stream, or FFmpeg internal errors.
+ * // It's difficult to trigger reliably via a simple example.
+ * // try {
+ * //    // Use a query/options known to cause FFmpeg issues
+ * //    await AudioCustom({ query: "query-causing-ffmpeg-error", resolution: "high" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (FFmpeg Processing Error):", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function AudioCustom({
     query,
     output,

@@ -55,6 +55,105 @@ async function fetchVideoComments({ query, verbose }: VideoCommentsOptions): Pro
         throw new Error(error.message);
     }
 }
+/**
+ * @shortdesc Fetches comments for a YouTube video based on a search query or URL.
+ *
+ * @description This function searches YouTube for a video matching the provided query or URL,
+ * and then retrieves the comments for the first video found.
+ * It uses the `youtubei.js` library internally for searching and fetching comments.
+ * The function requires a query string as input and can optionally provide verbose logging.
+ *
+ * The process involves:
+ * 1. Searching for a video using the `query`.
+ * 2. Selecting the first video from the search results.
+ * 3. Fetching comments for the selected video ID.
+ * 4. Parsing and structuring the fetched comments into a `CommentType` array.
+ *
+ * The function supports the following configuration options:
+ * - **Query:** A string representing the Youtube query or video URL. Must be at least 2 characters long. **Required**.
+ * - **Verbose:** An optional boolean flag that, if true, enables detailed console logging during the search and fetching process. Defaults to `false`.
+ *
+ * The function returns a Promise that resolves with an array of comment objects (`CommentType[]`) if successful.
+ *
+ * @param {object} options - The configuration options for fetching video comments.
+ * @param {string} options.query - The Youtube query or video URL (minimum 2 characters). **Required**.
+ * @param {boolean} [options.verbose=false] - Enable verbose logging.
+ *
+ * @returns {Promise<CommentType[]>} A Promise that resolves with an array of `CommentType` objects representing the comments for the video. Returns an empty array or throws an error if no comments are found.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing `query`, `query` is less than 2 characters).
+ * - Throws an `Error` if no videos are found for the given `query`.
+ * - Throws an `Error` if no comments are found for the selected video.
+ * - Throws an `Error` for any underlying issues during video search or comment fetching using the internal `youtubei.js` client.
+ * - Throws a generic `Error` for any unexpected issues.
+ *
+ * @example
+ * // 1. Running Basic Comments Fetch Example
+ * try {
+ * const result = await videoComments({ query: "video title or topic" });
+ * console.log("Comments:", result);
+ * } catch (error) {
+ * console.error("Basic Comments Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Running Comments Fetch with Verbose Logging Example
+ * try {
+ * const result = await videoComments({ query: "another video query", verbose: true });
+ * console.log("Comments:", result);
+ * } catch (error) {
+ * console.error("Verbose Comments Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Running Zod Validation Error Example (Missing Query - will throw ZodError)
+ * try {
+ * await videoComments({} as any); // Using 'as any' to simulate missing required parameter
+ * console.log("This should not be reached - Missing Query Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Running Zod Validation Error Example (Short Query - will throw ZodError)
+ * try {
+ * await videoComments({ query: "a" }); // Query is less than minimum length (2)
+ * console.log("This should not be reached - Short Query Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Query Too Short):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Running No Videos Found Example (will throw Error)
+ * // Use a query very unlikely to match any video.
+ * try {
+ * await videoComments({ query: "very unlikely video search 1a2b3c4d5e" });
+ * console.log("This should not be reached - No Videos Found Example.");
+ * } catch (error) {
+ * console.error("Expected Error (No Videos Found):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Running No Comments Found Example (will throw Error)
+ * // Use a query for a video known to exist but have no comments enabled or posted.
+ * try {
+ * await videoComments({ query: "a video known to have no comments" });
+ * console.log("This should not be reached - No Comments Found Example.");
+ * } catch (error) {
+ * console.error("Expected Error (No Comments Found):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 7. Example of an Unexpected Error during fetch (e.g., network issue, API change)
+ * // This is harder to trigger predictably with a simple example.
+ * // try {
+ * //    // Use a query that might somehow cause an unexpected issue with the internal clients
+ * //    await videoComments({ query: "query causing internal error" });
+ * // } catch (error) {
+ * //    console.error("Expected Unexpected Error:", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function videoComments({ query, verbose }: VideoCommentsOptions): Promise<CommentType[]> {
     try {
         ZodSchema.parse({ query, verbose });

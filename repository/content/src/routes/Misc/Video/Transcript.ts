@@ -30,6 +30,91 @@ async function getVideoTranscript({ videoId }: { videoId: string }): Promise<Vid
     }
 }
 type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Fetches the transcript (captions) for a YouTube video given its link.
+ *
+ * @description This function retrieves the available transcript or captions for a specific YouTube video.
+ * It first extracts the video ID from the provided video link using a utility function,
+ * and then uses the `youtubei.js` library to fetch the transcript data.
+ *
+ * The function requires a valid YouTube video link as input.
+ *
+ * The process involves:
+ * 1. Validating the input `videoLink` using Zod.
+ * 2. Extracting the video ID from the `videoLink`.
+ * 3. Fetching the transcript data using the video ID.
+ * 4. Structuring the fetched data into an array of `VideoTranscriptType` objects.
+ *
+ * If a transcript is not available for the video in any language, or if the video link is invalid, the function will throw an error.
+ *
+ * @param {object} options - The configuration options for fetching the video transcript.
+ * @param {string} options.videoLink - The link to the YouTube video. Must be a string with a minimum length of 2 characters. **Required**.
+ *
+ * @returns {Promise<VideoTranscriptType[]>} A Promise that resolves with an array of `VideoTranscriptType` objects. Each object represents a segment of the transcript and includes the text, start time, duration, and detailed segment information. Returns an empty array or throws an error if no transcript is available or an error occurs.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., `videoLink` is missing or less than 2 characters).
+ * - Throws an `Error` if the provided `videoLink` is in an incorrect format and a video ID cannot be extracted.
+ * - Throws an `Error` if the transcript data is not available for the video or the internal fetching process returns no data.
+ * - Throws an `Error` for any underlying issues during the transcript fetching using the internal `youtubei.js` client.
+ * - Throws a generic `Error` for any other unexpected issues.
+ *
+ * @example
+ * // 1. Running Basic Transcript Fetch Example using a googleusercontent URL
+ * try {
+ * const result = await videoTranscript({ videoLink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" });
+ * console.log("Video Transcript:", result);
+ * } catch (error) {
+ * console.error("Basic Transcript Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Running Transcript Fetch with Shortened YouTube URL Example
+ * try {
+ * const result = await videoTranscript({ videoLink: "https://youtu.be/dQw4w9WgXcQ" }); // Represents a shortened URL like youtu.be/...
+ * console.log("Video Transcript:", result);
+ * } catch (error) {
+ * console.error("Shortened URL Transcript Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Running Zod Validation Error Example (Missing videoLink - will throw ZodError)
+ * try {
+ * await videoTranscript({} as any); // Using 'as any' to simulate missing required parameter
+ * console.log("This should not be reached - Missing videoLink Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Missing videoLink):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Running Invalid videoLink Example (Incorrect format - will throw Error)
+ * try {
+ * await videoTranscript({ videoLink: "this is not a video link" });
+ * console.log("This should not be reached - Invalid videoLink Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Incorrect videoLink):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Running No Transcript Available Example (will throw Error)
+ * // Use a video link for a video known to not have any transcripts/captions.
+ * try {
+ * await videoTranscript({ videoLink: "https://www.youtube.com/watch?v=VIDEO_ID_WITHOUT_TRANSCRIPT" }); // Represents a video without transcripts
+ * console.log("This should not be reached - No Transcript Example.");
+ * } catch (error) {
+ * console.error("Expected Error (No Transcript Available):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Example of an Unexpected Error during fetch (e.g., network issue, API change)
+ * // This is harder to trigger predictably with a simple example.
+ * // try {
+ * //    // Use a video link that might somehow cause an unexpected issue with the internal client
+ * //    await videoTranscript({ videoLink: "link causing internal error" });
+ * // } catch (error) {
+ * //    console.error("Expected Unexpected Error:", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function videoTranscript({ videoLink }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
     try {
         ZodSchema.parse({ videoLink });

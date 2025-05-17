@@ -44,6 +44,328 @@ var ZodSchema = z.object({
     showProgress: z.boolean().optional(),
 });
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Downloads or streams a video with audio from YouTube with custom resolution and video filters.
+ *
+ * @description This function allows fetching a video with its audio track from a YouTube video identified by a query or URL.
+ * It uses an internal engine (`ytdlx`) to retrieve video information and available formats,
+ * selecting the highest quality audio and a video stream matching the specified resolution.
+ * It then utilizes FFmpeg to combine the audio and video streams, optionally apply video filters,
+ * and output the result as a downloadable file or a readable stream.
+ * The function also supports fetching only the video's metadata.
+ *
+ * It requires a valid search query or URL to identify the YouTube video and a specific video resolution.
+ * FFmpeg and FFprobe executables must be available in the system's PATH or locatable by the internal `locator` utility.
+ *
+ * The function supports the following configuration options:
+ * - **Query:** A string representing the Youtube query or URL. **Required**.
+ * - **Resolution:** Specifies the desired video resolution ("144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "3072p", "4320p", "6480p", "8640p", "12000p"). **Required**.
+ * - **Output:** An optional string specifying the directory path where the downloaded video file should be saved. If not provided, the file is saved in the current working directory. Cannot be used with `stream`.
+ * - **Stream:** An optional boolean flag. If set to `true`, the function returns a Node.js Readable stream of the video data (in Matroska format) instead of saving a file. Cannot be used with `output`. Defaults to `false`.
+ * - **Filter:** An optional string specifying a video filter to apply using FFmpeg. Available filters include "invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal".
+ * - **UseTor:** An optional boolean flag to route requests through Tor. Defaults to `false`.
+ * - **Verbose:** An optional boolean value that, if true, enables detailed logging of the process, including FFmpeg commands. Defaults to `false`.
+ * - **Metadata:** An optional boolean flag. If set to `true`, the function will only fetch and return the video metadata without performing any download or streaming. Cannot be used with `stream`, `output`, `filter`, or `showProgress`. Defaults to `false`.
+ * - **ShowProgress:** An optional boolean flag to display a progress bar in the console during download or streaming. Defaults to `false`. Cannot be used with `metadata`.
+ *
+ * The function's return type depends on the provided options:
+ * - If `metadata` is `true`, it returns a Promise resolving to `{ metadata: object }` containing detailed video and audio format information and a suggested filename.
+ * - If `stream` is `true` (and `metadata` is `false`), it returns a Promise resolving to `{ stream: Readable }` providing a stream of the video data (in Matroska format).
+ * - Otherwise (if `metadata` is `false` and `stream` is `false`), it returns a Promise resolving to `{ outputPath: string }` indicating the path to the downloaded file (in Matroska format).
+ *
+ * FFmpeg is used internally to combine the highest quality audio stream with the video stream matching the specified resolution. The output container format is Matroska (`.mkv`).
+ *
+ * @param {object} options - The configuration options for the video fetching and processing.
+ * @param {string} options.query - The Youtube query or video URL. **Required**.
+ * @param {"144p" | "240p" | "360p" | "480p" | "720p" | "1080p" | "1440p" | "2160p" | "3072p" | "4320p" | "6480p" | "8640p" | "12000p"} options.resolution - The desired video resolution. **Required**.
+ * @param {string} [options.output] - The directory path to save the downloaded file. Cannot be used with `stream`.
+ * @param {boolean} [options.stream=false] - If true, returns a Readable stream instead of saving a file. Cannot be used with `output`.
+ * @param {boolean} [options.useTor=false] - Use Tor for requests.
+ * @param {boolean} [options.verbose=false] - Enable verbose logging.
+ * @param {boolean} [options.metadata=false] - Fetch only metadata. Cannot be used with `stream`, `output`, `filter`, or `showProgress`.
+ * @param {boolean} [options.showProgress=false] - Display a progress bar. Cannot be used with `metadata`.
+ * @param {"invert" | "rotate90" | "rotate270" | "grayscale" | "rotate180" | "flipVertical" | "flipHorizontal"} [options.filter] - Apply a video filter.
+ *
+ * @returns {Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }>} A promise resolving to an object containing either the metadata, the output file path, or a readable stream, depending on the options.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing required `query` or `resolution`, invalid enum value for `filter`).
+ * - Throws an `Error` if invalid option combinations are used (e.g., `metadata` with output/stream/filter/showProgress, `stream` with output).
+ * - Throws an `Error` if the internal engine (`ytdlx`) fails to retrieve a response or metadata.
+ * - Throws an `Error` if FFmpeg or FFprobe executables are not found on the system.
+ * - Throws an `Error` if the highest quality audio URL (`BestAudioHigh?.url`) is not found in the fetched data.
+ * - Throws an `Error` if no video data is found for the specified `resolution` in the fetched data.
+ * - Throws an `Error` if the video URL for the matched resolution is not found.
+ * - Throws an `Error` if the output directory cannot be created when `output` is specified and `stream` is false.
+ * - Throws an `Error` if an FFmpeg process error occurs during download, processing, or streaming.
+ * - Throws a generic `Error` for any other unexpected issues.
+ *
+ * @example
+ * // 1. Running Basic Download Example (downloads 720p video with highest quality audio, saves in current directory)
+ * try {
+ * const result = await AudioVideoCustom({ query: "your search query or url", resolution: "720p" });
+ * if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("Basic Download Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Running Download with Output and Filter Example (downloads 1080p with grayscale filter)
+ * try {
+ * const result = await AudioVideoCustom({
+ * query: "your search query or url",
+ * output: "./custom_downloads",
+ * filter: "grayscale",
+ * resolution: "1080p",
+ * });
+ * if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Running Download with All Options Example (excluding incompatible 'metadata' and 'stream')
+ * try {
+ * const result = await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "2160p",
+ * output: "./full_downloads",
+ * useTor: true,
+ * verbose: true,
+ * filter: "rotate90",
+ * showProgress: true,
+ * });
+ * if ("outputPath" in result) {
+ * console.log("\nDownload with All Options finished:", result.outputPath);
+ * }
+ * } catch (error) {
+ * console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Running Fetch Metadata Only Example
+ * try {
+ * const result = await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "720p",
+ * metadata: true,
+ * });
+ * if ("metadata" in result) {
+ * console.log("Metadata Only:", result.metadata);
+ * }
+ * } catch (error) {
+ * console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Running Fetch Metadata with Tor and Verbose Example
+ * try {
+ * const result = await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "720p",
+ * metadata: true,
+ * useTor: true,
+ * verbose: true,
+ * });
+ * if ("metadata" in result) {
+ * console.log("Metadata with Tor and Verbose:", result.metadata);
+ * }
+ * } catch (error) {
+ * console.error("Metadata with Tor and Verbose Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Running Basic Stream Example (streams 480p video with highest quality audio, pipes to a local file)
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioVideoCustom({ query: "your search query or url", resolution: "480p", stream: true });
+ * if ("stream" in result && result.stream) {
+ * console.log("Basic Streaming started. Piping to basic_stream.mkv...");
+ * const outputStream = createWriteStream("basic_stream.mkv");
+ * result.stream.pipe(outputStream);
+ *
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Basic Streaming finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Basic Stream error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 7. Running Stream with Filter Example (streams 720p with invert filter)
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "720p",
+ * stream: true,
+ * filter: "invert",
+ * });
+ * if ("stream" in result && result.stream) {
+ * console.log("Stream with Filter started. Piping to filtered_stream.mkv...");
+ * const outputStream = createWriteStream("filtered_stream.mkv");
+ * result.stream.pipe(outputStream);
+ *
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Stream with Filter finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Stream with Filter error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 8. Running Stream with All Options Example (excluding incompatible 'metadata' and 'output')
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "1440p",
+ * stream: true,
+ * useTor: true,
+ * verbose: true,
+ * filter: "flipHorizontal",
+ * showProgress: true,
+ * });
+ * if ("stream" in result && result.stream) {
+ * console.log("\nStream with All Options started. Piping to full_stream.mkv...");
+ * const outputStream = createWriteStream("full_stream.mkv");
+ * result.stream.pipe(outputStream);
+ *
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Stream with All Options finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Stream with All Options error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("\nStream with All Options Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 9. Running Invalid Options Example (Metadata and Output used together - will throw Error)
+ * try {
+ * await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "720p",
+ * metadata: true,
+ * output: "./should_fail_dir",
+ * } as any); // Use 'as any' to bypass TypeScript check for demonstration
+ * console.log("This should not be reached - Invalid Options Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 10. Running Invalid Options Example (Stream and Output used together - will throw Error)
+ * try {
+ * await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "720p",
+ * stream: true,
+ * output: "./should_fail_dir",
+ * } as any); // Use 'as any' to bypass TypeScript check for demonstration
+ * console.log("This should not be reached - Invalid Options Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Stream and Output):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 11. Running Zod Validation Error Example (Missing Query - will throw ZodError)
+ * try {
+ * await AudioVideoCustom({
+ * resolution: "720p",
+ * } as any); // Use 'as any' to simulate missing required parameter
+ * console.log("This should not be reached - Zod Validation Error Example.");
+ * } catch (error) {
+ * console.error("Expected Zod Error (Missing Query):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 12. Running Zod Validation Error Example (Invalid Resolution - will throw ZodError)
+ * try {
+ * await AudioVideoCustom({
+ * query: "your search query or url",
+ * resolution: "500p" as any, // Use 'as any' to simulate invalid enum value
+ * });
+ * console.log("This should not be reached - Zod Validation Error Example.");
+ * } catch (error) {
+ * console.error("Expected Zod Error (Invalid Resolution):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 13. Running Download with Built-in Progress Example (downloads 720p with progress bar)
+ * try {
+ * const result = await AudioVideoCustom({ query: "your search query or url", resolution: "720p", showProgress: true });
+ * if ("outputPath" in result) console.log("\nDownload finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("\nError:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 14. Example of Client Initialization Failure (e.g., ytdlx Agent fails to respond)
+ * // This scenario depends on the internal ytdlx Agent logic failing.
+ * // You would typically trigger this by providing a query that the engine cannot process or if the engine itself fails.
+ * // try {
+ * //    await AudioVideoCustom({ query: "query-that-breaks-agent", resolution: "720p" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 15. Example of FFmpeg/FFprobe not found
+ * // This would occur if the ffmpeg/ffprobe executables are not in PATH and the locator fails.
+ * // try {
+ * //    // Ensure ffmpeg/ffprobe are not found in PATH before running
+ * //    await AudioVideoCustom({ query: "your search query or url", resolution: "720p" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (FFmpeg not found):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 16. Example of Video Resolution not found
+ * // This would occur if the requested resolution is not available for the specific video.
+ * // try {
+ * //    // Use a query/resolution combination known to be unavailable
+ * //    await AudioVideoCustom({ query: "some video", resolution: "12000p" }); // Example, might not always fail depending on video
+ * // } catch (error) {
+ * //    console.error("Expected Error (Video Resolution not found):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 17. Example of FFmpeg processing error (during download or stream)
+ * // This can occur due to various reasons like network issues, invalid input streams, or FFmpeg internal errors.
+ * // It's difficult to trigger reliably via a simple example.
+ * // try {
+ * //    // Use a query/options known to cause FFmpeg issues
+ * //    await AudioVideoCustom({ query: "query-causing-ffmpeg-error", resolution: "720p" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (FFmpeg Processing Error):", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function AudioVideoCustom({
     query,
     stream,

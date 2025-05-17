@@ -45,6 +45,255 @@ const ZodSchema = z.object({
         .optional(),
 });
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Downloads or streams the lowest quality audio from YouTube videos/queries with options for filters and output.
+ *
+ * @description This function allows fetching the lowest available quality audio from a YouTube video identified by a query or URL.
+ * It uses an internal engine (`Agent`) to retrieve video information and the URL for the lowest audio format,
+ * and then utilizes FFmpeg to process (optionally apply filters) and output the selected audio.
+ * The output can be either a downloadable file saved locally or a readable stream.
+ * The function also supports fetching only the video's metadata.
+ *
+ * It requires a valid search query or URL to identify the YouTube video.
+ * FFmpeg and FFprobe executables must be available in the system's PATH or locatable by the internal `locator` utility.
+ *
+ * The function supports the following configuration options:
+ * - **Query:** A string representing the Youtube query or URL. **Required**.
+ * - **Output:** An optional string specifying the directory path where the downloaded audio file should be saved. If not provided, the file is saved in the current working directory. Cannot be used with `stream`.
+ * - **Stream:** An optional boolean flag. If set to `true`, the function returns a Node.js Readable stream of the audio data instead of saving a file. Cannot be used with `output`. Defaults to `false`.
+ * - **Filter:** An optional string specifying an audio filter to apply using FFmpeg. Available filters include "echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed".
+ * - **UseTor:** An optional boolean flag to route requests through Tor. Defaults to `false`.
+ * - **Verbose:** An optional boolean value that, if true, enables detailed logging of the process, including FFmpeg commands. Defaults to `false`.
+ * - **Metadata:** An optional boolean flag. If set to `true`, the function will only fetch and return the video metadata without performing any download or streaming. Cannot be used with `stream`, `output`, `filter`, or `showProgress`. Defaults to `false`.
+ * - **ShowProgress:** An optional boolean flag to display a progress bar in the console during download or streaming. Defaults to `false`. Cannot be used with `metadata`.
+ *
+ * The function's return type depends on the provided options:
+ * - If `metadata` is `true`, it returns a Promise resolving to `{ metadata: object }` containing detailed video information including the lowest quality audio format data (`BestAudioLow`, `AudioLowDRC`) and a suggested filename.
+ * - If `stream` is `true` (and `metadata` is `false`), it returns a Promise resolving to `{ stream: Readable }` providing a stream of the audio data.
+ * - Otherwise (if `metadata` is `false` and `stream` is `false`), it returns a Promise resolving to `{ outputPath: string }` indicating the path to the downloaded file.
+ *
+ * FFmpeg is used internally, setting the output format to 'avi' and including the video thumbnail as a second input, potentially for embedding album art.
+ *
+ * @param {object} options - The configuration options for the audio fetching and processing.
+ * @param {string} options.query - The Youtube query or video URL. **Required**.
+ * @param {string} [options.output] - The directory path to save the downloaded file. Cannot be used with `stream`.
+ * @param {boolean} [options.stream=false] - If true, returns a Readable stream instead of saving a file. Cannot be used with `output`.
+ * @param {boolean} [options.useTor=false] - Use Tor for requests.
+ * @param {boolean} [options.verbose=false] - Enable verbose logging.
+ * @param {boolean} [options.metadata=false] - Fetch only metadata. Cannot be used with `stream`, `output`, `filter`, or `showProgress`.
+ * @param {boolean} [options.showProgress=false] - Display a progress bar. Cannot be used with `metadata`.
+ * @param {"echo" | "slow" | "speed" | "phaser" | "flanger" | "panning" | "reverse" | "vibrato" | "subboost" | "surround" | "bassboost" | "nightcore" | "superslow" | "vaporwave" | "superspeed"} [options.filter] - Apply an audio filter.
+ *
+ * @returns {Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }>} A promise resolving to an object containing either the metadata, the output file path, or a readable stream, depending on the options.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing required `query`, invalid enum value for `filter`).
+ * - Throws an `Error` if invalid option combinations are used (e.g., `metadata` with output/stream/filter/showProgress, `stream` with output).
+ * - Throws an `Error` if the internal engine (`Agent`) fails to retrieve a response or metadata.
+ * - Throws an `Error` if FFmpeg or FFprobe executables are not found on the system.
+ * - Throws an `Error` if the lowest quality audio URL (`BestAudioLow?.url`) is not found in the fetched data.
+ * - Throws an `Error` if the thumbnail URL is missing from the fetched data.
+ * - Throws an `Error` if the output directory cannot be created when `output` is specified and `stream` is false.
+ * - Throws an `Error` if an FFmpeg process error occurs during download or streaming.
+ * - Throws a generic `Error` for any other unexpected issues.
+ *
+ * @example
+ * // 1. Running Basic Download Example (fetches lowest quality audio, saves in current directory)
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url" });
+ * if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("Basic Download Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Running Download with Output and Filter Example
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", output: "./custom_downloads", filter: "bassboost" });
+ * if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Running Download with All Options Example (excluding incompatible 'metadata' and 'stream')
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", output: "./full_downloads", useTor: true, verbose: true, filter: "vaporwave", showProgress: true });
+ * if ("outputPath" in result) console.log("\nDownload with All Options finished:", result.outputPath);
+ * } catch (error) {
+ * console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Running Fetch Metadata Only Example
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", metadata: true });
+ * if ("metadata" in result) console.log("Metadata Only:", result.metadata);
+ * } catch (error) {
+ * console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Running Fetch Metadata with Tor and Verbose Example
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", metadata: true, useTor: true, verbose: true });
+ * if ("metadata" in result) console.log("Metadata with Tor and Verbose:", result.metadata);
+ * } catch (error) {
+ * console.error("Metadata with Tor and Verbose Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Running Basic Stream Example (fetches lowest quality audio, pipes to a local file)
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", stream: true });
+ * if ("stream" in result && result.stream) {
+ * console.log("Basic Streaming started. Piping to basic_stream.avi...");
+ * const outputStream = createWriteStream("basic_stream.avi");
+ * result.stream.pipe(outputStream);
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Basic Streaming finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Basic Stream error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 7. Running Stream with Filter Example (pipes to a local file)
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", stream: true, filter: "nightcore" });
+ * if ("stream" in result && result.stream) {
+ * console.log("Stream with Filter started. Piping to filtered_stream.avi...");
+ * const outputStream = createWriteStream("filtered_stream.avi");
+ * result.stream.pipe(outputStream);
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Stream with Filter finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Stream with Filter error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 8. Running Stream with All Options Example (excluding incompatible 'metadata' and 'output')
+ * import { createWriteStream } from "fs";
+ * try {
+ * const result = await AudioLowest({ query: "your search query or url", stream: true, useTor: true, verbose: true, filter: "superspeed", showProgress: true });
+ * if ("stream" in result && result.stream) {
+ * console.log("\nStream with All Options started. Piping to full_stream.avi...");
+ * const outputStream = createWriteStream("full_stream.avi");
+ * result.stream.pipe(outputStream);
+ * await new Promise<void>((resolve, reject) => {
+ * result.stream.on("end", () => {
+ * console.log("Stream with All Options finished.");
+ * resolve();
+ * });
+ * result.stream.on("error", error => {
+ * console.error("Stream with All Options error:", error.message);
+ * result.stream.destroy(error);
+ * reject(error);
+ * });
+ * });
+ * }
+ * } catch (error) {
+ * console.error("\nStream with All Options Setup Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 9. Running Invalid Options Example (Metadata and Output used together - will throw Error)
+ * try {
+ * await AudioLowest({ query: "your search query or url", metadata: true, output: "./should_fail_dir" });
+ * console.log("This should not be reached - Invalid Options Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 10. Running Invalid Options Example (Stream and Output used together - will throw Error)
+ * try {
+ * await AudioLowest({ query: "your search query or url", stream: true, output: "./should_fail_dir" });
+ * console.log("This should not be reached - Invalid Options Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Stream and Output):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 11. Running Zod Validation Error Example (Missing Query - will throw ZodError)
+ * try {
+ * await AudioLowest({} as any); // Using 'as any' to simulate missing required parameter
+ * console.log("This should not be reached - Zod Validation Error Example.");
+ * } catch (error) {
+ * console.error("Expected Zod Error (Missing Query):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 12. Running Zod Validation Error Example (Invalid Filter - will throw ZodError)
+ * try {
+ * await AudioLowest({ query: "your search query or url", filter: "nonexistentfilter" as any }); // Using 'as any' to simulate invalid enum value
+ * console.log("This should not be reached - Zod Validation Error Example.");
+ * } catch (error) {
+ * console.error("Expected Zod Error (Invalid Filter):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 13. Example of Client Initialization Failure (e.g., Agent fails to respond)
+ * // This scenario depends on the internal Agent logic failing.
+ * // You would typically trigger this by providing a query that the engine cannot process or if the engine itself fails.
+ * // try {
+ * //    await AudioLowest({ query: "query-that-breaks-agent" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 14. Example of FFmpeg/FFprobe not found
+ * // This would occur if the ffmpeg/ffprobe executables are not in PATH and the locator fails.
+ * // try {
+ * //    // Ensure ffmpeg/ffprobe are not found in PATH before running
+ * //    await AudioLowest({ query: "your search query or url" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (FFmpeg not found):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 15. Example of Lowest Quality Audio URL not found
+ * // This might occur for certain videos if the internal engine cannot find the expected format.
+ * // try {
+ * //    // Use a query for a video known to have issues with lowest quality audio detection
+ * //    await AudioLowest({ query: "some video with format issues" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (Lowest Quality Audio URL not found):", error instanceof Error ? error.message : error);
+ * // }
+ *
+ * @example
+ * // 16. Example of FFmpeg processing error (during download or stream)
+ * // This can occur due to various reasons like network issues, invalid input stream, or FFmpeg internal errors.
+ * // It's difficult to trigger reliably via a simple example.
+ * // try {
+ * //    // Use a query/options known to cause FFmpeg issues
+ * //    await AudioLowest({ query: "query-causing-ffmpeg-error" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (FFmpeg Processing Error):", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function AudioLowest({
     query,
     output,

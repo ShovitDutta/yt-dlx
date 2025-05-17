@@ -5,6 +5,85 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
 type SubscriptionsFeedOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Fetches the user's YouTube subscriptions feed.
+ *
+ * @description This function retrieves the latest content from the channels the user is subscribed to,
+ * authenticated via cookies. It processes the fetched feed and returns the contents.
+ * Optional verbose logging can provide details during the process.
+ *
+ * Authentication is performed using the provided YouTube cookies, which are mandatory.
+ * The fetched subscriptions feed data is returned as an array of sanitized content items.
+ * The exact structure of items within the `contents` array can vary depending on the type of content
+ * (e.g., videos, posts) and the structure returned by the YouTube API for subscription feeds.
+ *
+ * The function supports the following configuration options:
+ * - **Cookies:** The user's cookies as a string, required for authentication.
+ * - **Verbose:** An optional boolean flag that enables detailed console logging during the fetch and processing stages. Defaults to `false`.
+ *
+ * The function returns a Promise that resolves with an object containing the fetched and processed subscriptions feed data.
+ *
+ * @param {object} options - An object containing the configuration options for fetching the subscriptions feed.
+ * @param {string} options.cookies - The YouTube authentication cookies as a string. **Required**.
+ * @param {boolean} [options.verbose=false] - If set to true, enables verbose logging to the console.
+ *
+ * @returns {Promise<TubeResponse<{ contents: any[] }>>} A Promise that resolves with a `TubeResponse` object. The `TubeResponse`'s `data` property contains an object with a `contents` property, which is an array of sanitized feed items. The structure of items within the `contents` array depends on the content type in the feed.
+ * The `TubeResponse` includes a `status` field indicating the outcome ('success' or 'error' implicitly handled by throwing).
+ *
+ * @throws {Error}
+ * - Throws an `Error` if the `cookies` parameter is missing or empty.
+ * - Throws a `ZodError` if the provided options fail schema validation.
+ * - Throws an `Error` if the internal Tube client fails to initialize using the provided cookies.
+ * - Throws an `Error` if fetching the subscriptions feed from the initialized client fails.
+ * - Throws a generic `Error` for any other unexpected issues during the process.
+ *
+ * @example
+ * // 1. Basic Subscriptions Feed Fetch
+ * const cookies = "YOUR_COOKIES_HERE";
+ * try {
+ * const result = await subscriptionsFeed({ cookies });
+ * console.log("Subscriptions Feed:", result);
+ * } catch (error) {
+ * console.error("Basic Subscriptions Feed Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Subscriptions Feed with Verbose Logging
+ * const cookies = "YOUR_COOKIES_HERE";
+ * try {
+ * const result = await subscriptionsFeed({ cookies, verbose: true });
+ * console.log("Subscriptions Feed:", result);
+ * } catch (error) {
+ * console.error("Verbose Subscriptions Feed Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Example of Missing Cookies (will throw an Error)
+ * try {
+ * await subscriptionsFeed({} as any);
+ * } catch (error) {
+ * console.error("Expected Error (Missing Cookies):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Example of Invalid Cookies (Client Initialization Failure)
+ * // This scenario depends on the internal TubeLogin logic failing.
+ * try {
+ * await subscriptionsFeed({ cookies: "INVALID_OR_EXPIRED_COOKIES" });
+ * } catch (error) {
+ * console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Example of Subscriptions Feed Fetch Failure
+ * // This scenario depends on the client's getSubscriptionsFeed() method failing after initialization.
+ * // It's harder to trigger predictably with just input options.
+ * // try {
+ * //    await subscriptionsFeed({ cookies: "VALID_COOKIES_BUT_FETCH_FAILS" });
+ * // } catch (error) {
+ * //    console.error("Expected Error (Subscriptions Feed Fetch Failed):", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function subscriptionsFeed({ cookies, verbose }: SubscriptionsFeedOptions): Promise<TubeResponse<{ contents: any[] }>> {
     try {
         ZodSchema.parse({ cookies, verbose });
