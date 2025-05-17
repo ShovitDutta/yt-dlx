@@ -4,17 +4,22 @@ import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
-type SubscriptionFeedOptions = z.infer<typeof ZodSchema>;
-export default async function subscriptions_feed(options: SubscriptionFeedOptions): Promise<TubeResponse<{ contents: any[] }>> {
+type SubscriptionsFeedOptions = z.infer<typeof ZodSchema>;
+export default async function subscriptionsFeed({ cookies, verbose }: SubscriptionsFeedOptions): Promise<TubeResponse<{ contents: any[] }>> {
     try {
-        ZodSchema.parse(options);
-        const { verbose, cookies } = options;
+        ZodSchema.parse({ cookies, verbose });
         if (verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
-        if (!cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
+        if (!cookies) {
+            throw new Error(`${colors.red("@error:")} Cookies not provided!`);
+        }
         const client: TubeType = await TubeLogin(cookies);
-        if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
+        if (!client) {
+            throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
+        }
         const feed = await client.getSubscriptionsFeed();
-        if (!feed) throw new Error(`${colors.red("@error:")} Failed to fetch subscriptions feed.`);
+        if (!feed) {
+            throw new Error(`${colors.red("@error:")} Failed to fetch subscriptions feed.`);
+        }
         const contents = (feed as any).contents?.map(sanitizeContentItem) || [];
         const result: TubeResponse<{ contents: any[] }> = { status: "success", data: { contents } };
         if (verbose) console.log(colors.green("@info:"), "Subscriptions feed fetched!");
@@ -38,35 +43,35 @@ export default async function subscriptions_feed(options: SubscriptionFeedOption
 }
 (async () => {
     try {
-        console.log("--- Basic Subscriptions Feed Example ---");
-        const result = await subscriptions_feed({ cookies: "YOUR_COOKIES_HERE" });
+        console.log("--- Running Basic Subscriptions Feed Example ---");
+        const result = await subscriptionsFeed({ cookies: "YOUR_COOKIES_HERE" });
         console.log("Subscriptions Feed:", result);
     } catch (error) {
-        console.error("Error:", error instanceof Error ? error.message : error);
+        console.error("Basic Subscriptions Feed Error:", error instanceof Error ? error.message : error);
     }
     console.log("\n");
     try {
-        console.log("--- Verbose Subscriptions Feed Example ---");
-        const result = await subscriptions_feed({ cookies: "YOUR_COOKIES_HERE", verbose: true });
-        console.log("Verbose Subscriptions Feed:", result);
+        console.log("--- Running Subscriptions Feed with Verbose Logging Example ---");
+        const result = await subscriptionsFeed({ cookies: "YOUR_COOKIES_HERE", verbose: true });
+        console.log("Subscriptions Feed:", result);
     } catch (error) {
-        console.error("Error:", error instanceof Error ? error.message : error);
+        console.error("Verbose Subscriptions Feed Error:", error instanceof Error ? error.message : error);
     }
     console.log("\n");
     try {
-        console.log("--- Missing Cookies Example ---");
-        await subscriptions_feed({} as any);
+        console.log("--- Running Missing Cookies Example ---");
+        await subscriptionsFeed({} as any);
         console.log("This should not be reached - Missing Cookies Example.");
     } catch (error) {
-        console.error("Expected Error:", error instanceof Error ? error.message : error);
+        console.error("Expected Error (Missing Cookies):", error instanceof Error ? error.message : error);
     }
     console.log("\n");
     try {
-        console.log("--- Invalid Cookies Example ---");
-        await subscriptions_feed({ cookies: "INVALID_COOKIES" });
+        console.log("--- Running Invalid Cookies Example ---");
+        await subscriptionsFeed({ cookies: "INVALID_OR_EXPIRED_COOKIES" });
         console.log("This should not be reached - Invalid Cookies Example.");
     } catch (error) {
-        console.error("Expected Error:", error instanceof Error ? error.message : error);
+        console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
     }
     console.log("\n");
 })();
