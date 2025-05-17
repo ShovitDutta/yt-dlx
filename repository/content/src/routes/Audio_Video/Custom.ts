@@ -195,7 +195,7 @@ export default async function AudioVideoCustom({
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 import { createWriteStream } from "fs";
 (async () => {
     try {
@@ -419,4 +419,3 @@ import { createWriteStream } from "fs";
     }
     console.log("\n");
 })();
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
