@@ -12,8 +12,8 @@
     },
     "homepage": "https://yt-dlx-shovit.koyeb.src",
     "scripts": {
-        "ws:start": "tsup && node routes/launch.mjs --production",
-        "ws:dev": "tsup && node routes/launch.mjs",
+        "ws:start": "tsup && node out/routes/launch.js --production",
+        "ws:dev": "tsup && node out/routes/launch.js",
         "dev": "next dev --turbopack",
         "build": "next build",
         "start": "next start",
