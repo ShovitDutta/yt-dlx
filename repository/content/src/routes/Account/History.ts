@@ -5,7 +5,18 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(), sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 type WatchHistoryOptions = z.infer<typeof ZodSchema>;
-export default async function watch_history(options: WatchHistoryOptions): Promise<{ data: TubeResponse<{ Shorts: any[]; Videos: any[] }> }> {
+interface Short {
+    title: string;
+    videoId: string;
+    thumbnails: any;
+}
+interface Video {
+    title: string;
+    videoId: string;
+    thumbnails: any;
+    description: string;
+}
+export default async function watch_history(options: WatchHistoryOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
     try {
         ZodSchema.parse(options);
         const { verbose, cookies, sort } = options;
@@ -21,7 +32,7 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
         if (!history) {
             throw new Error(`${colors.red("@error:")} Failed to fetch watch history.`);
         }
-        const result: TubeResponse<{ Shorts: any[]; Videos: any[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
+        const result: TubeResponse<{ Shorts: Short[]; Videos: Video[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
         history.sections?.forEach(section => {
             section.contents?.forEach(content => {
                 const sanitized = sanitizeContentItem(content);
@@ -61,7 +72,7 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
                 break;
         }
         if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
-        return { data: result };
+        return result;
     } catch (error: any) {
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;

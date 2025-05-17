@@ -3,7 +3,8 @@ import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
-export default async function unseen_notifications(options: z.infer<typeof ZodSchema>): Promise<{ data: TubeResponse<{ count: number }> }> {
+type UnseenNotificationsOptions = z.infer<typeof ZodSchema>;
+export default async function unseen_notifications(options: UnseenNotificationsOptions): Promise<TubeResponse<{ count: number }>> {
     try {
         ZodSchema.parse(options);
         const { verbose, cookies } = options;
@@ -21,7 +22,7 @@ export default async function unseen_notifications(options: z.infer<typeof ZodSc
         }
         const result: TubeResponse<{ count: number }> = { status: "success", data: { count: Number(count) || 0 } };
         if (verbose) console.log(colors.green("@info:"), "Unseen notifications fetched!");
-        return { data: result };
+        return result;
     } catch (error: any) {
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
@@ -44,7 +45,7 @@ export default async function unseen_notifications(options: z.infer<typeof ZodSc
     try {
         console.log("--- Running Basic Unseen Notifications Fetch ---");
         const result = await unseen_notifications({ cookies });
-        console.log("Unseen Notifications Count:", result.data?.data?.count);
+        console.log("Unseen Notifications Count:", result.data?.count);
     } catch (error) {
         console.error("Basic Unseen Notifications Error:", error instanceof Error ? error.message : error);
     }
@@ -52,7 +53,7 @@ export default async function unseen_notifications(options: z.infer<typeof ZodSc
     try {
         console.log("--- Running Unseen Notifications with Verbose Logging ---");
         const result = await unseen_notifications({ cookies, verbose: true });
-        console.log("Unseen Notifications Count (Verbose):", result.data?.data?.count);
+        console.log("Unseen Notifications Count (Verbose):", result.data?.count);
     } catch (error) {
         console.error("Unseen Notifications with Verbose Error:", error instanceof Error ? error.message : error);
     }

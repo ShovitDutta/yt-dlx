@@ -3,14 +3,34 @@ import { z, ZodError } from "zod";
 import Tuber from "../../../utils/Agent";
 import type EngineOutput from "../../../interfaces/EngineOutput";
 const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
-export default async function list_formats({ query, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: any }> {
+interface ManifestFormat {
+    format: string;
+    tbr: number;
+}
+interface OtherFormat {
+    filesizeP?: string | number;
+    format_note?: string;
+}
+interface ListFormatsData {
+    ManifestLow: ManifestFormat[];
+    ManifestHigh: ManifestFormat[];
+    AudioLow: OtherFormat[];
+    VideoLow: OtherFormat[];
+    VideoHigh: OtherFormat[];
+    AudioHigh: OtherFormat[];
+    VideoLowHDR: OtherFormat[];
+    AudioLowDRC: OtherFormat[];
+    AudioHighDRC: OtherFormat[];
+    VideoHighHDR: OtherFormat[];
+}
+export default async function list_formats({ query, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: ListFormatsData }> {
     try {
         ZodSchema.parse({ query, verbose });
         const metaBody: EngineOutput = await Tuber({ query, verbose });
         if (!metaBody) {
             throw new Error(`${colors.red("@error:")} Unable to get response from YouTube.`);
         }
-        const data = {
+        const data: ListFormatsData = {
             ManifestLow: metaBody.ManifestLow?.map(item => ({ format: item.format, tbr: item.tbr })) || [],
             ManifestHigh: metaBody.ManifestHigh?.map(item => ({ format: item.format, tbr: item.tbr })) || [],
             AudioLow: metaBody.AudioLow?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],

@@ -18,21 +18,85 @@ interface VideoTranscriptType {
     duration: number;
     segments: CaptionSegment[];
 }
-function calculateUploadAgo(days: number) {
+interface UploadAgo {
+    years: number;
+    months: number;
+    days: number;
+    formatted: string;
+}
+interface VideoDuration {
+    hours: number;
+    minutes: number;
+    seconds: number;
+    formatted: string;
+}
+interface BaseEngineMetaData {
+    id: string;
+    original_url?: string;
+    webpage_url?: string;
+    title?: string;
+    view_count?: number;
+    like_count?: number;
+    uploader?: string;
+    uploader_id?: string;
+    uploader_url?: string;
+    thumbnail?: string;
+    categories?: string[];
+    duration: number;
+    age_limit?: number;
+    live_status?: string;
+    description?: string;
+    upload_date?: string;
+    comment_count?: number;
+    channel_id?: string;
+    channel_name?: string;
+    channel_url?: string;
+    channel_follower_count?: number;
+}
+interface MetadataPayload extends Omit<BaseEngineMetaData, "duration"> {
+    view_count_formatted: string;
+    like_count_formatted: string;
+    duration: number;
+    upload_date: string;
+    upload_ago: number;
+    upload_ago_formatted: UploadAgo;
+    comment_count_formatted: string;
+    channel_follower_count_formatted: string;
+}
+interface PayloadType {
+    BestAudioLow?: any;
+    BestAudioHigh?: any;
+    BestVideoLow?: any;
+    BestVideoHigh?: any;
+    AudioLowDRC?: any;
+    AudioHighDRC?: any;
+    AudioLow?: any;
+    AudioHigh?: any;
+    VideoLowHDR?: any;
+    VideoHighHDR?: any;
+    VideoLow?: any;
+    VideoHigh?: any;
+    ManifestLow?: any;
+    ManifestHigh?: any;
+    meta_data: MetadataPayload;
+    comments: CommentType[] | null;
+    transcript: VideoTranscriptType[] | null;
+}
+function calculateUploadAgo(days: number): UploadAgo {
     const years = Math.floor(days / 365);
     const months = Math.floor((days % 365) / 30);
     const remainingDays = days % 30;
     const formattedString = `${years > 0 ? years + " years, " : ""}${months > 0 ? months + " months, " : ""}${remainingDays} days`;
     return { years, months, days: remainingDays, formatted: formattedString };
 }
-function calculateVideoDuration(seconds: number) {
+function calculateVideoDuration(seconds: number): VideoDuration {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
     const formattedString = `${hours > 0 ? hours + " hours, " : ""}${minutes > 0 ? minutes + " minutes, " : ""}${remainingSeconds} seconds`;
     return { hours, minutes, seconds: remainingSeconds, formatted: formattedString };
 }
-function formatCount(count: number) {
+function formatCount(count: number): string {
     const abbreviations = ["K", "M", "B", "T"];
     for (let i = abbreviations.length - 1; i >= 0; i--) {
         const size = Math.pow(10, (i + 1) * 3);
@@ -45,7 +109,7 @@ function formatCount(count: number) {
 }
 async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promise<CommentType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Fetching comments for video ID: ${videoId}`);
+        if (verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${videoId}`);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
@@ -86,7 +150,7 @@ async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promis
 }
 async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Fetching transcript for video ID: ${videoId}`);
+        if (verbose) console.log(colors.green("@info:"), `Workspaceing transcript for video ID: ${videoId}`);
         const youtube = new Client();
         const captions = await youtube.getVideoTranscript(videoId);
         if (!captions) {
@@ -106,7 +170,7 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
         return null;
     }
 }
-export default async function extract(options: z.infer<typeof ZodSchema>): Promise<{ data: any }> {
+export default async function extract(options: z.infer<typeof ZodSchema>): Promise<{ data: PayloadType }> {
     try {
         const { query, useTor, verbose } = ZodSchema.parse(options);
         const metaBody: EngineOutput = await Tuber({ query, verbose, useTor });
@@ -137,7 +201,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const commentsPromise = fetchCommentsByVideoId(metaBody.metaData.id, verbose ?? false);
         const transcriptPromise = fetchVideoTranscript(metaBody.metaData.id, verbose ?? false);
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
-        const payload = {
+        const payload: PayloadType = {
             BestAudioLow: metaBody.BestAudioLow,
             BestAudioHigh: metaBody.BestAudioHigh,
             BestVideoLow: metaBody.BestVideoLow,
@@ -153,34 +217,14 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             ManifestLow: metaBody.ManifestLow,
             ManifestHigh: metaBody.ManifestHigh,
             meta_data: {
-                id: metaBody.metaData.id,
-                original_url: metaBody.metaData.original_url,
-                webpage_url: metaBody.metaData.webpage_url,
-                title: metaBody.metaData.title,
-                view_count: metaBody.metaData.view_count,
-                like_count: metaBody.metaData.like_count,
+                ...metaBody.metaData,
                 view_count_formatted: viewCountFormatted,
                 like_count_formatted: likeCountFormatted,
-                uploader: metaBody.metaData.uploader,
-                uploader_id: metaBody.metaData.uploader_id,
-                uploader_url: metaBody.metaData.uploader_url,
-                thumbnail: metaBody.metaData.thumbnail,
-                categories: metaBody.metaData.categories,
-                time: videoTimeInSeconds,
-                duration: videoDuration,
-                age_limit: metaBody.metaData.age_limit,
-                live_status: metaBody.metaData.live_status,
-                description: metaBody.metaData.description,
-                full_description: metaBody.metaData.description,
+                duration: videoDuration.seconds,
                 upload_date: prettyDate,
                 upload_ago: daysAgo,
                 upload_ago_formatted: uploadAgoObject,
-                comment_count: metaBody.metaData.comment_count,
                 comment_count_formatted: commentCountFormatted,
-                channel_id: metaBody.metaData.channel_id,
-                channel_name: metaBody.metaData.channel,
-                channel_url: metaBody.metaData.channel_url,
-                channel_follower_count: metaBody.metaData.channel_follower_count,
                 channel_follower_count_formatted: channelFollowerCountFormatted,
             },
             comments,

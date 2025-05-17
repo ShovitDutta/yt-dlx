@@ -12,7 +12,7 @@ export default interface VideoInfo {
     description: string;
     channel_url: string;
     webpage_url: string;
-    live_status: boolean;
+    live_status: string;
     view_count: number;
     like_count: number;
     comment_count: number;

@@ -5,7 +5,26 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(), sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 type HomeFeedOptions = z.infer<typeof ZodSchema>;
-export default async function home_feed(options: HomeFeedOptions): Promise<{ data: TubeResponse<{ Shorts: any[]; Videos: any[] }> }> {
+interface Short {
+    title: string;
+    videoId: string;
+    thumbnails: any[];
+}
+interface Video {
+    type: string;
+    title: string;
+    videoId: string;
+    description: string;
+    thumbnails: any[];
+    authorId: string;
+    authorName: string;
+    authorThumbnails: any[];
+    authorBadges: any[];
+    authorUrl: string;
+    viewCount: string;
+    shortViewCount: string;
+}
+export default async function home_feed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
     try {
         ZodSchema.parse(options);
         const { verbose, cookies, sort } = options;
@@ -21,7 +40,7 @@ export default async function home_feed(options: HomeFeedOptions): Promise<{ dat
         if (!homeFeed) {
             throw new Error(`${colors.red("@error:")} Failed to fetch home feed.`);
         }
-        const result: TubeResponse<{ Shorts: any[]; Videos: any[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
+        const result: TubeResponse<{ Shorts: Short[]; Videos: Video[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
         homeFeed.contents?.contents?.forEach((section: any) => {
             if (section?.type === "RichItem" && section?.content?.type === "Video") {
                 const sanitized = sanitizeContentItem(section);
@@ -77,7 +96,7 @@ export default async function home_feed(options: HomeFeedOptions): Promise<{ dat
                 break;
         }
         if (verbose) console.log(colors.green("@info:"), "Home feed fetched!");
-        return { data: result };
+        return result;
     } catch (error: any) {
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;

@@ -5,7 +5,21 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
 type SubscriptionsFeedOptions = z.infer<typeof ZodSchema>;
-export default async function subscriptionsFeed({ cookies, verbose }: SubscriptionsFeedOptions): Promise<TubeResponse<{ contents: any[] }>> {
+interface Content {
+    type: string;
+    title: string;
+    videoId: string;
+    thumbnails: any[];
+    description: string;
+    authorId: string;
+    authorName: string;
+    authorThumbnails: any[];
+    authorBadges: any[];
+    authorUrl: string;
+    viewCount: string;
+    shortViewCount: string;
+}
+export default async function subscriptionsFeed({ cookies, verbose }: SubscriptionsFeedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
         ZodSchema.parse({ cookies, verbose });
         if (verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
@@ -20,8 +34,25 @@ export default async function subscriptionsFeed({ cookies, verbose }: Subscripti
         if (!feed) {
             throw new Error(`${colors.red("@error:")} Failed to fetch subscriptions feed.`);
         }
-        const contents = (feed as any).contents?.map(sanitizeContentItem) || [];
-        const result: TubeResponse<{ contents: any[] }> = { status: "success", data: { contents } };
+        const contents =
+            (feed as any).contents?.map((item: any) => {
+                const sanitized = sanitizeContentItem(item);
+                return {
+                    type: sanitized?.type || "",
+                    title: sanitized?.title?.text || "",
+                    videoId: sanitized?.videoId || "",
+                    thumbnails: sanitized?.thumbnails || [],
+                    description: sanitized?.description?.text || "",
+                    authorId: sanitized?.author?.id || "",
+                    authorName: sanitized?.author?.name || "",
+                    authorThumbnails: sanitized?.author?.thumbnails || [],
+                    authorBadges: sanitized?.author?.badges || [],
+                    authorUrl: sanitized?.author?.url || "",
+                    viewCount: sanitized?.view_count?.text || "",
+                    shortViewCount: sanitized?.short_view_count?.text || "",
+                };
+            }) || [];
+        const result: TubeResponse<{ contents: Content[] }> = { status: "success", data: { contents } };
         if (verbose) console.log(colors.green("@info:"), "Subscriptions feed fetched!");
         return result;
     } catch (error: any) {
