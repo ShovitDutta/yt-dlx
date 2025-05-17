@@ -4,8 +4,34 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
-import { EventEmitter } from "events";
 import { locator } from "../../utils/locator";
+import { Readable, PassThrough } from "stream";
+function formatTime(seconds: number): string {
+    if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
+}
+function calculateETA(startTime: Date, percent: number): number {
+    const currentTime = new Date();
+    const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
+    if (percent <= 0) return NaN;
+    const totalTimeEstimate = (elapsedTime / percent) * 100;
+    const remainingTime = totalTimeEstimate - elapsedTime;
+    return remainingTime;
+}
+function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
+    let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
+    displayPercent = Math.min(Math.max(displayPercent, 0), 100);
+    const colorFn = displayPercent < 25 ? colors.red : displayPercent < 50 ? colors.yellow : colors.green;
+    const width = Math.floor((process.stdout.columns || 80) / 4);
+    const scomp = Math.round((width * displayPercent) / 100);
+    const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
+    const etaSeconds = calculateETA(startTime, displayPercent);
+    const etaFormatted = formatTime(etaSeconds);
+    process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
+}
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -13,352 +39,280 @@ const ZodSchema = z.object({
     stream: z.boolean().optional(),
     verbose: z.boolean().optional(),
     metadata: z.boolean().optional(),
+    showProgress: z.boolean().optional(),
     resolution: z.enum(["high", "medium", "low", "ultralow"]),
     filter: z
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
-/**
- * @shortdesc Downloads or streams audio from YouTube with custom options.
- *
- * @description This function allows you to download or stream audio from YouTube based on a search query or video URL. It provides extensive customization options, including specifying the audio resolution, applying various audio filters, saving the output to a specified directory, using Tor for anonymity, enabling verbose logging, streaming the output, or simply fetching the metadata without downloading.
- *
- * The function requires a search query or video URL and the desired audio resolution.
- *
- * It supports the following configuration options:
- * - **query:** A string representing the search query or video URL. This is a mandatory parameter.
- * - **output:** An optional string specifying the directory where the output audio file should be saved. If not provided, the file will be saved in the current working directory. This parameter cannot be used when `metadata` is true.
- * - **useTor:** An optional boolean value. If true, the function will attempt to use Tor for the network requests, enhancing anonymity.
- * - **stream:** An optional boolean value. If true, the audio will be streamed instead of saved to a file. When streaming, the `end` event will provide the streamable path and the `stream` event will provide the FFmpeg instance. This parameter cannot be used when `metadata` is true.
- * - **verbose:** An optional boolean value. If true, enables detailed logging to the console, providing more information about the process.
- * - **metadata:** An optional boolean value. If true, the function will only fetch and emit the video metadata without downloading or streaming the audio. When `metadata` is true, the `output`, `stream`, and `filter` parameters are not allowed.
- * - **resolution:** A string specifying the desired audio resolution or quality. Mandatory parameter. Accepted values are "high", "medium", "low", and "ultralow".
- * - **filter:** An optional string specifying an audio filter to apply to the audio stream. This parameter is ignored when `metadata` is true. Available filters include: "echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed".
- *
- * The function returns an EventEmitter instance that emits events during the process:
- * - `"start"`: Emitted when the process begins, providing the FFmpeg command being executed.
- * - `"progress"`: Emitted periodically during the download/streaming process, providing progress details (e.g., downloaded size, time remaining).
- * - `"end"`: Emitted when the download/streaming process completes successfully, providing the path to the saved file. If `stream` is true, it provides the streamable path.
- * - `"metadata"`: Emitted only when the `metadata` parameter is true. Provides an object containing the video metadata, available audio formats, and a suggested filename.
- * - `"stream"`: Emitted only when the `stream` parameter is true. Provides an object containing the streamable filename/path and the FFmpeg instance.
- * - `"error"`: Emitted when an error occurs at any stage, such as argument validation, network issues, or FFmpeg errors. The emitted data is the error message.
- *
- * @param {object} options - An object containing the configuration options.
- * @param {string} options.query - The search query or video URL. **Required**.
- * @param {string} [options.output] - The directory to save the output file. Cannot be used with `metadata: true`.
- * @param {boolean} [options.useTor] - Whether to use Tor.
- * @param {boolean} [options.stream] - Whether to stream the output. Cannot be used with `metadata: true`.
- * @param {boolean} [options.verbose] - Enable verbose logging.
- * @param {boolean} [options.metadata] - Only fetch metadata. Cannot be used with `output`, `stream`, or `filter`.
- * @param {("high" | "medium" | "low" | "ultralow")} options.resolution - The desired audio resolution/quality. **Required**.
- * @param {("echo" | "slow" | "speed" | "phaser" | "flanger" | "panning" | "reverse" | "vibrato" | "subboost" | "surround" | "bassboost" | "nightcore" | "superslow" | "vaporwave" | "superspeed")} [options.filter] - An audio filter to apply. Cannot be used with `metadata: true`.
- *
- * @returns {EventEmitter} An EventEmitter instance for handling events during the audio processing.
- *
- * @example
- * // 1. Download audio with a specific resolution to the current directory
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 2. Download audio with a specific resolution to a custom output directory
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "medium", output: "./downloads" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 3. Stream audio with a specific resolution
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "low", stream: true })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream available:", data.filename);
- * // You can use data.ffmpeg instance for streaming
- * })
- * .on("end", (streamPath) => console.log("Streaming session ended:", streamPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 4. Fetch only metadata for a video
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", metadata: true })
- * .on("metadata", (data) => console.log("Metadata:", data))
- * .on("error", (error) => console.error("Error:", error));
- * // Note: output, stream, and filter are ignored when metadata is true.
- *
- * @example
- * // 5. Download audio with a specific resolution and apply a filter
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", filter: "bassboost" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 6. Download audio with a specific resolution and use Tor
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "medium", useTor: true })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 7. Download audio with a specific resolution and enable verbose logging
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "low", verbose: true })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 8. Download audio with a specific resolution, custom output, and apply a filter
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", output: "./audio_files", filter: "echo" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 9. Stream audio with a specific resolution and apply a filter
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "medium", stream: true, filter: "vaporwave" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream available:", data.filename);
- * // You can use data.ffmpeg instance for streaming
- * })
- * .on("end", (streamPath) => console.log("Streaming session ended:", streamPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 10. Download audio with all applicable options enabled (query, resolution, output, useTor, verbose, filter)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "ultralow", output: "./processed_audio", useTor: true, verbose: true, filter: "nightcore" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("end", (outputPath) => console.log("Download finished:", outputPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 11. Stream audio with all applicable options enabled (query, resolution, stream, useTor, verbose, filter)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", stream: true, useTor: true, verbose: true, filter: "phaser" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream available:", data.filename);
- * // You can use data.ffmpeg instance for streaming
- * })
- * .on("end", (streamPath) => console.log("Streaming session ended:", streamPath))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 12. Fetch metadata with verbose logging and use Tor
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "medium", metadata: true, verbose: true, useTor: true })
- * .on("metadata", (data) => console.log("Metadata (Verbose, Tor):", data))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 13. Attempt to use output with metadata (will result in an error)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", metadata: true, output: "./should_fail" })
- * .on("error", (error) => console.error("Expected Error (output with metadata):", error));
- *
- * @example
- * // 14. Attempt to use stream with metadata (will result in an error)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", metadata: true, stream: true })
- * .on("error", (error) => console.error("Expected Error (stream with metadata):", error));
- *
- * @example
- * // 15. Attempt to use filter with metadata (will result in an error)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", metadata: true, filter: "speed" })
- * .on("error", (error) => console.error("Expected Error (filter with metadata):", error));
- *
- * @example
- * // 16. Attempt to use stream and output together (will result in output taking precedence or an error depending on implementation)
- * // Based on the code, stream: true and an output path provided will likely result in a file being saved and the stream event also firing.
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", stream: true, output: "./streamed_and_saved" })
- * .on("start", (start) => console.log("FFmpeg started:", start))
- * .on("progress", (progress) => console.log("Progress:", progress))
- * .on("stream", (data) => {
- * console.log("Stream event fired, file likely being saved to:", data.filename);
- * })
- * .on("end", (outputPath) => console.log("Process ended, file saved at:", outputPath)) // Should output the path in './streamed_and_saved'
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 17. Missing required 'query' parameter (will result in an error)
- * YouTubeDLX.Audio.Custom({ resolution: "high" } as any)
- * .on("error", (error) => console.error("Expected Error (missing query):", error));
- *
- * @example
- * // 18. Missing required 'resolution' parameter (will result in an error - Zod validation)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url" } as any)
- * .on("error", (error) => console.error("Expected Error (missing resolution):", error));
- *
- * @example
- * // 19. Invalid 'resolution' value (will result in an error - Zod validation)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "superhigh" as any })
- * .on("error", (error) => console.error("Expected Error (invalid resolution):", error));
- *
- * @example
- * // 20. Invalid 'filter' value (will result in an error - Zod validation)
- * YouTubeDLX.Audio.Custom({ query: "your search query or url", resolution: "high", filter: "nonexistentfilter" as any })
- * .on("error", (error) => console.error("Expected Error (invalid filter):", error));
- *
- * @example
- * // 21. Query results in no engine data
- * // Note: This scenario depends on the internal Tuber function's behavior.
- * // You can simulate by providing a query that is unlikely to return results.
- * YouTubeDLX.Audio.Custom({ query: "a query that should return no results 12345abcde", resolution: "high" })
- * .on("error", (error) => console.error("Expected Error (no engine data):", error));
- *
- * @example
- * // 22. Engine data missing metadata
- * // Note: This is an internal error scenario, difficult to trigger via simple example call.
- * // The error emitted would be: "@error: Metadata was not found in the engine's response."
- *
- * @example
- * // 23. No audio data found for specified resolution
- * // Note: This scenario depends on the available formats for the specific video found.
- * // You can simulate by requesting a resolution unlikely to be available for certain videos.
- * YouTubeDLX.Audio.Custom({ query: "some video with limited formats", resolution: "ultralow" })
- * .on("error", (error) => console.error("Expected Error (no audio data for resolution):", error));
- *
- */
-export default function AudioCustom({ query, output, useTor, stream, filter, verbose, metadata, resolution }: z.infer<typeof ZodSchema>): EventEmitter {
-    const emitter = new EventEmitter();
-    (async () => {
-        try {
-            if (!query) {
-                emitter.emit("error", `${colors.red("@error:")} The 'query' parameter is required.`);
-                return;
-            }
-            if (metadata) {
-                if (stream) {
-                    emitter.emit("error", `${colors.red("@error:")} The 'stream' parameter cannot be used when 'metadata' is true.`);
-                    return;
-                }
-                if (output) {
-                    emitter.emit("error", `${colors.red("@error:")} The 'output' parameter cannot be used when 'metadata' is true.`);
-                    return;
-                }
-                if (filter) {
-                    emitter.emit("error", `${colors.red("@error:")} The 'filter' parameter cannot be used when 'metadata' is true.`);
-                    return;
-                }
-            }
-            if (stream && metadata) {
-                emitter.emit("error", `${colors.red("@error:")} The 'stream' parameter cannot be true when 'metadata' is true.`);
-                return;
-            }
-            if (!resolution) {
-                emitter.emit("error", `${colors.red("@error:")} The 'resolution' parameter is required.`);
-                return;
-            }
-            ZodSchema.parse({ query, output, useTor, stream, filter, verbose, metadata, resolution });
-
-            const engineData = await Tuber({ query, verbose, useTor });
-            if (!engineData) {
-                emitter.emit("error", `${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-                return;
-            }
-            if (!engineData.metaData) {
-                emitter.emit("error", `${colors.red("@error:")} Metadata was not found in the engine's response.`);
-                return;
-            }
-            if (metadata) {
-                emitter.emit("metadata", {
+type AudioCustomOptions = z.infer<typeof ZodSchema>;
+export default async function AudioCustom({
+    query,
+    output,
+    useTor,
+    stream,
+    filter,
+    verbose,
+    metadata,
+    resolution,
+    showProgress,
+}: AudioCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
+    try {
+        ZodSchema.parse({ query, output, useTor, stream, filter, verbose, metadata, resolution, showProgress });
+        if (metadata && (stream || output || filter || showProgress)) {
+            throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
+        }
+        if (stream && output) {
+            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        }
+        const engineData = await Tuber({ query, verbose, useTor });
+        if (!engineData) {
+            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        }
+        if (!engineData.metaData) {
+            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine's response.`);
+        }
+        if (metadata) {
+            return {
+                metadata: {
                     metaData: engineData.metaData,
                     BestAudioLow: engineData.BestAudioLow,
                     BestAudioHigh: engineData.BestAudioHigh,
                     AudioLowDRC: engineData.AudioLowDRC,
                     AudioHighDRC: engineData.AudioHighDRC,
                     filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
-                });
-                return;
-            }
-            const title = engineData.metaData.title.replace(/[^a-zA-Z0-9_]+/g, "_");
-            const folder = output ? output : process.cwd();
-            if (!fs.existsSync(folder)) {
-                try {
-                    fs.mkdirSync(folder, { recursive: true });
-                } catch (mkdirError: any) {
-                    emitter.emit("error", `${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
-                    return;
-                }
-            }
-            const instance: ffmpeg.FfmpegCommand = ffmpeg();
+                },
+            };
+        }
+        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const folder = output ? output : process.cwd();
+        if (!stream && !fs.existsSync(folder)) {
             try {
-                const paths = await locator();
-                if (!paths.ffmpeg) {
-                    emitter.emit("error", `${colors.red("@error:")} ffmpeg executable not found.`);
-                    return;
+                fs.mkdirSync(folder, { recursive: true });
+            } catch (mkdirError: any) {
+                throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
+            }
+        }
+        const instance: ffmpeg.FfmpegCommand = ffmpeg();
+        try {
+            const paths = await locator();
+            if (!paths.ffmpeg) {
+                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            }
+            if (!paths.ffprobe) {
+                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+            }
+            instance.setFfmpegPath(paths.ffmpeg);
+            instance.setFfprobePath(paths.ffprobe);
+        } catch (locatorError: any) {
+            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
+        }
+        const adata = engineData.AudioHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolution));
+        if (!adata) {
+            throw new Error(`${colors.red("@error:")} No audio data found for the specified resolution: ${resolution}. Please use the 'list_formats()' command to see available formats.`);
+        }
+        if (!adata.url) {
+            throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
+        }
+        instance.addInput(adata.url);
+        if (!engineData.metaData.thumbnail) {
+            throw new Error(`${colors.red("@error:")} The thumbnail URL was not found.`);
+        }
+        instance.addInput(engineData.metaData.thumbnail);
+        instance.withOutputFormat("avi");
+        const filterMap: { [key: string]: string[] } = {
+            speed: ["atempo=2"],
+            flanger: ["flanger"],
+            slow: ["atempo=0.8"],
+            reverse: ["areverse"],
+            surround: ["surround"],
+            subboost: ["asubboost"],
+            superspeed: ["atempo=3"],
+            superslow: ["atempo=0.5"],
+            vibrato: ["vibrato=f=6.5"],
+            panning: ["apulsator=hz=0.08"],
+            phaser: ["aphaser=in_gain=0.4"],
+            echo: ["aecho=0.8:0.9:1000:0.3"],
+            bassboost: ["bass=g=10,dynaudnorm=f=150"],
+            vaporwave: ["aresample=48000,asetrate=48000*0.8"],
+            nightcore: ["aresample=48000,asetrate=48000*1.25"],
+        };
+        if (filter && filterMap[filter]) {
+            instance.withAudioFilter(filterMap[filter]);
+        } else {
+            instance.outputOptions("-c copy");
+        }
+        let processStartTime: Date;
+        if (showProgress) {
+            instance.on("start", () => {
+                processStartTime = new Date();
+            });
+            instance.on("progress", progress => {
+                if (processStartTime) {
+                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 }
-                if (!paths.ffprobe) {
-                    emitter.emit("error", `${colors.red("@error:")} ffprobe executable not found.`);
-                    return;
-                }
-                instance.setFfmpegPath(paths.ffmpeg);
-                instance.setFfprobePath(paths.ffprobe);
-            } catch (locatorError: any) {
-                emitter.emit("error", `${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
-                return;
-            }
-            const resolutionFilter = resolution.replace("p", "");
-            const adata = engineData.AudioHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolutionFilter));
-            if (!adata) {
-                emitter.emit("error", `${colors.red("@error:")} No audio data found for the specified resolution: ${resolution}. Please use the 'list_formats()' command to see available formats.`);
-                return;
-            }
-            if (!engineData.metaData.thumbnail) {
-                emitter.emit("error", `${colors.red("@error:")} The thumbnail URL was not found.`);
-                return;
-            }
-            instance.addInput(engineData.metaData.thumbnail);
-            instance.withOutputFormat("avi");
-            if (!adata.url) {
-                emitter.emit("error", `${colors.red("@error:")} The audio URL was not found.`);
-                return;
-            }
-            instance.addInput(adata.url);
+            });
+        }
+        if (stream) {
+            const passthroughStream = new PassThrough();
+            instance.on("start", command => {
+                if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
+            });
+            instance.pipe(passthroughStream, { end: true });
+            instance.on("end", () => {
+                if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                if (showProgress) process.stdout.write("\n");
+            });
+            instance.on("error", (error, stdout, stderr) => {
+                const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
+                console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                passthroughStream.emit("error", new Error(errorMessage));
+                passthroughStream.destroy(new Error(errorMessage));
+                if (showProgress) process.stdout.write("\n");
+            });
+            instance.run();
+            return { stream: passthroughStream };
+        } else {
             const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, filename);
-            const filterMap: { [key: string]: string[] } = {
-                speed: ["atempo=2"],
-                flanger: ["flanger"],
-                slow: ["atempo=0.8"],
-                reverse: ["areverse"],
-                surround: ["surround"],
-                subboost: ["asubboost"],
-                superspeed: ["atempo=3"],
-                superslow: ["atempo=0.5"],
-                vibrato: ["vibrato=f=6.5"],
-                panning: ["apulsator=hz=0.08"],
-                phaser: ["aphaser=in_gain=0.4"],
-                echo: ["aecho=0.8:0.9:1000:0.3"],
-                bassboost: ["bass=g=10,dynaudnorm=f=150"],
-                vaporwave: ["aresample=48000,asetrate=48000*0.8"],
-                nightcore: ["aresample=48000,asetrate=48000*1.25"],
-            };
-            if (filter && filterMap[filter]) instance.withVideoFilter(filterMap[filter]);
-            else instance.outputOptions("-c copy");
-            instance.on("progress", progress => emitter.emit("progress", progress));
-            instance.on("error", error => emitter.emit("error", `${colors.red("@error:")} FFmpeg encountered an error: ${error.message}`));
-            instance.on("start", start => emitter.emit("start", start));
-            instance.on("end", () => emitter.emit("end", outputPath));
             instance.output(outputPath);
-            if (stream) emitter.emit("stream", { filename: outputPath, ffmpeg: instance });
-            instance.run();
-        } catch (error) {
-            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        } finally {
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+            await new Promise<void>((resolve, reject) => {
+                instance.on("start", command => {
+                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                    if (showProgress) processStartTime = new Date();
+                });
+                instance.on("progress", progress => {
+                    if (showProgress && processStartTime) {
+                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                    }
+                });
+                instance.on("end", () => {
+                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                    if (showProgress) process.stdout.write("\n");
+                    resolve();
+                });
+                instance.on("error", (error, stdout, stderr) => {
+                    const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
+                    console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                    if (showProgress) process.stdout.write("\n");
+                    reject(new Error(errorMessage));
+                });
+                instance.run();
+            });
+            return { outputPath };
         }
-    })();
-    return emitter;
+    } catch (error: any) {
+        if (error instanceof ZodError) {
+            const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
+            console.error(errorMessage);
+            throw new Error(errorMessage);
+        } else if (error instanceof Error) {
+            console.error(error.message);
+            throw error;
+        } else {
+            const unexpectedError = `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`;
+            console.error(unexpectedError);
+            throw new Error(unexpectedError);
+        }
+    } finally {
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+    }
 }
+import { createWriteStream } from "fs";
+(async () => {
+    try {
+        console.log("--- Running Basic Download Example ---");
+        const result = await AudioCustom({ query: "your search query or url", resolution: "high" });
+        if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
+    } catch (error) {
+        console.error("Basic Download Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Download with Output and Filter Example ---");
+        const result = await AudioCustom({ query: "your search query or url", output: "./custom_downloads", filter: "bassboost", resolution: "medium" });
+        if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
+    } catch (error) {
+        console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Download with All Options Example ---");
+        const result = await AudioCustom({ query: "your search query or url", resolution: "low", output: "./full_downloads", useTor: true, verbose: true, filter: "echo", showProgress: true });
+        if ("outputPath" in result) console.log("\nDownload with All Options finished:", result.outputPath);
+    } catch (error) {
+        console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Fetch Metadata Only Example ---");
+        const result = await AudioCustom({ query: "your search query or url", resolution: "high", metadata: true });
+        if ("metadata" in result) console.log("Metadata Only:", result.metadata);
+    } catch (error) {
+        console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Basic Stream Example ---");
+        const result = await AudioCustom({ query: "your search query or url", resolution: "low", stream: true });
+        if ("stream" in result && result.stream) {
+            console.log("Basic Streaming started. Piping to basic_stream.avi...");
+            const outputStream = createWriteStream("basic_stream.avi");
+            result.stream.pipe(outputStream);
+            await new Promise<void>((resolve, reject) => {
+                result.stream.on("end", () => {
+                    console.log("Basic Streaming finished.");
+                    resolve();
+                });
+                result.stream.on("error", error => {
+                    console.error("Basic Stream error:", error.message);
+                    result.stream.destroy(error);
+                    reject(error);
+                });
+            });
+        }
+    } catch (error) {
+        console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Stream with Filter Example ---");
+        const result = await AudioCustom({ query: "your search query or url", resolution: "medium", stream: true, filter: "vaporwave" });
+        if ("stream" in result && result.stream) {
+            console.log("Stream with Filter started. Piping to filtered_stream.avi...");
+            const outputStream = createWriteStream("filtered_stream.avi");
+            result.stream.pipe(outputStream);
+            await new Promise<void>((resolve, reject) => {
+                result.stream.on("end", () => {
+                    console.log("Stream with Filter finished.");
+                    resolve();
+                });
+                result.stream.on("error", error => {
+                    console.error("Stream with Filter error:", error.message);
+                    result.stream.destroy(error);
+                    reject(error);
+                });
+            });
+        }
+    } catch (error) {
+        console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Invalid Options Example (Metadata and Output) ---");
+        await AudioCustom({ query: "your search query or url", resolution: "high", metadata: true, output: "./should_fail_dir" });
+        console.log("This should not be reached - Invalid Options Example.");
+    } catch (error) {
+        console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Zod Validation Error Example (Invalid Resolution) ---");
+        await AudioCustom({ query: "your search query or url", resolution: "superhigh" as any });
+        console.log("This should not be reached - Zod Validation Error Example.");
+    } catch (error) {
+        console.error("Expected Zod Error (Invalid Resolution):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+})();
