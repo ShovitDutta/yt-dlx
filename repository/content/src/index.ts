@@ -10,7 +10,7 @@ import AudioHighest from "./routes/Audio/Highest";
 import VideoHighest from "./routes/Video/Highest";
 import home_feed from "./routes/Account/HomeFeed";
 import watch_history from "./routes/Account/History";
-import video_data from "./routes/Search/Video/SIngle";
+import video_data from "./routes/Search/Video/Single";
 import list_formats from "./routes/Misc/Video/Formats";
 import related_videos from "./routes/Misc/Video/Related";
 import video_comments from "./routes/Misc/Video/Comments";
