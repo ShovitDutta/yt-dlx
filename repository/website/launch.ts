@@ -16,12 +16,8 @@ const app = next({ dev, hostname, port, turbo: dev });
 const handler = app.getRequestHandler();
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 function SockerHUB(socket: Socket): void {
-    socket.on("message", (data: unknown) => {
-        console.log(`Received message from ${socket.id}:`, data);
-    });
-    socket.on("disconnect", (reason: DisconnectReason) => {
-        console.log(`Socket disconnected: ${socket.id} (${reason})`);
-    });
+    socket.on("message", (data: unknown) => console.log(`Received message from ${socket.id}:`, data));
+    socket.on("disconnect", (reason: DisconnectReason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
 }
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 function getNetworkAddress(): string | null {
@@ -52,10 +48,7 @@ app.prepare().then(() => {
     const httpServer: HttpServer = createServer(handler as any);
     const io: Server = new Server(httpServer);
     io.on("connection", (socket: Socket) => {
-        console.log(colors.green("Socket Connected:"), socket.id);
-        console.log(colors.green("Socket Handshake URL:"), socket.handshake.url);
-        console.log(colors.green("Socket Handshake Time:"), socket.handshake.time);
-        console.log(colors.green("Socket Handshake Host:"), socket.handshake.headers.host);
+        console.log(colors.green(`Socket Connected: [ID: ${socket.id}, URL: ${socket.handshake.url}, Time: ${socket.handshake.time}, Host: ${socket.handshake.headers.host}]`));
         SockerHUB(socket);
     });
     console.log("Socket.IO routes initialized.");

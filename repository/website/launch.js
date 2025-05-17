@@ -38,12 +38,20 @@ var hostname = process.env.HOSTNAME || "localhost";
 var port = parseInt(process.env.PORT || "3000", 10);
 var app = (0, import_next.default)({ dev, hostname, port, turbo: dev });
 var handler = app.getRequestHandler();
+function SockerHUB(socket) {
+  socket.on("message", (data) => console.log(`Received message from ${socket.id}:`, data));
+  socket.on("disconnect", (reason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
+}
 function getNetworkAddress() {
   const interfaces = import_node_os.default.networkInterfaces();
   for (const name in interfaces) {
     const interfaceInfo = interfaces[name];
     if (!interfaceInfo) continue;
-    for (const { address, family, internal } of interfaceInfo) if (family === "IPv4" && !internal) return address;
+    for (const { address, family, internal } of interfaceInfo) {
+      if (family === "IPv4" && !internal) {
+        return address;
+      }
+    }
   }
   return null;
 }
@@ -61,21 +69,20 @@ app.prepare().then(() => {
   const httpServer = (0, import_node_http.createServer)(handler);
   const io = new import_socket.Server(httpServer);
   io.on("connection", (socket) => {
-    console.log(import_colors.default.green("Socket Connected:"), socket.id);
-    console.log(import_colors.default.green("Socket Handshake URL:"), socket.handshake.url);
-    console.log(import_colors.default.green("Socket Handshake Time:"), socket.handshake.time);
-    console.log(import_colors.default.green("Socket Handshake Host:"), socket.handshake.headers.host);
-    socket.on("message", (data) => console.log(`Received message from ${socket.id}:`, data));
-    socket.on("disconnect", (reason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
+    console.log(import_colors.default.green(`Socket Connected: [ID: ${socket.id}, URL: ${socket.handshake.url}, Time: ${socket.handshake.time}, Host: ${socket.handshake.headers.host}]`));
+    SockerHUB(socket);
   });
   console.log("Socket.IO routes initialized.");
   const nextVersion = getNextVersion();
   const networkAddress = getNetworkAddress();
   console.log(`
-  ${"\u25B2"} ${import_colors.default.bold("Next.js")} ${nextVersion} ${dev ? import_colors.default.dim("(Custom Server, Turbopack)") : import_colors.default.dim("(Custom Server, Production)")}`);
-  console.log(`  ${import_colors.default.dim("-")} ${import_colors.default.bold("Local:")}    ${import_colors.default.green(`http://${hostname}:${port}`)}`);
-  if (networkAddress) console.log(`  ${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")}  ${import_colors.default.green(`http://${networkAddress}:${port}`)}`);
-  else console.log(`  ${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")}  ${import_colors.default.dim("unavailable")}`);
+ \xA0${"\u25B2"} ${import_colors.default.bold("Next.js")} ${nextVersion} ${dev ? import_colors.default.dim("(Custom Server, Turbopack)") : import_colors.default.dim("(Custom Server, Production)")}`);
+  console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Local:")} \xA0 \xA0${import_colors.default.green(`http://${hostname}:${port}`)}`);
+  if (networkAddress) {
+    console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")} \xA0${import_colors.default.green(`http://${networkAddress}:${port}`)}`);
+  } else {
+    console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")} \xA0${import_colors.default.dim("unavailable")}`);
+  }
   console.log("\n");
   httpServer.once("error", (err) => {
     console.error(import_colors.default.red(`HTTP server error:`), err);
