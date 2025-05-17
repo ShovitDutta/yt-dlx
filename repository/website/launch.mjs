@@ -41,13 +41,12 @@ const bold = "\x1b[1m";
 const dim = "\x1b[2m";
 function addIoRoutes(io) {
     io.on("connection", socket => {
-        console.log(`Socket connected: ${socket.id}`);
-        socket.on("message", data => {
-            console.log(`Received message from ${socket.id}: ${data}`);
-        });
-        socket.on("disconnect", () => {
-            console.log(`Socket disconnected: ${socket.id}`);
-        });
+        console.log(green, "Socket Connected:", reset, socket.id);
+        console.log(green, "Socket Connected:", reset, socket.handshake.url);
+        console.log(green, "Socket Connected:", reset, socket.handshake.time);
+        console.log(green, "Socket Connected:", reset, socket.handshake.headers.host);
+        socket.on("message", data => console.log(`Received message from ${socket.id}: ${data}`));
+        socket.on("disconnect", () => console.log(`Socket disconnected: ${socket.id}`));
     });
     console.log("Socket.IO routes initialized.");
 }
