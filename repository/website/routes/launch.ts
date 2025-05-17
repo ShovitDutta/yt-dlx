@@ -12,7 +12,6 @@ const hostname: string = process.env.HOSTNAME || "localhost";
 const port: number = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port, turbo: dev });
 const handler = app.getRequestHandler();
-
 function getNetworkAddress(): string | null {
     const interfaces: NodeJS.Dict<os.NetworkInterfaceInfo[]> = os.networkInterfaces();
     for (const name in interfaces) {
@@ -26,7 +25,6 @@ function getNetworkAddress(): string | null {
     }
     return null;
 }
-
 function getNextVersion(): string {
     try {
         const packageJsonPath: string = path.resolve(process.cwd(), "package.json");
@@ -39,7 +37,6 @@ function getNextVersion(): string {
         return "unknown";
     }
 }
-
 const bright: string = "\x1b[1m";
 const green: string = "\x1b[32m";
 const reset: string = "\x1b[0m";
@@ -49,19 +46,17 @@ const socketHandlerFiles: string[] = [];
 const routesDir = path.join(process.cwd(), "routes");
 function findSocketHandlerFiles(directory: string): void {
     if (!fs.existsSync(directory)) {
-        console.warn(`Socket routes directory not found: ${directory}. Skipping automatic route loading.`);
+        console.warn(`Socket routes directory not found at ${directory}. Skipping automatic route loading.`);
         return;
     }
     const entries = fs.readdirSync(directory, { withFileTypes: true });
     for (const entry of entries) {
         const fullPath = path.join(directory, entry.name);
-        if (entry.isDirectory()) findSocketHandlerFiles(fullPath);
-        else if (entry.isFile()) {
-            const isHandlerFile = entry.name.endsWith(".js") || (dev && entry.name.endsWith(".ts"));
-            if (isHandlerFile) {
-                console.log(`Found potential socket handler file: ${fullPath}`);
-                socketHandlerFiles.push(fullPath);
-            }
+        if (entry.isDirectory()) {
+            findSocketHandlerFiles(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith(".js")) {
+            console.log(`Found potential socket handler file: ${fullPath}`);
+            socketHandlerFiles.push(fullPath);
         }
     }
 }
@@ -74,8 +69,11 @@ function applySocketHandlers(socket: Socket): void {
         try {
             const handlerModule = require(filePath);
             const setupFunction = typeof handlerModule === "function" ? handlerModule : handlerModule.default;
-            if (typeof setupFunction === "function") setupFunction(socket);
-            else console.warn(`File ${filePath} does not export a default function.`);
+            if (typeof setupFunction === "function") {
+                setupFunction(socket);
+            } else {
+                console.warn(`File ${filePath} does not export a default function.`);
+            }
         } catch (error) {
             console.error(`Error loading or applying socket handlers from ${filePath}:`, error);
         }
@@ -102,8 +100,11 @@ app.prepare().then(() => {
     const networkAddress: string | null = getNetworkAddress();
     console.log(`\n  ${bright}▲${reset} ${bold}Next.js${reset} ${nextVersion} ${dev ? "(Custom Server, Turbopack)" : "(Custom Server, Production)"}`);
     console.log(`  ${dim}-${reset} ${bold}Local:${reset}     ${green}http://${hostname}:${port}${reset}`);
-    if (networkAddress) console.log(`  ${dim}-${reset} ${bold}Network:${reset}   ${green}http://${networkAddress}:${port}${reset}`);
-    else console.log(`  ${dim}-${reset} ${bold}Network:${reset}   ${dim}unavailable${reset}`);
+    if (networkAddress) {
+        console.log(`  ${dim}-${reset} ${bold}Network:${reset}   ${green}http://${networkAddress}:${port}${reset}`);
+    } else {
+        console.log(`  ${dim}-${reset} ${bold}Network:${reset}   ${dim}unavailable${reset}`);
+    }
     console.log("\n");
     httpServer
         .once("error", (err: Error) => {

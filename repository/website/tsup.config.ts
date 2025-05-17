@@ -1,8 +1,8 @@
 import { defineConfig } from "tsup";
 export default defineConfig({
-    entry: ["launch.ts"],
-    format: ["esm"],
-    outDir: ".",
-    clean: false,
+    entry: ["routes/launch.ts", "routes/**/*.ts"],
     splitting: false,
+    format: ["esm"],
+    outDir: "out",
+    clean: false,
 });
