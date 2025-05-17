@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import { EventEmitter } from "events";
-import YouTubeID from "../../../utils/YouTubeId";
+import YouTubeID from "../../../../utils/YouTubeId";
 const ZodSchema = z.object({ videoLink: z.string().min(2) });
 export interface singleVideoType {
     id: string;

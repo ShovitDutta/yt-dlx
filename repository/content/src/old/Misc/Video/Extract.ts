@@ -2,11 +2,11 @@ import path from "path";
 import colors from "colors";
 import { Client } from "youtubei";
 import { z, ZodError } from "zod";
-import Tuber from "../../../utils/Agent";
+import Tuber from "../../../../utils/Agent";
 import { EventEmitter } from "events";
 import { Innertube, UniversalCache } from "youtubei.js";
-import { CommentType } from "../../../interfaces/CommentType";
-import type EngineOutput from "../../../interfaces/EngineOutput";
+import { CommentType } from "../../../../interfaces/CommentType";
+import type EngineOutput from "../../../../interfaces/EngineOutput";
 const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
 interface CaptionSegment {
     utf8: string;

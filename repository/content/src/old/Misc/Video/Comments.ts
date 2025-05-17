@@ -4,7 +4,7 @@ import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import { EventEmitter } from "events";
 import { Innertube, UniversalCache } from "youtubei.js";
-import { CommentType } from "../../../interfaces/CommentType";
+import { CommentType } from "../../../../interfaces/CommentType";
 const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
 async function fetchVideoComments({ query, verbose }: z.infer<typeof ZodSchema>): Promise<CommentType[] | null> {
     try {

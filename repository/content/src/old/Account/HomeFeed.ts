@@ -1,9 +1,9 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { EventEmitter } from "events";
-import TubeResponse from "../../interfaces/TubeResponse";
-import TubeLogin, { TubeType } from "../../utils/TubeLogin";
-import sanitizeContentItem from "../../utils/sanitizeContentItem";
+import TubeResponse from "../../../interfaces/TubeResponse";
+import TubeLogin, { TubeType } from "../../../utils/TubeLogin";
+import sanitizeContentItem from "../../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(), sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 /**
  * @shortdesc Fetches the user's YouTube home feed.

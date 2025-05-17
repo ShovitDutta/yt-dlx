@@ -3,9 +3,9 @@ import colors from "colors";
 import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
-import Tuber from "../../utils/Agent";
+import Tuber from "../../../utils/Agent";
 import { EventEmitter } from "events";
-import { locator } from "../../utils/locator";
+import { locator } from "../../../utils/locator";
 var ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),

@@ -2,7 +2,7 @@ import colors from "colors";
 import { Client } from "youtubei";
 import { z, ZodError } from "zod";
 import { EventEmitter } from "events";
-import YouTubeID from "../../../utils/YouTubeId";
+import YouTubeID from "../../../../utils/YouTubeId";
 const ZodSchema = z.object({ playlistLink: z.string().min(2) });
 export interface searchPlaylistsType {
     id: string;

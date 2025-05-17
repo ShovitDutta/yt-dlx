@@ -1,8 +1,8 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { EventEmitter } from "events";
-import Tuber from "../../../utils/Agent";
-import type EngineOutput from "../../../interfaces/EngineOutput";
+import Tuber from "../../../../utils/Agent";
+import type EngineOutput from "../../../../interfaces/EngineOutput";
 const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
 /**
  * @shortdesc Lists available audio and video formats for a YouTube video.

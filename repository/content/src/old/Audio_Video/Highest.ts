@@ -3,9 +3,9 @@ import colors from "colors";
 import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
-import ytdlx from "../../utils/Agent";
+import Tuber from "../../../utils/Agent";
 import { EventEmitter } from "events";
-import { locator } from "../../utils/locator";
+import { locator } from "../../../utils/locator";
 var ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -14,64 +14,61 @@ var ZodSchema = z.object({
     verbose: z.boolean().optional(),
     metadata: z.boolean().optional(),
     filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-    resolution: z.enum(["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "3072p", "4320p", "6480p", "8640p", "12000p"]),
 });
 /**
- * @shortdesc Downloads or streams combined audio and video from YouTube with custom options.
+ * @shortdesc Downloads or streams the highest quality audio from YouTube with filter options.
  *
- * @description This function allows you to download or stream a combined audio and video stream from YouTube based on a search query or video URL and a specified video resolution. It offers customization options such as saving the output to a specified directory, using Tor for anonymity, enabling verbose logging, streaming the output, or simply fetching the metadata without downloading. Video filters can also be applied.
+ * @description This function allows you to download or stream the highest available audio quality from YouTube based on a search query or video URL. It offers customization options such as saving the output to a specified directory, using Tor for anonymity, enabling verbose logging, streaming the output, or simply fetching the metadata without downloading. An optional filter parameter is accepted, although its application might vary based on internal implementation.
  *
- * The function requires a search query or video URL and the desired video resolution. It fetches the highest quality audio and the specified video resolution stream and merges them.
+ * The function requires a search query or video URL. It automatically selects the highest quality audio format available.
  *
  * It supports the following configuration options:
  * - **query:** A string representing the search query or video URL. This is a mandatory parameter.
- * - **resolution:** A string specifying the desired video resolution. Mandatory parameter. Accepted values are "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "3072p", "4320p", "6480p", "8640p", "12000p".
- * - **output:** An optional string specifying the directory where the output video file should be saved. If not provided, the file will be saved in the current working directory. This parameter cannot be used when `metadata` is true.
+ * - **output:** An optional string specifying the directory where the output audio file should be saved. If not provided, the file will be saved in the current working directory. This parameter cannot be used when `metadata` is true.
  * - **useTor:** An optional boolean value. If true, the function will attempt to use Tor for the network requests, enhancing anonymity.
- * - **stream:** An optional boolean value. If true, the video will be streamed instead of saved to a file. When streaming, the `end` event will provide the streamable path and the `stream` event will provide the FFmpeg instance. This parameter cannot be used when `metadata` is true.
+ * - **stream:** An optional boolean value. If true, the audio will be streamed instead of saved to a file. When streaming, the `end` event will provide the streamable path and the `stream` event will provide the FFmpeg instance. This parameter cannot be used when `metadata` is true.
  * - **verbose:** An optional boolean value. If true, enables detailed logging to the console, providing more information about the process.
- * - **metadata:** An optional boolean value. If true, the function will only fetch and emit the video metadata and available format details without downloading or streaming. When `metadata` is true, the `output`, `stream`, and `filter` parameters are not allowed.
- * - **filter:** An optional string specifying a video filter to apply to the video stream. This parameter is ignored when `metadata` is true. Available filters include: "invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal".
+ * - **metadata:** An optional boolean value. If true, the function will only fetch and emit the video metadata without downloading or streaming the audio. When `metadata` is true, the `output`, `stream`, and `filter` parameters are not allowed.
+ * - **filter:** An optional string specifying a filter to potentially apply. The filter names accepted by validation are: "invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal". Note that due to internal implementation details, applying filters using these names might not have an effect on the output audio. This parameter is ignored when `metadata` is true.
  *
  * The function returns an EventEmitter instance that emits events during the process:
  * - `"start"`: Emitted when the process begins, providing the FFmpeg command being executed.
  * - `"progress"`: Emitted periodically during the download/streaming process, providing progress details (e.g., downloaded size, time remaining).
  * - `"end"`: Emitted when the download/streaming process completes successfully, providing the path to the saved file. If `stream` is true, it provides the streamable path.
- * - `"metadata"`: Emitted only when the `metadata` parameter is true. Provides an object containing the video metadata, available audio and video format details, and a suggested filename.
+ * - `"metadata"`: Emitted only when the `metadata` parameter is true. Provides an object containing the video metadata, the highest audio and video format details, and a suggested filename.
  * - `"stream"`: Emitted only when the `stream` parameter is true. Provides an object containing the streamable filename/path and the FFmpeg instance.
  * - `"error"`: Emitted when an error occurs at any stage, such as argument validation, network issues, or FFmpeg errors. The emitted data is the error message.
  *
  * @param {object} options - An object containing the configuration options.
  * @param {string} options.query - The search query or video URL. **Required**.
- * @param {boolean} [options.stream] - Whether to stream the output. Cannot be used with `metadata: true`.
  * @param {string} [options.output] - The directory to save the output file. Cannot be used with `metadata: true`.
  * @param {boolean} [options.useTor] - Whether to use Tor.
- * @param {("invert" | "rotate90" | "rotate270" | "grayscale" | "rotate180" | "flipVertical" | "flipHorizontal")} [options.filter] - A video filter to apply. Cannot be used with `metadata: true`.
- * @param {boolean} [options.metadata] - Only fetch metadata. Cannot be used with `output`, `stream`, or `filter`.
+ * @param {boolean} [options.stream] - Whether to stream the output. Cannot be used with `metadata: true`.
  * @param {boolean} [options.verbose] - Enable verbose logging.
- * @param {("144p" | "240p" | "360p" | "480p" | "720p" | "1080p" | "1440p" | "2160p" | "3072p" | "4320p" | "6480p" | "8640p" | "12000p")} options.resolution - The desired video resolution. **Required**.
+ * @param {boolean} [options.metadata] - Only fetch metadata. Cannot be used with `output`, `stream`, or `filter`.
+ * @param {("invert" | "rotate90" | "rotate270" | "grayscale" | "rotate180" | "flipVertical" | "flipHorizontal")} [options.filter] - A filter to potentially apply. Note: Actual application of filters might not work as expected. Cannot be used with `metadata: true`.
  *
- * @returns {EventEmitter} An EventEmitter instance for handling events during the audio/video processing.
+ * @returns {EventEmitter} An EventEmitter instance for handling events during the audio processing.
  *
  * @example
- * // 1. Download combined audio/video with a specific resolution to the current directory
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p" })
+ * // 1. Download the highest quality audio to the current directory
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 2. Download combined audio/video with a specific resolution to a custom output directory
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "1080p", output: "./video_downloads" })
+ * // 2. Download the highest quality audio to a custom output directory
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", output: "./highest_audio_downloads" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 3. Stream combined audio/video with a specific resolution
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "480p", stream: true })
+ * // 3. Stream the highest quality audio
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", stream: true })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("stream", (data) => {
@@ -82,47 +79,50 @@ var ZodSchema = z.object({
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 4. Fetch only metadata for a video
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", metadata: true })
+ * // 4. Fetch only metadata for the highest quality audio
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", metadata: true })
  * .on("metadata", (data) => console.log("Metadata:", data))
  * .on("error", (error) => console.error("Error:", error));
  * // Note: output, stream, and filter are ignored when metadata is true.
  *
  * @example
- * // 5. Download combined audio/video with a specific resolution and apply a filter
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", filter: "grayscale" })
+ * // 5. Download the highest quality audio and provide a filter name from the accepted list
+ * // Note: Due to the internal logic, this filter might not be applied to the audio.
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", filter: "grayscale" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 6. Download combined audio/video with a specific resolution and use Tor
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "1080p", useTor: true })
+ * // 6. Download the highest quality audio and use Tor
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", useTor: true })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 7. Download combined audio/video with a specific resolution and enable verbose logging
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "480p", verbose: true })
+ * // 7. Download the highest quality audio and enable verbose logging
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", verbose: true })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 8. Download combined audio/video with a specific resolution, custom output, and apply a filter
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", output: "./filtered_videos", filter: "rotate90" })
+ * // 8. Download the highest quality audio with custom output and a filter name
+ * // Note: Filter might not be applied.
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", output: "./filtered_audio", filter: "invert" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 9. Stream combined audio/video with a specific resolution and apply a filter
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "1080p", stream: true, filter: "flipHorizontal" })
+ * // 9. Stream the highest quality audio and a filter name
+ * // Note: Filter might not be applied.
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", stream: true, filter: "rotate90" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("stream", (data) => {
@@ -133,16 +133,18 @@ var ZodSchema = z.object({
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 10. Download combined audio/video with all applicable options enabled (query, resolution, output, useTor, verbose, filter)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "2160p", output: "./full_options_video", useTor: true, verbose: true, filter: "invert" })
+ * // 10. Download the highest quality audio with all applicable options (query, output, useTor, verbose, filter from list)
+ * // Note: Filter might not be applied.
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", output: "./full_options", useTor: true, verbose: true, filter: "flipHorizontal" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("end", (outputPath) => console.log("Download finished:", outputPath))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
- * // 11. Stream combined audio/video with all applicable options enabled (query, resolution, stream, useTor, verbose, filter)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "1440p", stream: true, useTor: true, verbose: true, filter: "rotate180" })
+ * // 11. Stream the highest quality audio with all applicable options (query, stream, useTor, verbose, filter from list)
+ * // Note: Filter might not be applied.
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", stream: true, useTor: true, verbose: true, filter: "rotate270" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("stream", (data) => {
@@ -154,29 +156,29 @@ var ZodSchema = z.object({
  *
  * @example
  * // 12. Fetch metadata with verbose logging and use Tor
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", metadata: true, verbose: true, useTor: true })
- * .on("metadata", (data) => console.log("Metadata (Verbose, Tor):", data))
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", metadata: true, verbose: true, useTor: true })
+ * .on("metadata", (data) => console.log("Metadata:", data))
  * .on("error", (error) => console.error("Error:", error));
  *
  * @example
  * // 13. Attempt to use output with metadata (will result in an error)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", metadata: true, output: "./should_fail" })
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", metadata: true, output: "./should_fail" })
  * .on("error", (error) => console.error("Expected Error (output with metadata):", error));
  *
  * @example
  * // 14. Attempt to use stream with metadata (will result in an error)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", metadata: true, stream: true })
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", metadata: true, stream: true })
  * .on("error", (error) => console.error("Expected Error (stream with metadata):", error));
  *
  * @example
  * // 15. Attempt to use filter with metadata (will result in an error)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", metadata: true, filter: "grayscale" })
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", metadata: true, filter: "speed" as any }) // Using 'speed' here to show it's the *filter* parameter that conflicts with metadata
  * .on("error", (error) => console.error("Expected Error (filter with metadata):", error));
  *
  * @example
  * // 16. Attempt to use stream and output together
  * // Based on the code, stream: true and an output path provided will likely result in a file being saved and the stream event also firing.
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", stream: true, output: "./streamed_and_saved" })
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", stream: true, output: "./streamed_and_saved" })
  * .on("start", (start) => console.log("FFmpeg started:", start))
  * .on("progress", (progress) => console.log("Progress:", progress))
  * .on("stream", (data) => {
@@ -187,66 +189,28 @@ var ZodSchema = z.object({
  *
  * @example
  * // 17. Missing required 'query' parameter (will result in an error)
- * YouTubeDLX.Audio_Video.Custom({ resolution: "720p" } as any)
+ * YouTubeDLX.Audio.Highest({} as any)
  * .on("error", (error) => console.error("Expected Error (missing query):", error));
  *
  * @example
- * // 18. Missing required 'resolution' parameter (will result in an error)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url" } as any)
- * .on("error", (error) => console.error("Expected Error (missing resolution):", error));
- *
- * @example
- * // 19. Invalid 'resolution' value (will result in an error - Zod validation)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "500p" as any })
- * .on("error", (error) => console.error("Expected Error (invalid resolution):", error));
- *
- * @example
- * // 20. Invalid 'filter' value (will result in an error - Zod validation)
- * YouTubeDLX.Audio_Video.Custom({ query: "your search query or url", resolution: "720p", filter: "nonexistentfilter" as any })
+ * // 18. Invalid 'filter' value (not in the Zod enum - will result in a Zod validation error)
+ * YouTubeDLX.Audio.Highest({ query: "your search query or url", filter: "bassboost" as any }) // Using an old filter name to show Zod validation failure
  * .on("error", (error) => console.error("Expected Error (invalid filter):", error));
  *
  * @example
- * // 21. Query results in no engine data
- * // Note: This scenario depends on the internal ytdlx function's behavior.
+ * // 19. Query results in no engine data
+ * // Note: This scenario depends on the internal Tuber function's behavior.
  * // You can simulate by providing a query that is unlikely to return results.
- * YouTubeDLX.Audio_Video.Custom({ query: "a query that should return no results 12345abcde", resolution: "720p" })
+ * YouTubeDLX.Audio.Highest({ query: "a query that should return no results 12345abcde" })
  * .on("error", (error) => console.error("Expected Error (no engine data):", error));
  *
- * @example
- * // 22. Engine data missing metadata
- * // Note: This is an internal error scenario, difficult to trigger via simple example call.
- * // The error emitted would be: "@error: Metadata was not found in the engine response."
- *
- * @example
- * // 23. Highest quality audio URL was not found
- * // Note: This is an internal error scenario, might happen for unusual content.
- * // The error emitted would be: "@error: Highest quality audio URL was not found."
- *
- * @example
- * // 24. Video URL not found for specified resolution
- * // Note: This might happen if the requested resolution is not available for the video.
- * // The error emitted would be: "@error: Video URL not found for resolution: [resolution]."
- * YouTubeDLX.Audio_Video.Custom({ query: "some video with limited resolutions", resolution: "8640p" })
- * .on("error", (error) => console.error("Expected Error (video URL not found):", error));
- *
- * @example
- * // 25. No video data found for specified resolution
- * // Note: Similar to example 24, indicates the resolution is not available.
- * // The error emitted would be: "@error: No video data found for resolution: [resolution]. Use list_formats() maybe?"
- * YouTubeDLX.Audio_Video.Custom({ query: "some video with limited resolutions", resolution: "12000p" })
- * .on("error", (error) => console.error("Expected Error (no video data):", error));
- *
  */
-export default function AudioVideoCustom({ query, stream, output, useTor, filter, metadata, verbose, resolution }: z.infer<typeof ZodSchema>): EventEmitter {
+export default function AudioHighest({ query, output, useTor, stream, filter, metadata, verbose }: z.infer<typeof ZodSchema>): EventEmitter {
     const emitter = new EventEmitter();
     (async () => {
         try {
             if (!query) {
                 emitter.emit("error", `${colors.red("@error:")} The 'query' parameter is always required.`);
-                return;
-            }
-            if (!resolution) {
-                emitter.emit("error", `${colors.red("@error:")} The 'resolution' parameter is always required.`);
                 return;
             }
             if (metadata) {
@@ -267,43 +231,39 @@ export default function AudioVideoCustom({ query, stream, output, useTor, filter
                 emitter.emit("error", `${colors.red("@error:")} The 'stream' parameter cannot be true when 'metadata' is true.`);
                 return;
             }
-            ZodSchema.parse({ query, stream, output, useTor, filter, metadata, verbose, resolution });
-            const engineData = await ytdlx({ query, verbose, useTor }).catch(error => {
+            ZodSchema.parse({ query, output, useTor, stream, filter, metadata, verbose });
+            const engineData = await Tuber({ query, verbose, useTor }).catch(error => {
                 emitter.emit("error", `${colors.red("@error:")} Engine error: ${error?.message}`);
                 return undefined;
             });
+
             if (!engineData) {
                 emitter.emit("error", `${colors.red("@error:")} Unable to retrieve a response from the engine.`);
                 return;
             }
             if (!engineData.metaData) {
-                emitter.emit("error", `${colors.red("@error:")} Metadata was not found in the engine response.`);
+                emitter.emit("error", `${colors.red("@error:")} Metadata not found in the engine response.`);
                 return;
             }
             if (metadata) {
                 emitter.emit("metadata", {
                     metaData: engineData.metaData,
-                    BestAudioLow: engineData.BestAudioLow,
-                    BestAudioHigh: engineData.BestAudioHigh,
-                    AudioLowDRC: engineData.AudioLowDRC,
+                    AudioHighF: engineData.AudioHighF,
                     AudioHighDRC: engineData.AudioHighDRC,
-                    BestVideoLow: engineData.BestVideoLow,
-                    BestVideoHigh: engineData.BestVideoHigh,
-                    VideoLowHDR: engineData.VideoLowHDR,
+                    VideoHighF: engineData.VideoHighF,
                     VideoHighHDR: engineData.VideoHighHDR,
-                    ManifestLow: engineData.ManifestLow,
                     ManifestHigh: engineData.ManifestHigh,
                     filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
                 });
                 return;
             }
-            const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
+            const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
             const folder = output ? output : process.cwd();
             if (!fs.existsSync(folder)) {
                 try {
                     fs.mkdirSync(folder, { recursive: true });
                 } catch (mkdirError: any) {
-                    emitter.emit("error", `${colors.red("@error:")} Failed to create the output directory: ${mkdirError?.message}`);
+                    emitter.emit("error", `${colors.red("@error:")} Failed to create output directory: ${mkdirError?.message}`);
                     return;
                 }
             }
@@ -324,35 +284,36 @@ export default function AudioVideoCustom({ query, stream, output, useTor, filter
                 emitter.emit("error", `${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
                 return;
             }
-            if (!engineData.BestAudioHigh?.url) {
-                emitter.emit("error", `${colors.red("@error:")} Highest quality audio URL was not found.`);
+            if (!engineData.metaData.thumbnail) {
+                emitter.emit("error", `${colors.red("@error:")} Thumbnail URL not found.`);
                 return;
             }
-            instance.addInput(engineData.BestAudioHigh.url);
-            instance.withOutputFormat("matroska");
-            const resolutionWithoutP = resolution.replace("p", "");
-            const vdata = engineData.ManifestHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolutionWithoutP));
-            if (vdata) {
-                if (!vdata.url) {
-                    emitter.emit("error", `${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
-                    return;
-                }
-                instance.addInput(vdata.url.toString());
-            } else {
-                emitter.emit("error", `${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
+            instance.addInput(engineData.metaData.thumbnail);
+            instance.withOutputFormat("avi");
+            if (!engineData.AudioHighF?.url) {
+                emitter.emit("error", `${colors.red("@error:")} Highest quality audio URL not found.`);
                 return;
             }
-            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            instance.addInput(engineData.AudioHighF.url);
+            const filenameBase = `yt-dlx_AudioHighest_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, filename);
             const filterMap: Record<string, string[]> = {
-                grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
-                invert: ["negate"],
-                rotate90: ["rotate=PI/2"],
-                rotate180: ["rotate=PI"],
-                rotate270: ["rotate=3*PI/2"],
-                flipHorizontal: ["hflip"],
-                flipVertical: ["vflip"],
+                bassboost: ["bass=g=10,dynaudnorm=f=150"],
+                echo: ["aecho=0.8:0.9:1000:0.3"],
+                flanger: ["flanger"],
+                nightcore: ["aresample=48000,asetrate=48000*1.25"],
+                panning: ["apulsator=hz=0.08"],
+                phaser: ["aphaser=in_gain=0.4"],
+                reverse: ["areverse"],
+                slow: ["atempo=0.8"],
+                speed: ["atempo=2"],
+                subboost: ["asubboost"],
+                superslow: ["atempo=0.5"],
+                superspeed: ["atempo=3"],
+                surround: ["surround"],
+                vaporwave: ["aresample=48000,asetrate=48000*0.8"],
+                vibrato: ["vibrato=f=6.5"],
             };
             if (filter && filterMap[filter]) instance.withVideoFilter(filterMap[filter]);
             else instance.outputOptions("-c copy");
