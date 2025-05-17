@@ -1,12 +1,12 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
-import { Client } from "youtubei";
+import { Client, Channel } from "youtubei";
 const ZodSchema = z.object({ channelLink: z.string().min(2) });
-export default async function channel_data({ channelLink }: z.infer<typeof ZodSchema>): Promise<{ data: any }> {
+export default async function channel_data({ channelLink }: z.infer<typeof ZodSchema>): Promise<{ data: Channel }> {
     try {
         ZodSchema.parse({ channelLink });
         const youtube = new Client();
-        const channelData: any = await youtube.getChannel(channelLink);
+        const channelData: Channel | undefined = await youtube.getChannel(channelLink);
         if (!channelData) {
             throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
         }
