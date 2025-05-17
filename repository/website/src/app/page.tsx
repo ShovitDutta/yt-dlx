@@ -2,7 +2,6 @@
 import { socket } from "@/socket";
 import React, { useEffect, useState } from "react";
 import { FaHome, FaCompass, FaBookOpen, FaSearch, FaBell, FaUserCircle, FaCog } from "react-icons/fa";
-
 function Sidebar({ isConnected, transport }: { isConnected: boolean; transport: string }) {
     return (
         <aside className="w-64 bg-black/40 backdrop-blur-lg p-6 flex flex-col fixed top-0 left-0 h-screen border-r border-white/10 shadow-lg">
@@ -44,7 +43,6 @@ function Sidebar({ isConnected, transport }: { isConnected: boolean; transport: 
         </aside>
     );
 }
-
 function HeaderSearch() {
     return (
         <header className="sticky top-0 z-10 flex items-center justify-between p-4 bg-black/40 backdrop-blur-md border-b border-white/10 shadow-md">
@@ -57,15 +55,12 @@ function HeaderSearch() {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
             <div className="flex items-center space-x-4 text-white text-xl">
-                <FaBell className="cursor-pointer hover:text-gray-300" />
-                <FaUserCircle className="cursor-pointer hover:text-gray-300" />
-                <FaCog className="cursor-pointer hover:text-gray-300" />
+                <FaBell className="cursor-pointer hover:text-gray-300" /> <FaUserCircle className="cursor-pointer hover:text-gray-300" /> <FaCog className="cursor-pointer hover:text-gray-300" />
                 <button className="py-2 px-4 bg-white text-black rounded-md font-semibold text-sm">Sign in</button>
             </div>
         </header>
     );
 }
-
 function CategoryButtons() {
     return (
         <div className="my-12">
@@ -79,7 +74,6 @@ function CategoryButtons() {
         </div>
     );
 }
-
 function QuickPicksSection() {
     return (
         <section className="my-12">
@@ -104,8 +98,7 @@ function QuickPicksSection() {
                     <div key={index} className="flex items-center bg-black/40 backdrop-blur-lg rounded-md overflow-hidden shadow-md">
                         <img src="/placeholder-album.jpg" alt="Album Art" className="w-16 h-16 object-cover" />
                         <div className="p-3">
-                            <p className="text-sm font-semibold">Song Title</p>
-                            <p className="text-xs text-gray-400">Artist - Album</p>
+                            <p className="text-sm font-semibold">Song Title</p> <p className="text-xs text-gray-400">Artist - Album</p>
                         </div>
                     </div>
                 ))}
@@ -113,7 +106,6 @@ function QuickPicksSection() {
         </section>
     );
 }
-
 function BandBaajaBaraatSection() {
     return (
         <section className="my-12">
@@ -135,8 +127,7 @@ function BandBaajaBaraatSection() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {[...Array(6)].map((_, index) => (
                     <div key={index} className="flex flex-col">
-                        <img src="/placeholder-playlist.jpg" alt="Playlist Cover" className="w-full h-auto rounded-md mb-2" />
-                        <p className="text-sm font-semibold">Playlist Title</p>
+                        <img src="/placeholder-playlist.jpg" alt="Playlist Cover" className="w-full h-auto rounded-md mb-2" /> <p className="text-sm font-semibold">Playlist Title</p>
                         <p className="text-xs text-gray-400">Description</p>
                     </div>
                 ))}
@@ -144,16 +135,11 @@ function BandBaajaBaraatSection() {
         </section>
     );
 }
-
 export default function Home() {
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState("N/A");
-
     useEffect(() => {
-        if (socket.connected) {
-            onConnect();
-        }
-
+        if (socket.connected) onConnect();
         function onConnect() {
             setIsConnected(true);
             setTransport(socket.io.engine.transport.name);
@@ -161,34 +147,24 @@ export default function Home() {
                 setTransport(transport.name);
             });
         }
-
         function onDisconnect() {
             setIsConnected(false);
             setTransport("N/A");
         }
-
         socket.on("connect", onConnect);
         socket.on("disconnect", onDisconnect);
-
         return () => {
             socket.off("connect", onConnect);
             socket.off("disconnect", onDisconnect);
         };
     }, []);
-
     return (
         <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_right,_#7f1d1d,_#000000_70%)] text-white">
-            {/* Pass connection status and transport to Sidebar */}
             <Sidebar isConnected={isConnected} transport={transport} />
             <main className="ml-64 flex-1 flex flex-col">
                 <HeaderSearch />
                 <div className="flex-1 overflow-y-auto p-8">
-                    <CategoryButtons />
-                    <QuickPicksSection />
-                    <BandBaajaBaraatSection />
-                    <QuickPicksSection />
-                    <BandBaajaBaraatSection />
-                    {/* Removed the socket status display from the main content */}
+                    <CategoryButtons /> <QuickPicksSection /> <BandBaajaBaraatSection /> <QuickPicksSection /> <BandBaajaBaraatSection />
                 </div>
             </main>
         </div>
