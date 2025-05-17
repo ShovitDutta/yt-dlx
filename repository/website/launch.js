@@ -28,6 +28,7 @@ var import_node_os = __toESM(require("os"));
 var import_node_fs = __toESM(require("fs"));
 var import_colors = __toESM(require("colors"));
 var import_node_path = __toESM(require("path"));
+var import_yt_dlx = __toESM(require("yt-dlx"));
 var import_socket = require("socket.io");
 var import_node_http = require("http");
 console.clear();
@@ -38,10 +39,6 @@ var hostname = process.env.HOSTNAME || "localhost";
 var port = parseInt(process.env.PORT || "3000", 10);
 var app = (0, import_next.default)({ dev, hostname, port, turbo: dev });
 var handler = app.getRequestHandler();
-function SockerHUB(socket) {
-  socket.on("message", (data) => console.log(`Received message from ${socket.id}:`, data));
-  socket.on("disconnect", (reason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
-}
 function getNetworkAddress() {
   const interfaces = import_node_os.default.networkInterfaces();
   for (const name in interfaces) {
@@ -70,7 +67,23 @@ app.prepare().then(() => {
   const io = new import_socket.Server(httpServer);
   io.on("connection", (socket) => {
     console.log(import_colors.default.green(`Socket Connected: [ID: ${socket.id}, URL: ${socket.handshake.url}, Time: ${socket.handshake.time}, Host: ${socket.handshake.headers.host}]`));
-    SockerHUB(socket);
+    socket.on("message", (data) => console.log(`Received message from ${socket.id}:`, data));
+    socket.on("disconnect", (reason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
+    socket.on("yt-dlx-command", async (data) => {
+      const { command, options } = data;
+      const commandParts = command.split(".");
+      if (import_yt_dlx.default[command]) {
+        const ytDlxFunction = commandParts.reduce((acc, part) => acc[part], import_yt_dlx.default);
+        if (typeof ytDlxFunction === "function") {
+          try {
+            const resultEmitter = ytDlxFunction(options).on("data", (resultData) => socket.emit(`${command}-response`, { status: "success", data: resultData })).on("metadata", (resultData) => socket.emit(`${command}-response`, { status: "success", data: resultData })).on("error", (error) => socket.emit(`${command}-response`, { status: "error", message: error.message || error }));
+            if (resultEmitter.on) resultEmitter.on("progress", (progressData) => socket.emit(`${command}-progress`, { progress: progressData }));
+          } catch (error) {
+            socket.emit(`${command}-response`, { status: "error", message: error.message || error });
+          }
+        } else socket.emit("yt-dlx-response", { command, status: "error", message: `Invalid yt-dlx command: ${command}` });
+      } else socket.emit("yt-dlx-response", { command, status: "error", message: `Unknown yt-dlx command: ${command}` });
+    });
   });
   console.log("Socket.IO routes initialized.");
   const nextVersion = getNextVersion();
@@ -78,11 +91,8 @@ app.prepare().then(() => {
   console.log(`
  \xA0${"\u25B2"} ${import_colors.default.bold("Next.js")} ${nextVersion} ${dev ? import_colors.default.dim("(Custom Server, Turbopack)") : import_colors.default.dim("(Custom Server, Production)")}`);
   console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Local:")} \xA0 \xA0${import_colors.default.green(`http://${hostname}:${port}`)}`);
-  if (networkAddress) {
-    console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")} \xA0${import_colors.default.green(`http://${networkAddress}:${port}`)}`);
-  } else {
-    console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")} \xA0${import_colors.default.dim("unavailable")}`);
-  }
+  if (networkAddress) console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")} \xA0${import_colors.default.green(`http://${networkAddress}:${port}`)}`);
+  else console.log(` \xA0${import_colors.default.dim("-")} ${import_colors.default.bold("Network:")} \xA0${import_colors.default.dim("unavailable")}`);
   console.log("\n");
   httpServer.once("error", (err) => {
     console.error(import_colors.default.red(`HTTP server error:`), err);

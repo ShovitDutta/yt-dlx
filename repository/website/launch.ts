@@ -16,28 +16,6 @@ const port: number = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port, turbo: dev });
 const handler = app.getRequestHandler();
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-function SockerHUB(socket: Socket): void {
-    socket.on("message", (data: unknown) => console.log(`Received message from ${socket.id}:`, data));
-    socket.on("disconnect", (reason: DisconnectReason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
-    socket.on("yt-dlx-command", async (data: { command: string; options: any }) => {
-        console.log(`Received yt-dlx command from ${socket.id}:`, data);
-        const { command, options } = data;
-        if (YouTubeDLX[command as keyof typeof YouTubeDLX]) {
-            const ytDlxFunction = YouTubeDLX[command as keyof typeof YouTubeDLX];
-            if (typeof ytDlxFunction === "function") {
-                try {
-                    const resultEmitter = (ytDlxFunction as any)(options);
-                    resultEmitter.on("data", (resultData: any) => socket.emit("yt-dlx-response", { command, status: "success", data: resultData }));
-                    resultEmitter.on("error", (error: any) => socket.emit("yt-dlx-response", { command, status: "error", message: error.message || error }));
-                    if (resultEmitter.on) resultEmitter.on("progress", (progressData: any) => socket.emit("yt-dlx-progress", { command, progress: progressData }));
-                } catch (error: any) {
-                    socket.emit("yt-dlx-response", { command, status: "error", message: error.message || error });
-                }
-            } else socket.emit("yt-dlx-response", { command, status: "error", message: `Invalid yt-dlx command: ${command}` });
-        } else socket.emit("yt-dlx-response", { command, status: "error", message: `Unknown yt-dlx command: ${command}` });
-    });
-}
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 function getNetworkAddress(): string | null {
     const interfaces: NodeJS.Dict<os.NetworkInterfaceInfo[]> = os.networkInterfaces();
     for (const name in interfaces) {
@@ -63,22 +41,38 @@ function getNextVersion(): string {
 }
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 app.prepare().then(() => {
-    const httpServer: HttpServer = createServer(handler as any);
+    const httpServer: HttpServer = createServer(handler);
     const io: Server = new Server(httpServer);
     io.on("connection", (socket: Socket) => {
         console.log(colors.green(`Socket Connected: [ID: ${socket.id}, URL: ${socket.handshake.url}, Time: ${socket.handshake.time}, Host: ${socket.handshake.headers.host}]`));
-        SockerHUB(socket);
+        socket.on("message", (data: unknown) => console.log(`Received message from ${socket.id}:`, data));
+        socket.on("disconnect", (reason: DisconnectReason) => console.log(`Socket disconnected: ${socket.id} (${reason})`));
+        socket.on("yt-dlx-command", async (data: { command: string; options: any }) => {
+            const { command, options } = data;
+            const commandParts = command.split(".");
+            if (YouTubeDLX[command as keyof typeof YouTubeDLX]) {
+                const ytDlxFunction = commandParts.reduce((acc: any, part: string) => acc[part], YouTubeDLX);
+                if (typeof ytDlxFunction === "function") {
+                    try {
+                        const resultEmitter = (ytDlxFunction as any)(options)
+                            .on("data", (resultData: any) => socket.emit(`${command}-response`, { status: "success", data: resultData }))
+                            .on("metadata", (resultData: any) => socket.emit(`${command}-response`, { status: "success", data: resultData }))
+                            .on("error", (error: any) => socket.emit(`${command}-response`, { status: "error", message: error.message || error }));
+                        if (resultEmitter.on) resultEmitter.on("progress", (progressData: any) => socket.emit(`${command}-progress`, { progress: progressData }));
+                    } catch (error: any) {
+                        socket.emit(`${command}-response`, { status: "error", message: error.message || error });
+                    }
+                } else socket.emit("yt-dlx-response", { command, status: "error", message: `Invalid yt-dlx command: ${command}` });
+            } else socket.emit("yt-dlx-response", { command, status: "error", message: `Unknown yt-dlx command: ${command}` });
+        });
     });
     console.log("Socket.IO routes initialized.");
     const nextVersion: string = getNextVersion();
     const networkAddress: string | null = getNetworkAddress();
     console.log(`\n  ${"▲"} ${colors.bold("Next.js")} ${nextVersion} ${dev ? colors.dim("(Custom Server, Turbopack)") : colors.dim("(Custom Server, Production)")}`);
     console.log(`  ${colors.dim("-")} ${colors.bold("Local:")}    ${colors.green(`http://${hostname}:${port}`)}`);
-    if (networkAddress) {
-        console.log(`  ${colors.dim("-")} ${colors.bold("Network:")}  ${colors.green(`http://${networkAddress}:${port}`)}`);
-    } else {
-        console.log(`  ${colors.dim("-")} ${colors.bold("Network:")}  ${colors.dim("unavailable")}`);
-    }
+    if (networkAddress) console.log(`  ${colors.dim("-")} ${colors.bold("Network:")}  ${colors.green(`http://${networkAddress}:${port}`)}`);
+    else console.log(`  ${colors.dim("-")} ${colors.bold("Network:")}  ${colors.dim("unavailable")}`);
     console.log("\n");
     httpServer
         .once("error", (err: Error) => {

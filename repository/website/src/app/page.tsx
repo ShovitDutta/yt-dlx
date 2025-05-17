@@ -43,18 +43,23 @@ function Sidebar({ isConnected, transport }: { isConnected: boolean; transport: 
         </aside>
     );
 }
-function HeaderSearch() {
+function HeaderSearch({ videoUrl, setVideoUrl, handleSearch }: { videoUrl: string; setVideoUrl: (url: string) => void; handleSearch: () => void }) {
     return (
         <header className="sticky top-0 z-10 flex items-center justify-between p-4 bg-black/40 backdrop-blur-md border-b border-white/10 shadow-md">
             <div className="relative flex-1 mr-8">
                 <input
                     type="text"
-                    placeholder="Search songs, albums, artists, podcasts"
+                    placeholder="Enter YouTube video URL"
                     className="w-full bg-black/60 text-white rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-red-700 placeholder:text-gray-400"
+                    value={videoUrl}
+                    onChange={e => setVideoUrl(e.target.value)}
                 />
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
-            <div className="flex items-center space-x-4 text-white text-xl">
+            <button className="py-2 px-4 bg-red-900 hover:bg-red-800 rounded-md text-white font-semibold text-sm transition" onClick={handleSearch}>
+                Extract Info
+            </button>
+            <div className="flex items-center space-x-4 text-white text-xl ml-4">
                 <FaBell className="cursor-pointer hover:text-gray-300" /> <FaUserCircle className="cursor-pointer hover:text-gray-300" /> <FaCog className="cursor-pointer hover:text-gray-300" />
                 <button className="py-2 px-4 bg-white text-black rounded-md font-semibold text-sm">Sign in</button>
             </div>
@@ -75,6 +80,32 @@ function CategoryButtons() {
     );
 }
 function QuickPicksSection() {
+    const [quickPicksData, setQuickPicksData] = useState<any[]>([]);
+    const [quickPicksLoading, setQuickPicksLoading] = useState(true);
+    useEffect(() => {
+        if (socket.connected) fetchQuickPicks();
+        function fetchQuickPicks() {
+            setQuickPicksLoading(true);
+            socket.emit("yt-dlx-command", { command: "Search.Video.Multiple", options: { query: "popular music videos", orderBy: "viewCount", verbose: true } });
+        }
+        function onQuickPicksResponse(data: any) {
+            console.log("Received Quick Picks response:", data);
+            if (data.status === "success") setQuickPicksData(data.data);
+            else setQuickPicksData([]);
+            setQuickPicksLoading(false);
+        }
+        function onQuickPicksProgress(data: any) {
+            console.log("Received Quick Picks progress:", data);
+        }
+        socket.on("connect", fetchQuickPicks);
+        socket.on("Search.Video.Multiple-response", onQuickPicksResponse);
+        socket.on("Search.Video.Multiple-progress", onQuickPicksProgress);
+        return () => {
+            socket.off("connect", fetchQuickPicks);
+            socket.off("Search.Video.Multiple-response", onQuickPicksResponse);
+            socket.off("Search.Video.Multiple-progress", onQuickPicksProgress);
+        };
+    }, [socket.connected]);
     return (
         <section className="my-12">
             <div className="flex items-center justify-between mb-6">
@@ -93,24 +124,58 @@ function QuickPicksSection() {
                     </button>
                 </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {[...Array(10)].map((_, index) => (
-                    <div key={index} className="flex items-center bg-black/40 backdrop-blur-lg rounded-md overflow-hidden shadow-md">
-                        <img src="/placeholder-album.jpg" alt="Album Art" className="w-16 h-16 object-cover" />
-                        <div className="p-3">
-                            <p className="text-sm font-semibold">Song Title</p> <p className="text-xs text-gray-400">Artist - Album</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            {quickPicksLoading ? (
+                <p>Loading Quick Picks...</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {quickPicksData.length > 0 ? (
+                        quickPicksData.map((video, index) => (
+                            <div key={video.id || index} className="flex items-center bg-black/40 backdrop-blur-lg rounded-md overflow-hidden shadow-md">
+                                <img src={video.thumbnails?.[0]?.url || "/placeholder-album.jpg"} alt="Album Art" className="w-16 h-16 object-cover" />
+                                <div className="p-3">
+                                    <p className="text-sm font-semibold">{video.title}</p> <p className="text-xs text-gray-400">{video.channelname}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No Quick Picks found.</p>
+                    )}
+                </div>
+            )}
         </section>
     );
 }
 function BandBaajaBaraatSection() {
+    const [trendingVideosData, setTrendingVideosData] = useState<any[]>([]);
+    const [trendingLoading, setTrendingLoading] = useState(true);
+    useEffect(() => {
+        if (socket.connected) fetchTrendingVideos();
+        function fetchTrendingVideos() {
+            setTrendingLoading(true);
+            socket.emit("yt-dlx-command", { command: "Search.Video.Multiple", options: { query: "trending music videos", orderBy: "viewCount", verbose: true } });
+        }
+        function onTrendingResponse(data: any) {
+            console.log("Received Trending Videos response:", data);
+            if (data.status === "success") setTrendingVideosData(data.data);
+            else setTrendingVideosData([]);
+            setTrendingLoading(false);
+        }
+        function onTrendingProgress(data: any) {
+            console.log("Received Trending Videos progress:", data);
+        }
+        socket.on("connect", fetchTrendingVideos);
+        socket.on("Search.Video.Multiple-response", onTrendingResponse);
+        socket.on("Search.Video.Multiple-progress", onTrendingProgress);
+        return () => {
+            socket.off("connect", fetchTrendingVideos);
+            socket.off("Search.Video.Multiple-response", onTrendingResponse);
+            socket.off("Search.Video.Multiple-progress", onTrendingProgress);
+        };
+    }, [socket.connected]);
     return (
         <section className="my-12">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent">Band Baaja Baraat</h2>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent">Trending Videos</h2>
                 <div className="flex items-center space-x-4">
                     <button className="p-2 bg-red-900 rounded-full hover:bg-red-800 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,20 +189,31 @@ function BandBaajaBaraatSection() {
                     </button>
                 </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                {[...Array(6)].map((_, index) => (
-                    <div key={index} className="flex flex-col">
-                        <img src="/placeholder-playlist.jpg" alt="Playlist Cover" className="w-full h-auto rounded-md mb-2" /> <p className="text-sm font-semibold">Playlist Title</p>
-                        <p className="text-xs text-gray-400">Description</p>
-                    </div>
-                ))}
-            </div>
+            {trendingLoading ? (
+                <p>Loading Trending Videos...</p>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                    {trendingVideosData.length > 0 ? (
+                        trendingVideosData.map((video, index) => (
+                            <div key={video.id || index} className="flex flex-col">
+                                <img src={video.thumbnails?.[0]?.url || "/placeholder-album.jpg"} alt="Video Thumbnail" className="w-full h-auto rounded-md mb-2" />
+                                <p className="text-sm font-semibold">{video.title}</p> <p className="text-xs text-gray-400">{video.channelname}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No trending videos found</p>
+                    )}
+                </div>
+            )}
         </section>
     );
 }
 export default function Home() {
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState("N/A");
+    const [videoUrl, setVideoUrl] = useState("");
+    const [ytDlxResult, setYtDlxResult] = useState<any>(null);
+    const [ytDlxProgress, setYtDlxProgress] = useState<any>(null);
     useEffect(() => {
         if (socket.connected) onConnect();
         function onConnect() {
@@ -151,20 +227,50 @@ export default function Home() {
             setIsConnected(false);
             setTransport("N/A");
         }
+        function onYtDlxResponse(data: any) {
+            console.log("Received yt-dlx response:", data);
+            setYtDlxResult(data);
+            setYtDlxProgress(null);
+        }
+        function onYtDlxProgress(data: any) {
+            console.log("Received yt-dlx progress:", data);
+            setYtDlxProgress(data.progress);
+        }
         socket.on("connect", onConnect);
         socket.on("disconnect", onDisconnect);
+        socket.on("Misc.Video.Extract-response", onYtDlxResponse);
+        socket.on("Misc.Video.Extract-progress", onYtDlxProgress);
         return () => {
             socket.off("connect", onConnect);
             socket.off("disconnect", onDisconnect);
+            socket.off("Misc.Video.Extract-response", onYtDlxResponse);
+            socket.off("Misc.Video.Extract-progress", onYtDlxProgress);
         };
     }, []);
+    const handleSearch = () => {
+        if (videoUrl) {
+            setYtDlxResult(null);
+            setYtDlxProgress(null);
+            socket.emit("yt-dlx-command", { command: "Misc.Video.Extract", options: { query: videoUrl, verbose: true } });
+        }
+    };
     return (
         <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_right,_#7f1d1d,_#000000_70%)] text-white">
             <Sidebar isConnected={isConnected} transport={transport} />
             <main className="ml-64 flex-1 flex flex-col">
-                <HeaderSearch />
+                <HeaderSearch videoUrl={videoUrl} setVideoUrl={setVideoUrl} handleSearch={handleSearch} />
                 <div className="flex-1 overflow-y-auto p-8">
-                    <CategoryButtons /> <QuickPicksSection /> <BandBaajaBaraatSection /> <QuickPicksSection /> <BandBaajaBaraatSection />
+                    {ytDlxProgress && (
+                        <div className="my-4 p-4 bg-blue-900/50 rounded-md">
+                            <h3 className="text-lg font-semibold mb-2">Progress:</h3> <pre>{JSON.stringify(ytDlxProgress, null, 2)}</pre>
+                        </div>
+                    )}
+                    {ytDlxResult && (
+                        <div className="my-4 p-4 bg-green-900/50 rounded-md">
+                            <h3 className="text-lg font-semibold mb-2">Result:</h3> <pre>{JSON.stringify(ytDlxResult, null, 2)}</pre>
+                        </div>
+                    )}
+                    <CategoryButtons /> <QuickPicksSection /> <BandBaajaBaraatSection />
                 </div>
             </main>
         </div>
