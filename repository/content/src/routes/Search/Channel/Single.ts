@@ -1,76 +1,156 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
-import { EventEmitter } from "events";
 const ZodSchema = z.object({ channelLink: z.string().min(2) });
 /**
- * @shortdesc Fetches data for a single YouTube channel.
+ * @shortdesc Fetches data for a YouTube channel using its link or ID.
  *
- * @description This function retrieves detailed information about a specific YouTube channel using its link or ID. It utilizes the 'youtubei' library to interact with the YouTube API.
+ * @description This function retrieves detailed information about a YouTube channel.
+ * It accepts either a full channel URL or a channel ID as input.
+ * The data fetching is performed using the `youtubei.js` library.
  *
- * The function requires the link or ID of the YouTube channel you want to fetch data for.
+ * The function requires a string representing the channel link (URL) or ID.
  *
- * It supports the following configuration options:
- * - **channelLink:** A string representing the link or ID of the YouTube channel. This is a mandatory parameter.
+ * The function supports the following configuration options:
+ * - **channelLink:** A string representing the YouTube channel's URL or ID. Must be at least 2 characters long. **Required**.
  *
- * The function returns an EventEmitter instance that emits events during the process:
- * - `"data"`: Emitted when the channel data is successfully fetched. The emitted data is an object containing detailed information about the channel.
- * - `"error"`: Emitted when an error occurs during any stage of the process, such as argument validation or failure to fetch channel data. The emitted data is the error message.
+ * The function returns a Promise that resolves with an object containing the fetched channel data if successful.
+ * The fetched data includes various details about the channel provided by the `youtubei.js` client.
  *
- * @param {object} options - An object containing the configuration options.
- * @param {string} options.channelLink - The link or ID of the YouTube channel. **Required**.
+ * @param {object} options - The configuration options for fetching channel data.
+ * @param {string} options.channelLink - The YouTube channel URL or ID (minimum 2 characters). **Required**.
  *
- * @returns {EventEmitter} An EventEmitter instance for handling events during channel data fetching.
+ * @returns {Promise<{ data: any }>} A Promise that resolves with an object containing a `data` property. The `data` property holds the raw channel data object fetched by the underlying library. The structure of this object depends on the data provided by the YouTube API.
  *
- * @example
- * // 1. Fetch data for a channel using its link
- * YouTubeDLX.Search.Channel.Single({ channelLink: "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA" })
- * .on("data", (data) => console.log("Channel Data:", data))
- * .on("error", (error) => console.error("Error:", error));
- *
- * @example
- * // 2. Fetch data for a channel using its ID
- * YouTubeDLX.Search.Channel.Single({ channelLink: "UC-9-kyTW8ZkZNSB7LxqIENA" })
- * .on("data", (data) => console.log("Channel Data:", data))
- * .on("error", (error) => console.error("Error:", error));
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing `channelLink`, `channelLink` is less than 2 characters).
+ * - Throws an `Error` if the underlying library (`youtubei.js`) is unable to fetch channel data for the provided link/ID, typically indicating the channel was not found or an API issue.
+ * - Throws a generic `Error` for any other unexpected issues during the process.
  *
  * @example
- * // 3. Missing required 'channelLink' parameter (will result in an error)
- * YouTubeDLX.Search.Channel.Single({} as any)
- * .on("error", (error) => console.error("Expected Error (missing channelLink):", error));
+ * // 1. Running Channel Data Fetch with a full Channel Link Example
+ * const channelLinkFull = "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA"; // Replace with a real channel link
+ * try {
+ * const result = await channel_data({ channelLink: channelLinkFull });
+ * console.log("Channel Data (Link):", result.data);
+ * } catch (error) {
+ * console.error("Channel Data Fetch with Link Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 4. Invalid 'channelLink' parameter (e.g., too short - will result in an error - Zod validation)
- * YouTubeDLX.Search.Channel.Single({ channelLink: "ab" })
- * .on("error", (error) => console.error("Expected Error (invalid channelLink length):", error));
+ * // 2. Running Channel Data Fetch with a Channel ID Example
+ * const channelId = "UC-9-kyTW8ZkZNSB7LxqIENA"; // Example Channel ID (MrBeast)
+ * try {
+ * const result = await channel_data({ channelLink: channelId });
+ * console.log("Channel Data (ID):", result.data);
+ * } catch (error) {
+ * console.error("Channel Data Fetch with ID Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 5. Channel not found or unable to fetch data for the provided link
- * // Note: This scenario depends on the 'youtubei' library's getChannel method behavior for invalid/non-existent links.
- * // The error emitted would be: "@error: Unable to fetch channel data for the provided link."
- * YouTubeDLX.Search.Channel.Single({ channelLink: "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID" })
- * .on("error", (error) => console.error("Expected Error (channel not found):", error));
+ * // 3. Running Zod Validation Error Example (Missing channelLink - will throw ZodError)
+ * try {
+ * await channel_data({} as any); // Using 'as any' to simulate missing required parameter
+ * console.log("This should not be reached - Missing channelLink Error.");
+ * } catch (error) {
+ * console.error("Expected Error (Missing channelLink):", error instanceof Error ? error.message : error);
+ * }
  *
+ * @example
+ * // 4. Running Zod Validation Error Example (Invalid channelLink Length - will throw ZodError)
+ * try {
+ * await channel_data({ channelLink: "ab" }); // channelLink is less than minimum length (2)
+ * console.log("This should not be reached - Invalid channelLink Length Error.");
+ * } catch (error) {
+ * console.error("Expected Error (Invalid channelLink Length):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Running Non-Existent Channel Error Example (will throw Error)
+ * // Use a link or ID that does not correspond to a valid YouTube channel.
+ * try {
+ * await channel_data({ channelLink: "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID" }); // Example of a non-existent link pattern
+ * console.log("This should not be reached - Non-Existent Channel Error.");
+ * } catch (error) {
+ * console.error("Expected Error (Channel Not Found):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Example of an Unexpected Error during fetch (e.g., network issue, API change)
+ * // This is harder to trigger predictably with a simple example.
+ * // try {
+ * //    // Use a channel link/ID that might somehow cause an unexpected issue with the internal client
+ * //    await channel_data({ channelLink: "link-or-id-causing-internal-error" });
+ * // } catch (error) {
+ * //    console.error("Expected Unexpected Error:", error instanceof Error ? error.message : error);
+ * // }
  */
-export default function channel_data({ channelLink }: z.infer<typeof ZodSchema>): EventEmitter {
-    const emitter = new EventEmitter();
-    (async () => {
-        try {
-            ZodSchema.parse({ channelLink });
-            const youtube = new Client();
-            const channelData: any = await youtube.getChannel(channelLink);
-            if (!channelData) {
-                emitter.emit("error", `${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
-                return;
-            }
-            emitter.emit("data", channelData);
-        } catch (error) {
-            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        } finally {
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+export default async function channel_data({ channelLink }: z.infer<typeof ZodSchema>): Promise<{ data: any }> {
+    try {
+        ZodSchema.parse({ channelLink });
+        const youtube = new Client();
+        const channelData: any = await youtube.getChannel(channelLink);
+        if (!channelData) {
+            throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
         }
-    })();
-    return emitter;
+        return { data: channelData };
+    } catch (error: any) {
+        if (error instanceof ZodError) {
+            const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
+            console.error(errorMessage);
+            throw new Error(errorMessage);
+        } else if (error instanceof Error) {
+            console.error(error.message);
+            throw error;
+        } else {
+            const unexpectedError = `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`;
+            console.error(unexpectedError);
+            throw new Error(unexpectedError);
+        }
+    } finally {
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+    }
 }
+(async () => {
+    const channelLink = "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA";
+    try {
+        console.log("--- Running Channel Data Fetch with Link ---");
+        const result = await channel_data({ channelLink });
+        console.log("Channel Data:", result.data);
+    } catch (error) {
+        console.error("Channel Data Fetch with Link Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Channel Data Fetch with ID ---");
+        const result = await channel_data({ channelLink: "UC-9-kyTW8ZkZNSB7LxqIENA" });
+        console.log("Channel Data:", result.data);
+    } catch (error) {
+        console.error("Channel Data Fetch with ID Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Missing channelLink Error ---");
+        await channel_data({} as any);
+        console.log("This should not be reached - Missing channelLink Error.");
+    } catch (error) {
+        console.error("Expected Error (Missing channelLink):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Invalid channelLink Length Error ---");
+        await channel_data({ channelLink: "ab" });
+        console.log("This should not be reached - Invalid channelLink Length Error.");
+    } catch (error) {
+        console.error("Expected Error (Invalid channelLink Length):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Non-Existent Channel Error ---");
+        await channel_data({ channelLink: "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID" });
+        console.log("This should not be reached - Non-Existent Channel Error.");
+    } catch (error) {
+        console.error("Expected Error (Channel Not Found):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+})();

@@ -3,7 +3,6 @@ import colors from "colors";
 import { Client } from "youtubei";
 import { z, ZodError } from "zod";
 import Tuber from "../../../utils/Agent";
-import { EventEmitter } from "events";
 import { Innertube, UniversalCache } from "youtubei.js";
 import { CommentType } from "../../../interfaces/CommentType";
 import type EngineOutput from "../../../interfaces/EngineOutput";
@@ -98,11 +97,7 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
             text: caption.text,
             start: caption.start,
             duration: caption.duration,
-            segments: caption.segments.map(segment => ({
-                utf8: segment.utf8,
-                tOffsetMs: segment.tOffsetMs,
-                acAsrConf: segment.acAsrConf,
-            })),
+            segments: caption.segments.map(segment => ({ utf8: segment.utf8, tOffsetMs: segment.tOffsetMs, acAsrConf: segment.acAsrConf })),
         }));
         if (verbose) console.log(colors.green("@info:"), "Video transcript fetched!");
         return transcript;
@@ -112,194 +107,352 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
     }
 }
 /**
- * @shortdesc Extracts comprehensive information about a YouTube video.
+ * @shortdesc Extracts comprehensive data for a YouTube video based on a search query or URL.
  *
- * @description This function extracts detailed data for a given YouTube video, including its metadata, available audio and video formats, comments, and transcript. It uses multiple internal tools to gather this information based on a search query or video URL. Optional parameters allow for using Tor and enabling verbose logging.
+ * @description This function fetches detailed information about a YouTube video, including its metadata,
+ * available audio/video formats, comments, and transcript. It uses an internal engine (`Tuber`)
+ * for initial metadata and format extraction and `youtubei.js` for comments and transcript.
  *
- * The function requires a search query or video URL. It compiles data from various sources into a single, comprehensive output.
+ * The function requires a valid search query or URL to identify the YouTube video.
+ * It processes and formats various metadata points such as upload date/age, duration, and counts (views, likes, comments, channel followers).
+ * Comments and the video transcript are fetched separately and included in the results if available.
  *
- * It supports the following configuration options:
- * - **query:** A string representing the search query or video URL of the video to extract information from. This is a mandatory parameter.
- * - **useTor:** An optional boolean value. If true, the function will attempt to use Tor for certain network requests (specifically, those made by the internal Tuber agent), enhancing anonymity.
- * - **verbose:** An optional boolean value. If true, enables detailed logging to the console throughout the extraction process, including fetching metadata, comments, and transcript.
+ * The function supports the following configuration options:
+ * - **Query:** A string representing the Youtube query or video URL. Must be at least 2 characters long. **Required**.
+ * - **UseTor:** An optional boolean flag to route initial metadata requests through Tor. Defaults to `false`.
+ * - **Verbose:** An optional boolean value that, if true, enables detailed console logging during the process, including steps for fetching metadata, comments, and transcript. Defaults to `false`.
  *
- * The function returns an EventEmitter instance that emits events during the extraction process:
- * - `"data"`: Emitted when all requested information is successfully extracted and compiled. The emitted data is a comprehensive object containing video formats, detailed metadata, comments (if available), and the transcript (if available).
- * - `"error"`: Emitted when an error occurs at any stage, such as argument validation, failure to retrieve initial video data, or issues fetching comments or the transcript. The emitted data is the error message.
+ * The function returns a Promise that resolves with an object containing all the extracted video data.
+ * The returned data structure includes detailed information about available audio/video formats (both best quality and standard resolutions, with and without DRC, DASH manifests),
+ * comprehensive formatted metadata (id, urls, title, counts, uploader info, categories, duration, description, dates, channel info),
+ * comments (an array of `CommentType` objects or `null` if fetching fails or no comments are found),
+ * and transcript (an array of `VideoTranscriptType` objects or `null` if fetching fails or no transcript is found).
+ * Helper functions are used internally to format duration, upload age, and counts into human-readable strings.
  *
- * @param {object} options - An object containing the configuration options.
- * @param {string} options.query - The search query or video URL. **Required**.
- * @param {boolean} [options.useTor=false] - Whether to use Tor for certain requests.
+ * @param {object} options - The configuration options for extracting video data.
+ * @param {string} options.query - The Youtube query or video URL (minimum 2 characters). **Required**.
+ * @param {boolean} [options.useTor=false] - If true, use Tor for initial data fetching.
  * @param {boolean} [options.verbose=false] - Enable verbose logging.
  *
- * @returns {EventEmitter} An EventEmitter instance for handling events during the extraction process.
+ * @returns {Promise<{ data: {
+ * BestAudioLow: any, // Details about best low quality audio format
+ * BestAudioHigh: any, // Details about best high quality audio format
+ * BestVideoLow: any, // Details about best low quality video format
+ * BestVideoHigh: any, // Details about best high quality video format
+ * AudioLowDRC: any, // Details about low quality audio format with DRC
+ * AudioHighDRC: any, // Details about high quality audio format with DRC
+ * AudioLow: any[], // Array of low quality audio formats
+ * AudioHigh: any[], // Array of high quality audio formats
+ * VideoLowHDR: any[], // Array of low quality HDR video formats
+ * VideoHighHDR: any[], // Array of high quality HDR video formats
+ * VideoLow: any[], // Array of low quality video formats
+ * VideoHigh: any[], // Array of high quality video formats
+ * ManifestLow: any, // Low quality DASH manifest details
+ * ManifestHigh: any, // High quality DASH manifest details
+ * meta_data: { // Formatted video metadata
+ * id: string,
+ * original_url: string,
+ * webpage_url: string,
+ * title: string,
+ * view_count?: number,
+ * like_count?: number,
+ * view_count_formatted: string, // Formatted view count (e.g., "1.2M")
+ * like_count_formatted: string, // Formatted like count (e.g., "50K")
+ * uploader?: string,
+ * uploader_id?: string,
+ * uploader_url?: string,
+ * thumbnail?: string,
+ * categories?: string[],
+ * time?: number, // Video duration in seconds
+ * duration: { hours: number, minutes: number, seconds: number, formatted: string }, // Formatted video duration
+ * age_limit?: number,
+ * live_status?: string,
+ * description?: string, // Full description
+ * full_description?: string, // Alias for description
+ * upload_date: string, // Formatted upload date (e.g., "May 15, 2023")
+ * upload_ago: number, // Upload age in days
+ * upload_ago_formatted: { years: number, months: number, days: number, formatted: string }, // Formatted upload age
+ * comment_count?: number,
+ * comment_count_formatted: string, // Formatted comment count
+ * channel_id?: string,
+ * channel_name?: string,
+ * channel_url?: string,
+ * channel_follower_count?: number,
+ * channel_follower_count_formatted: string, // Formatted channel follower count
+ * },
+ * comments: CommentType[] | null, // Array of comments or null
+ * transcript: VideoTranscriptType[] | null, // Array of transcript entries or null
+ * } }> A Promise that resolves with an object containing the extracted video data under the `data` key.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing `query`, `query` is less than 2 characters).
+ * - Throws an `Error` if the internal engine (`Tuber`) fails to retrieve a response or metadata.
+ * - Throws an `Error` if parsing the upload date fails.
+ * - Throws a generic `Error` for any other unexpected issues during the extraction process. Note that errors during comments or transcript fetching will result in those fields being `null` rather than throwing an error from the main `extract` function.
  *
  * @example
- * // 1. Extract information for a video using a query
- * YouTubeDLX.Misc.Video.Extract({ query: "your search query or url" })
- * .on("data", (data) => console.log("Video Data:", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 1. Running Basic Video Extract (fetches all data for a video)
+ * const query = "your search query or url";
+ * try {
+ * const result = await extract({ query });
+ * console.log("Video Data:", result.data);
+ * // Access specific data, e.g., result.data.meta_data.title, result.data.comments, result.data.transcript
+ * } catch (error) {
+ * console.error("Basic Video Extract Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 2. Extract information using a query and enable verbose logging
- * YouTubeDLX.Misc.Video.Extract({ query: "your search query or url", verbose: true })
- * .on("data", (data) => console.log("Video Data (Verbose):", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 2. Running Video Extract with Verbose Logging
+ * const query = "your search query or url";
+ * try {
+ * const result = await extract({ query, verbose: true });
+ * console.log("Video Data (Verbose):", result.data);
+ * } catch (error) {
+ * console.error("Video Extract with Verbose Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 3. Extract information using a query and attempt to use Tor
- * YouTubeDLX.Misc.Video.Extract({ query: "your search query or url", useTor: true })
- * .on("data", (data) => console.log("Video Data (with Tor):", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 3. Running Video Extract with Tor
+ * const query = "your search query or url";
+ * try {
+ * const result = await extract({ query, useTor: true });
+ * console.log("Video Data (with Tor):", result.data);
+ * } catch (error) {
+ * console.error("Video Extract with Tor Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 4. Extract information using a query with both verbose logging and Tor
- * YouTubeDLX.Misc.Video.Extract({ query: "your search query or url", verbose: true, useTor: true })
- * .on("data", (data) => console.log("Video Data (Verbose, with Tor):", data))
- * .on("error", (error) => console.error("Error:", error));
+ * // 4. Running Video Extract with Verbose Logging and Tor
+ * const query = "your search query or url";
+ * try {
+ * const result = await extract({ query, verbose: true, useTor: true });
+ * console.log("Video Data (Verbose, with Tor):", result.data);
+ * } catch (error) {
+ * console.error("Video Extract with Verbose and Tor Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 5. Missing required 'query' parameter (will result in an error)
- * YouTubeDLX.Misc.Video.Extract({} as any)
- * .on("error", (error) => console.error("Expected Error (missing query):", error));
+ * // 5. Running Zod Validation Error Example (Missing Query - will throw ZodError)
+ * try {
+ * await extract({} as any); // Using 'as any' to simulate missing required parameter
+ * console.log("This should not be reached - Missing Query Error.");
+ * } catch (error) {
+ * console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 6. Query results in no engine data
- * // Note: This scenario depends on the internal Tuber function's behavior.
- * // You can simulate by providing a query that is unlikely to return results.
- * YouTubeDLX.Misc.Video.Extract({ query: "a query that should return no results 12345abcde" })
- * .on("error", (error) => console.error("Expected Error (no engine data):", error));
+ * // 6. Running Zod Validation Error Example (Short Query - will throw ZodError)
+ * try {
+ * await extract({ query: "a" }); // Query is less than minimum length (2)
+ * console.log("This should not be reached - Short Query Example.");
+ * } catch (error) {
+ * console.error("Expected Error (Query Too Short):", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 7. Engine data missing metadata
- * // Note: This is an internal error scenario, difficult to trigger via simple example call.
- * // The error emitted would be: "@error: Metadata not found in the response!"
+ * // 7. Running Error Example when Engine Data is not retrieved (e.g., query yields no results or engine fails)
+ * // Use a query that is highly unlikely to return any results.
+ * try {
+ * await extract({ query: "a query that should return no results 12345abcde" });
+ * console.log("This should not be reached - No Engine Data Error.");
+ * } catch (error) {
+ * console.error("Expected Error (No Engine Data):", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 8. Failed to parse upload date (internal error)
- * // Note: This is an internal error scenario, unlikely with standard YouTube data.
- * // The error emitted would be: "@error: Failed to parse upload date: ..."
+ * // 8. Running Example for Video with No Comments or Comments Disabled
+ * // Use a query for a video known to exist but have no comments or comments disabled.
+ * try {
+ * const result = await extract({ query: "a video where comments are disabled" });
+ * console.log("Video Data (Comments Null):", result.data.comments === null);
+ * // Access other data like metadata or formats which should still be present
+ * } catch (error) {
+ * console.error("Video with No Comments Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 9. Failed to fetch comments
- * // Note: This can happen if comments are disabled or due to network issues during comment fetching.
- * // The `comments` property in the output will be null, and an error might be logged if verbose is true.
- * // The main emitter will only emit an error if the *entire* process fails critically before fetching comments/transcript.
- * // If comments fetching fails but the rest succeeds, the 'data' event will fire with `comments: null`.
- * // Example showing data event even if comments fail:
- * YouTubeDLX.Misc.Video.Extract({ query: "a video where comments are disabled" })
- * .on("data", (data) => console.log("Video Data (comments null):", data.comments === null))
- * .on("error", (error) => console.error("Error:", error)); // This error is less likely unless the main data fetch fails
+ * // 9. Running Example for Video with No Transcript
+ * // Use a query for a video known to exist but have no transcript/captions available.
+ * try {
+ * const result = await extract({ query: "a video with no transcript" });
+ * console.log("Video Data (Transcript Null):", result.data.transcript === null);
+ * // Access other data like metadata or formats which should still be present
+ * } catch (error) {
+ * console.error("Video with No Transcript Error:", error instanceof Error ? error.message : error);
+ * }
  *
  * @example
- * // 10. Failed to fetch transcript
- * // Note: This can happen if subtitles/transcripts are not available for the video or due to network issues.
- * // The `transcript` property in the output will be null, and an error might be logged if verbose is true.
- * // Similar to comments, the main emitter will only emit an error if the entire process fails critically before fetching comments/transcript.
- * // If transcript fetching fails but the rest succeeds, the 'data' event will fire with `transcript: null`.
- * // Example showing data event even if transcript fails:
- * YouTubeDLX.Misc.Video.Extract({ query: "a video with no transcript" })
- * .on("data", (data) => console.log("Video Data (transcript null):", data.transcript === null))
- * .on("error", (error) => console.error("Error:", error)); // This error is less likely unless the main data fetch fails
- *
- * @example
- * // 11. An unexpected error occurs during processing
- * // Note: This is a catch-all for unforeseen errors. The emitted error message will vary.
- * // YouTubeDLX.Misc.Video.Extract({...})
- * // .on("error", (error) => console.error("Unexpected Error:", error)); // Emits "@error: An unexpected error occurred: ..."
+ * // 10. Example of an Unexpected Error during the primary extraction process (e.g., network issue, Tuber error not caught)
+ * // This is harder to trigger predictably with a simple example.
+ * // try {
+ * //    // Use a query that might somehow cause an unexpected issue with the engine or date parsing
+ * //    await extract({ query: "query causing internal error" });
+ * // } catch (error) {
+ * //    console.error("Expected Unexpected Error:", error instanceof Error ? error.message : error);
+ * // }
  */
-export default function extract(options: z.infer<typeof ZodSchema>): EventEmitter {
-    const emitter = new EventEmitter();
-    (async () => {
-        try {
-            const { query, useTor, verbose } = ZodSchema.parse(options);
-            const metaBody: EngineOutput = await Tuber({ query, verbose, useTor });
-            if (!metaBody) {
-                emitter.emit("error", `${colors.red("@error:")} Unable to get response!`);
-                return;
-            }
-            if (!metaBody.metaData) {
-                emitter.emit("error", `${colors.red("@error:")} Metadata not found in the response!`);
-                return;
-            }
-            let uploadDate: Date | undefined;
-            try {
-                if (metaBody.metaData.upload_date) {
-                    uploadDate = new Date(metaBody.metaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
-                }
-            } catch (error) {
-                emitter.emit("error", `${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
-            }
-            const currentDate = new Date();
-            const daysAgo = uploadDate ? Math.floor((currentDate.getTime() - uploadDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
-            const prettyDate = uploadDate?.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) || "N/A";
-            const uploadAgoObject = calculateUploadAgo(daysAgo);
-            const videoTimeInSeconds = metaBody.metaData.duration;
-            const videoDuration = calculateVideoDuration(videoTimeInSeconds);
-            const viewCountFormatted = metaBody.metaData.view_count !== undefined ? formatCount(metaBody.metaData.view_count) : "N/A";
-            const likeCountFormatted = metaBody.metaData.like_count !== undefined ? formatCount(metaBody.metaData.like_count) : "N/A";
-            const commentCountFormatted = metaBody.metaData.comment_count !== undefined ? formatCount(metaBody.metaData.comment_count) : "N/A";
-            const channelFollowerCountFormatted = metaBody.metaData.channel_follower_count !== undefined ? formatCount(metaBody.metaData.channel_follower_count) : "N/A";
-            const commentsPromise = fetchCommentsByVideoId(metaBody.metaData.id, verbose ?? false);
-            const transcriptPromise = fetchVideoTranscript(metaBody.metaData.id, verbose ?? false);
-            const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
-            const payload = {
-                BestAudioLow: metaBody.BestAudioLow,
-                BestAudioHigh: metaBody.BestAudioHigh,
-                BestVideoLow: metaBody.BestVideoLow,
-                BestVideoHigh: metaBody.BestVideoHigh,
-                AudioLowDRC: metaBody.AudioLowDRC,
-                AudioHighDRC: metaBody.AudioHighDRC,
-                AudioLow: metaBody.AudioLow,
-                AudioHigh: metaBody.AudioHigh,
-                VideoLowHDR: metaBody.VideoLowHDR,
-                VideoHighHDR: metaBody.VideoHighHDR,
-                VideoLow: metaBody.VideoLow,
-                VideoHigh: metaBody.VideoHigh,
-                ManifestLow: metaBody.ManifestLow,
-                ManifestHigh: metaBody.ManifestHigh,
-                meta_data: {
-                    id: metaBody.metaData.id,
-                    original_url: metaBody.metaData.original_url,
-                    webpage_url: metaBody.metaData.webpage_url,
-                    title: metaBody.metaData.title,
-                    view_count: metaBody.metaData.view_count,
-                    like_count: metaBody.metaData.like_count,
-                    view_count_formatted: viewCountFormatted,
-                    like_count_formatted: likeCountFormatted,
-                    uploader: metaBody.metaData.uploader,
-                    uploader_id: metaBody.metaData.uploader_id,
-                    uploader_url: metaBody.metaData.uploader_url,
-                    thumbnail: metaBody.metaData.thumbnail,
-                    categories: metaBody.metaData.categories,
-                    time: videoTimeInSeconds,
-                    duration: videoDuration,
-                    age_limit: metaBody.metaData.age_limit,
-                    live_status: metaBody.metaData.live_status,
-                    description: metaBody.metaData.description,
-                    full_description: metaBody.metaData.description,
-                    upload_date: prettyDate,
-                    upload_ago: daysAgo,
-                    upload_ago_formatted: uploadAgoObject,
-                    comment_count: metaBody.metaData.comment_count,
-                    comment_count_formatted: commentCountFormatted,
-                    channel_id: metaBody.metaData.channel_id,
-                    channel_name: metaBody.metaData.channel,
-                    channel_url: metaBody.metaData.channel_url,
-                    channel_follower_count: metaBody.metaData.channel_follower_count,
-                    channel_follower_count_formatted: channelFollowerCountFormatted,
-                },
-                comments,
-                transcript,
-            };
-            emitter.emit("data", payload);
-        } catch (error) {
-            if (error instanceof ZodError) emitter.emit("error", `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
-            else if (error instanceof Error) emitter.emit("error", `${colors.red("@error:")} ${error.message}`);
-            else emitter.emit("error", `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
-        } finally {
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+export default async function extract(options: z.infer<typeof ZodSchema>): Promise<{ data: any }> {
+    try {
+        const { query, useTor, verbose } = ZodSchema.parse(options);
+        const metaBody: EngineOutput = await Tuber({ query, verbose, useTor });
+        if (!metaBody) {
+            throw new Error(`${colors.red("@error:")} Unable to get response!`);
         }
-    })();
-    return emitter;
+        if (!metaBody.metaData) {
+            throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
+        }
+        let uploadDate: Date | undefined;
+        try {
+            if (metaBody.metaData.upload_date) {
+                uploadDate = new Date(metaBody.metaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
+            }
+        } catch (error) {
+            throw new Error(`${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        const currentDate = new Date();
+        const daysAgo = uploadDate ? Math.floor((currentDate.getTime() - uploadDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+        const prettyDate = uploadDate?.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) || "N/A";
+        const uploadAgoObject = calculateUploadAgo(daysAgo);
+        const videoTimeInSeconds = metaBody.metaData.duration;
+        const videoDuration = calculateVideoDuration(videoTimeInSeconds);
+        const viewCountFormatted = metaBody.metaData.view_count !== undefined ? formatCount(metaBody.metaData.view_count) : "N/A";
+        const likeCountFormatted = metaBody.metaData.like_count !== undefined ? formatCount(metaBody.metaData.like_count) : "N/A";
+        const commentCountFormatted = metaBody.metaData.comment_count !== undefined ? formatCount(metaBody.metaData.comment_count) : "N/A";
+        const channelFollowerCountFormatted = metaBody.metaData.channel_follower_count !== undefined ? formatCount(metaBody.metaData.channel_follower_count) : "N/A";
+        const commentsPromise = fetchCommentsByVideoId(metaBody.metaData.id, verbose ?? false);
+        const transcriptPromise = fetchVideoTranscript(metaBody.metaData.id, verbose ?? false);
+        const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
+        const payload = {
+            BestAudioLow: metaBody.BestAudioLow,
+            BestAudioHigh: metaBody.BestAudioHigh,
+            BestVideoLow: metaBody.BestVideoLow,
+            BestVideoHigh: metaBody.BestVideoHigh,
+            AudioLowDRC: metaBody.AudioLowDRC,
+            AudioHighDRC: metaBody.AudioHighDRC,
+            AudioLow: metaBody.AudioLow,
+            AudioHigh: metaBody.AudioHigh,
+            VideoLowHDR: metaBody.VideoLowHDR,
+            VideoHighHDR: metaBody.VideoHighHDR,
+            VideoLow: metaBody.VideoLow,
+            VideoHigh: metaBody.VideoHigh,
+            ManifestLow: metaBody.ManifestLow,
+            ManifestHigh: metaBody.ManifestHigh,
+            meta_data: {
+                id: metaBody.metaData.id,
+                original_url: metaBody.metaData.original_url,
+                webpage_url: metaBody.metaData.webpage_url,
+                title: metaBody.metaData.title,
+                view_count: metaBody.metaData.view_count,
+                like_count: metaBody.metaData.like_count,
+                view_count_formatted: viewCountFormatted,
+                like_count_formatted: likeCountFormatted,
+                uploader: metaBody.metaData.uploader,
+                uploader_id: metaBody.metaData.uploader_id,
+                uploader_url: metaBody.metaData.uploader_url,
+                thumbnail: metaBody.metaData.thumbnail,
+                categories: metaBody.metaData.categories,
+                time: videoTimeInSeconds,
+                duration: videoDuration,
+                age_limit: metaBody.metaData.age_limit,
+                live_status: metaBody.metaData.live_status,
+                description: metaBody.metaData.description,
+                full_description: metaBody.metaData.description,
+                upload_date: prettyDate,
+                upload_ago: daysAgo,
+                upload_ago_formatted: uploadAgoObject,
+                comment_count: metaBody.metaData.comment_count,
+                comment_count_formatted: commentCountFormatted,
+                channel_id: metaBody.metaData.channel_id,
+                channel_name: metaBody.metaData.channel,
+                channel_url: metaBody.metaData.channel_url,
+                channel_follower_count: metaBody.metaData.channel_follower_count,
+                channel_follower_count_formatted: channelFollowerCountFormatted,
+            },
+            comments,
+            transcript,
+        };
+        return { data: payload };
+    } catch (error: any) {
+        if (error instanceof ZodError) {
+            const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
+            console.error(errorMessage);
+            throw new Error(errorMessage);
+        } else if (error instanceof Error) {
+            console.error(error.message);
+            throw error;
+        } else {
+            const unexpectedError = `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`;
+            console.error(unexpectedError);
+            throw new Error(unexpectedError);
+        }
+    } finally {
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+    }
 }
+(async () => {
+    const query = "your search query or url";
+    try {
+        console.log("--- Running Basic Video Extract ---");
+        const result = await extract({ query });
+        console.log("Video Data:", result.data);
+    } catch (error) {
+        console.error("Basic Video Extract Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Video Extract with Verbose Logging ---");
+        const result = await extract({ query, verbose: true });
+        console.log("Video Data (Verbose):", result.data);
+    } catch (error) {
+        console.error("Video Extract with Verbose Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Video Extract with Tor ---");
+        const result = await extract({ query, useTor: true });
+        console.log("Video Data (with Tor):", result.data);
+    } catch (error) {
+        console.error("Video Extract with Tor Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Video Extract with Verbose and Tor ---");
+        const result = await extract({ query, verbose: true, useTor: true });
+        console.log("Video Data (Verbose, with Tor):", result.data);
+    } catch (error) {
+        console.error("Video Extract with Verbose and Tor Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Missing Query Error ---");
+        await extract({} as any);
+        console.log("This should not be reached - Missing Query Error.");
+    } catch (error) {
+        console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running No Engine Data Error ---");
+        await extract({ query: "a query that should return no results 12345abcde" });
+        console.log("This should not be reached - No Engine Data Error.");
+    } catch (error) {
+        console.error("Expected Error (No Engine Data):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Video with No Comments ---");
+        const result = await extract({ query: "a video where comments are disabled" });
+        console.log("Video Data (Comments Null):", result.data.comments === null);
+    } catch (error) {
+        console.error("Video with No Comments Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+    try {
+        console.log("--- Running Video with No Transcript ---");
+        const result = await extract({ query: "a video with no transcript" });
+        console.log("Video Data (Transcript Null):", result.data.transcript === null);
+    } catch (error) {
+        console.error("Video with No Transcript Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+})();
