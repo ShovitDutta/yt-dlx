@@ -118,6 +118,7 @@ export default async function relatedVideosFn({ videoId }: RelatedVideosOptions)
         if (!videos || videos.length === 0) {
             throw new Error(`${colors.red("@error:")} No related videos found for the provided video ID.`);
         }
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return videos;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -133,6 +134,5 @@ export default async function relatedVideosFn({ videoId }: RelatedVideosOptions)
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
