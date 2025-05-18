@@ -165,6 +165,5 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
     } else {
         console.log(colors.green("All essential external tools located successfully via yt-dlx."));
     }
-
     return results;
 }
