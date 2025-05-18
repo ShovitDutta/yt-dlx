@@ -1,5 +1,5 @@
-import * as vitest from "vitest";
 import videoData from "../../../../routes/Search/Video/Single";
+import * as vitest from "vitest";
 vitest.describe("videoData", () => {
     const rawVideoId = "dQw4w9WgXcQ";
     const invalidVideoLink = "this is not a youtube link";
