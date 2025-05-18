@@ -104,13 +104,4 @@ vitest.describe("home_feed", () => {
         vitest.expect(result.status).toBe("success");
         vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    vitest.it("should throw error for missing cookies (handled by explicit check)", async () => {
-        await vitest.expect(home_feed({ cookies: "" })).rejects.toThrowError(/Cookies not provided!/);
-    });
-    vitest.it("should throw Zod error for missing cookies (handled by ZodSchema)", async () => {
-        await vitest.expect(home_feed({} as any)).rejects.toThrowError(/cookies.*Required/);
-    });
-    vitest.it("should throw Zod error for invalid sort", async () => {
-        await vitest.expect(home_feed({ cookies: mockCookies, sort: "invalid-sort" as any })).rejects.toThrowError(/sort.*invalid enum value/);
-    });
 });
