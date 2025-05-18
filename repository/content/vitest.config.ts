@@ -5,11 +5,11 @@ export default defineConfig({
         environment: "node",
         include: ["spec/**/*.test.ts"],
         globals: true,
-        // resolve: {
-        //   alias: {
-        //     '@/': new URL('./src/', import.meta.url).pathname,
-        //   },
-        // },
+        resolve: {
+            alias: {
+                "@/": new URL("./src/", import.meta.url).pathname,
+            },
+        },
 
         // Optional: Add setup files if you have global setup/teardown logic.
         // setupFiles: ['./spec/setup.ts'],
