@@ -67,14 +67,9 @@ const binDL = async (url, filepath, binaryName, retries = 3) => {
 const main = async () => {
     var binaries = [];
     if (process.platform === "linux") {
-        binaries = [{ name: "yt-dlx.bin", url: "" }];
+        binaries = [{ name: "yt-dlx.bin", url: "https://drive.usercontent.google.com/download?id=10kWUAtOYuwhiJ5Z3b2xZhlC_czV9xiZL&export=download&authuser=0&confirm=t&uuid=b7b1e027-88f6-4097-ab58-2d663b9cb299&at=ALoNOgnFRkpzQo5lAWuXtDQX3uy8%3A1747548092781" }];
     } else if (process.platform === "win32") {
-        binaries = [
-            {
-                name: "yt-dlx.exe",
-                url: "https://drive.usercontent.google.com/download?id=1Em3oWflxGABtlz9hgwNbDAFJvHqWQXsm&export=download&authuser=0&confirm=t&uuid=0f7d0449-8815-4bdd-894b-90d1f9046b5b&at=ALoNOgksLoVOeuadn5vKFG0HD6bn%3A1747544764031",
-            },
-        ];
+        binaries = [{name: "yt-dlx.exe",url: "https://drive.usercontent.google.com/download?id=1Em3oWflxGABtlz9hgwNbDAFJvHqWQXsm&export=download&authuser=0&confirm=t&uuid=0f7d0449-8815-4bdd-894b-90d1f9046b5b&at=ALoNOgksLoVOeuadn5vKFG0HD6bn%3A1747544764031",},];
     } else {
         console.error(`${colors.red("@error:")} Unsupported platform! Please use Linux or Windows.`);
         process.exit(1);
