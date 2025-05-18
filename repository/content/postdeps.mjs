@@ -74,22 +74,22 @@ const main = async () => {
             },
             {
                 name: "ffmpeg.bin",
-                url: "https://drive.usercontent.google.com/download?id=1mTJXoZ0JyOGREZIkd7YXTtnJyPeBR7-t&export=download&authuser=0&confirm=t&uuid=3c57889a-9438-4311-82b2-c04a7efd512e&at=APcmpoy7GW4zIFwQytaMrfqXuYav%3A1744944760404",
+                url: "",
             },
             {
                 name: "ffprobe.bin",
-                url: "https://drive.usercontent.google.com/download?id=1JaLMy9MAvSPOWYGYrf2m4zzJUbDk4sig&export=download&authuser=0&confirm=t&uuid=abf65991-2d2a-4e4b-9364-0bdc2770c023&at=APcmpowjfOxnrt0KtqxHBmQ-0Y1y%3A1744944786413",
+                url: "",
             },
         ];
     } else if (process.platform === "win32") {
         binaries = [
             {
                 name: "yt-dlx.exe",
-                url: "https://drive.usercontent.google.com/download?id=1-3qW3iGz1SqxO4zjKEaJtBjBJNswLOHq&export=download&authuser=0&confirm=t&uuid=4a76f769-5832-4b87-944d-30230f64a485&at=ALoNOgmTnShUg2BEdxd2tzywkbNr%3A1747192910877",
+                url: "",
             },
             {
                 name: "ffmpeg.exe",
-                url: "https://drive.usercontent.google.com/download?id=1EcKV_ORRwJ-cKpjjiVl0y4oG5bNvp6SY&export=download&authuser=0&confirm=t&uuid=e338b1b2-fde5-45ab-876e-4db0f756eddb&at=APcmpozZLuKfkgmBz3wqCUF9RQxY%3A1744943836996",
+                url: "",
             },
             {
                 name: "ffprobe.exe",
