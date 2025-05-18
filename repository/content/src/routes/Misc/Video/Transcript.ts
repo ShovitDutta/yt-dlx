@@ -122,17 +122,6 @@ type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
  * //    console.error("Expected Unexpected Error:", error instanceof Error ? error.message : error);
  * // }
  */
-export interface CaptionSegment {
-    utf8: string;
-    tOffsetMs?: number;
-    acAsrConf: number;
-}
-export interface VideoTranscriptType {
-    text: string;
-    start: number;
-    duration: number;
-    segments: CaptionSegment[];
-}
 export default async function videoTranscript({ videoLink }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
     try {
         ZodSchema.parse({ videoLink });
