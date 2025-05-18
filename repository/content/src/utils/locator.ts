@@ -44,8 +44,6 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
         return results;
     }
     results["yt-dlx"] = ytdlxPath;
-    console.log(colors.green(` ✓ Found yt-dlx:`), ytdlxPath);
-    console.log(colors.cyan(` Running "${ytdlxPath}" to get paths...`));
     try {
         const { stdout, stderr } = await execPromise(`"${ytdlxPath}"`);
         if (stderr) console.warn(colors.yellow(" Warning from yt-dlx when getting paths:"), stderr);
