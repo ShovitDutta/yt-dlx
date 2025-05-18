@@ -478,6 +478,7 @@ export default async function VideoCustom({
                 });
                 instance.run();
             });
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {
@@ -494,6 +495,5 @@ export default async function VideoCustom({
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
