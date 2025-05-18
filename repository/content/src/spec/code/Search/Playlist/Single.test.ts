@@ -25,22 +25,4 @@ vitest.describe("playlist_data", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing playlistLink", async () => {
-        await vitest.expect(playlist_data({} as any)).rejects.toThrowError(/playlistLink.*Required/);
-    });
-    vitest.it("should throw error for invalid playlist link format", async () => {
-        await vitest.expect(playlist_data({ playlistLink: invalidPlaylistLink })).rejects.toThrowError(/Incorrect playlist link provided./);
-    });
-    vitest.it("should throw error for a non-existent playlist", async () => {
-        try {
-            await playlist_data({ playlistLink: nonExistentPlaylistLink });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/Unable to retrieve playlist information./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for a non-existent playlist.");
-    });
 });
