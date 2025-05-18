@@ -70,9 +70,10 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
         else console.warn(colors.yellow(` @warning: ytprobe not found via yt-dlx output. This might affect some features.`));
         if (toolPaths.tor_executable && typeof toolPaths.tor_executable === "string" && toolPaths.tor_executable !== "Not found in bundle") results.tor_executable = toolPaths.tor_executable;
         else console.warn(colors.yellow(` @warning: Tor executable not found via yt-dlx output. Tor proxy features will not work.`));
-        if (toolPaths.tor_data_directory && typeof toolPaths.tor_data_directory === "string" && toolPaths.tor_data_directory !== "Not found in bundle") {
+        if (toolPaths.tor_data_directory && typeof toolPaths.tor_data_directory === "string" && toolPaths.tor_data_directory !== "Not found in bundle")
             results.tor_data_directory = toolPaths.tor_data_directory;
-        } else console.warn(colors.yellow(` @warning: Tor data directory not found via yt-dlx output. Tor proxy features will not work.`));
+    }
+         else console.warn(colors.yellow(` @warning: Tor data directory not found via yt-dlx output. Tor proxy features will not work.`));
     } catch (execError: any) {
         console.error(colors.red("@error:"), `Failed to run yt-dlx executable at "${ytdlxPath}" to get paths:`, execError.message);
         console.error(colors.red("@error:"), "Cannot locate ffmpeg, ffprobe, etc. due to execution failure.");

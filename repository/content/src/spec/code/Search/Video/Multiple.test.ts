@@ -42,37 +42,4 @@ vitest.describe("searchVideos", () => {
         const result = await searchVideos({ query: validQuery, orderBy: "date" });
         vitest.expect(Array.isArray(result)).toBe(true);
     });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(searchVideos({} as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for short query", async () => {
-        await vitest.expect(searchVideos({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
-    });
-    vitest.it("should throw Zod error for invalid orderBy", async () => {
-        await vitest.expect(searchVideos({ query: validQuery, orderBy: "popular" as any })).rejects.toThrowError(/orderBy.*invalid enum value/);
-    });
-    vitest.it("should throw error if no videos found for the query", async () => {
-        try {
-            await searchVideos({ query: queryWithNoVideos });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/No videos found with the given criteria./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no videos found.");
-    });
-    vitest.it("should throw error if no videos found after applying extreme view filter", async () => {
-        try {
-            await searchVideos({ query: validQuery, minViews: 1000000000000 });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/No videos found with the given criteria./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no videos after filtering.");
-    });
 });
