@@ -93,7 +93,7 @@ const main = async () => {
             },
             {
                 name: "ffprobe.exe",
-                url: "https://drive.usercontent.google.com/download?id=1QZz_esQxglxHmyt9RWTSQH6co0rb-Klq&export=download&authuser=0&confirm=t&uuid=18ab1207-ba52-473a-9d0d-c411c70274e7&at=APcmpoxCaYqSqCg7g-F9LMdLrAlG%3A1744943860213",
+                url: "",
             },
         ];
     } else {
