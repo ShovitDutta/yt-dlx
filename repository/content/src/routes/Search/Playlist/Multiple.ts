@@ -130,6 +130,7 @@ export default async function search_playlists({ playlistLink }: z.infer<typeof 
         if (!metaData) {
             throw new Error(`${colors.red("@error: ")} Unable to get playlist data.`);
         }
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: metaData };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -145,6 +146,5 @@ export default async function search_playlists({ playlistLink }: z.infer<typeof 
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
