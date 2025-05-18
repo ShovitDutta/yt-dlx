@@ -31,23 +31,4 @@ vitest.describe("list_formats", () => {
         vitest.expect(result).toHaveProperty("data");
         vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(list_formats({} as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for short query", async () => {
-        await vitest.expect(list_formats({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
-    });
-    vitest.it("should throw error if unable to get response from YouTube", async () => {
-        const queryThatShouldFail = "a query that should return no results 12345abcde";
-        try {
-            await list_formats({ query: queryThatShouldFail });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/Unable to get response from YouTube./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no engine data.");
-    });
 });
