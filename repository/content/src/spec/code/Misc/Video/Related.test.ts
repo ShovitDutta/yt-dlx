@@ -1,3 +1,4 @@
+import relatedVideosFn from "../../../../routes/Misc/Video/Related";
 import * as vitest from "vitest";
 vitest.describe("relatedVideosFn", () => {
     const videoIdWithRelated = "dQw4w9WgXcQ";
