@@ -66,33 +66,28 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
         }
         if (toolPaths.ffmpeg && typeof toolPaths.ffmpeg === "string" && toolPaths.ffmpeg !== "Not found in bundle") {
             results.ffmpeg = toolPaths.ffmpeg;
-            console.log(colors.green(` ✓ Found ffmpeg via yt-dlx:`), results.ffmpeg);
         } else {
             console.error(colors.red(` ✗ ffmpeg not found via yt-dlx output.`));
             console.error(colors.red("@error:"), "Please ensure FFmpeg is included in the yt-dlx bundle or accessible to the bundled executable.");
         }
         if (toolPaths.ffprobe && typeof toolPaths.ffprobe === "string" && toolPaths.ffprobe !== "Not found in bundle") {
             results.ffprobe = toolPaths.ffprobe;
-            console.log(colors.green(` ✓ Found ffprobe via yt-dlx:`), results.ffprobe);
         } else {
             console.error(colors.red(` ✗ ffprobe not found via yt-dlx output.`));
             console.error(colors.red("@error:"), "Please ensure FFmpeg (which includes ffprobe) is included in the yt-dlx bundle or accessible to the bundled executable.");
         }
         if (toolPaths.ytprobe && typeof toolPaths.ytprobe === "string" && toolPaths.ytprobe !== "Not found in bundle") {
             results.ytprobe = toolPaths.ytprobe;
-            console.log(colors.green(` ✓ Found ytprobe via yt-dlx:`), results.ytprobe);
         } else {
             console.warn(colors.yellow(` @warning: ytprobe not found via yt-dlx output. This might affect some features.`));
         }
         if (toolPaths.tor_executable && typeof toolPaths.tor_executable === "string" && toolPaths.tor_executable !== "Not found in bundle") {
             results.tor_executable = toolPaths.tor_executable;
-            console.log(colors.green(` ✓ Found tor executable via yt-dlx:`), results.tor_executable);
         } else {
             console.warn(colors.yellow(` @warning: Tor executable not found via yt-dlx output. Tor proxy features will not work.`));
         }
         if (toolPaths.tor_data_directory && typeof toolPaths.tor_data_directory === "string" && toolPaths.tor_data_directory !== "Not found in bundle") {
             results.tor_data_directory = toolPaths.tor_data_directory;
-            console.log(colors.green(` ✓ Found tor data directory via yt-dlx:`), results.tor_data_directory);
         } else {
             console.warn(colors.yellow(` @warning: Tor data directory not found via yt-dlx output. Tor proxy features will not work.`));
         }
