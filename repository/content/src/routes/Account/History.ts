@@ -291,10 +291,11 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
                         if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
                         return a.videoId.localeCompare(b.videoId);
                     });
-                if (result.data?.Videos) result.data.Videos.sort((a, b) => {
-                    if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
-                    return a.videoId.localeCompare(b.videoId);
-                });
+                if (result.data?.Videos)
+                    result.data.Videos.sort((a, b) => {
+                        if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
+                        return a.videoId.localeCompare(b.videoId);
+                    });
                 break;
             case "new-to-old":
                 if (result.data?.Shorts)
@@ -302,13 +303,13 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
                         if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
                         return b.videoId.localeCompare(a.videoId);
                     });
-                if (result.data?.Videos) result.data.Videos.sort((a, b) => {
-                    if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
-                    return b.videoId.localeCompare(a.videoId);
-                });
+                if (result.data?.Videos)
+                    result.data.Videos.sort((a, b) => {
+                        if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
+                        return b.videoId.localeCompare(a.videoId);
+                    });
                 break;
         }
-        if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
         if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
