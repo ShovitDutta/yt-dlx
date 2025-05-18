@@ -56,7 +56,7 @@ sudo apt install -y npm nodejs || { error "Failed To Install Npm Or Nodejs Via A
 success "Nodejs And Npm Installed Successfully."
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 info "Installing Python 3 And Pip..."
-sudo apt install -y python3 python3-pip || { error "Failed To Install Python 3 Or Pip"; exit 1; }
+sudo apt install -y python3 python3-pip python3-venv || { error "Failed To Install Python 3 Or Pip"; exit 1; }
 success "Python 3 And Pip Installed Successfully."
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 info "Running Autoremove To Clean Up Unused Dependencies..."
