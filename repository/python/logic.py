@@ -108,10 +108,10 @@ def main():
     else:
         paths_info = {
             "Running Python Executable": sys.executable,
-            "ffmpeg": ffmpeg_path if ffmpeg_path else "Not found in bundle",
-            "tor_executable": tor_path if tor_path else "Not found in bundle",
-            "ffprobe": ffprobe_path if ffprobe_path else "Not found in bundle",
+            "ffmpeg": "yt-dlx --ffmpeg",
+            "ffprobe": "yt-dlx --ffprobe",
             "ytprobe": ytprobe_path if ytprobe_path else "Not found in bundle",
+            "tor_executable": tor_path if tor_path else "Not found in bundle",
             "tor_data_directory": tor_data_dir if tor_data_dir else "Not found in bundle",
             "bundled_torrc_win": find_bundled_file("context/windows/TorBrowser/data/torrc") if sys.platform == "win32" else "N/A on this platform",
             "bundled_torrc_linux": find_bundled_file("context/linux/TorBrowser/data/torrc") if sys.platform != "win32" else "N/A on this platform",
