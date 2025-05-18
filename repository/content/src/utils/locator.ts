@@ -150,15 +150,12 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
     } catch (execError: any) {
         console.error(colors.red("@error:"), `Failed to run yt-dlx executable at "${ytdlxPath}" to get paths:`, execError.message);
         console.error(colors.red("@error:"), "Cannot locate ffmpeg, ffprobe, etc. due to execution failure.");
-        // Return results with only yt-dlx path found so far
         results.ffmpeg = "";
         results.ffprobe = "";
         results.ytprobe = "";
         results.tor_executable = "";
         results.tor_data_directory = "";
     }
-
-    // Final check on essential tools
     if (results.ffmpeg === "" || results.ffprobe === "") {
         console.error(colors.red("@error:"), "One or more essential external tools (ffmpeg, ffprobe) were not found via yt-dlx output.");
         console.error(colors.red("@error:"), "Ensure your yt-dlx bundle includes FFmpeg or can access it from its runtime environment.");
