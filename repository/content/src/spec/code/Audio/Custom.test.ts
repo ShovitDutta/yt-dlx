@@ -12,14 +12,14 @@ vitest.describe("AudioCustom", () => {
         }
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await AudioCustom({ query, output: "./custom_downloads_audiocustom", filter: "bassboost", resolution: "medium" });
+        const result = await AudioCustom({ query, output: "output", filter: "bassboost", resolution: "medium" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
         }
     });
     vitest.it("should handle download with all options", async () => {
-        const result = await AudioCustom({ query, resolution: "low", output: "./full_downloads_audiocustom", useTor: false, verbose: true, filter: "echo", showProgress: true });
+        const result = await AudioCustom({ query, resolution: "low", output: "output", useTor: false, verbose: true, filter: "echo", showProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
