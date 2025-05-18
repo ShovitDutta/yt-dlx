@@ -145,6 +145,7 @@ export default async function videoData({ videoLink }: VideoDataOptions): Promis
             throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
         }
         const metaData = await singleVideo({ videoId: vId });
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return metaData;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -160,6 +161,5 @@ export default async function videoData({ videoLink }: VideoDataOptions): Promis
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
