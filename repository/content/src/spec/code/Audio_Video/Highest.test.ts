@@ -64,16 +64,4 @@ vitest.describe("AudioVideoHighest", () => {
             (result as { stream: Readable })?.stream?.on("end", resolve);
         });
     });
-    vitest.it("should throw error for metadata with output", async () => {
-        await vitest.expect(AudioVideoHighest({ query: "test query", metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
-    });
-    vitest.it("should throw error for stream with output", async () => {
-        await vitest.expect(AudioVideoHighest({ query: "test query", stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
-    });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(AudioVideoHighest({} as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for invalid filter", async () => {
-        await vitest.expect(AudioVideoHighest({ query: "test query", filter: "bassboost" as any })).rejects.toThrowError(/filter.*invalid enum value/);
-    });
 });

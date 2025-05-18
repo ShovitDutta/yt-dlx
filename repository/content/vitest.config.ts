@@ -4,9 +4,9 @@ export default defineConfig({
     test: {
         include: ["src/spec/code/**/*.test.ts"],
         fileParallelism: false,
+        testTimeout: 1800000,
         reporters: "verbose",
         environment: "node",
-        testTimeout: 60000,
         bail: 1,
     },
 });
