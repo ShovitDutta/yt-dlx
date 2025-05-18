@@ -449,6 +449,7 @@ export default async function VideoCustom({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream };
         } else {
             const filenameBase = `yt-dlx_VideoCustom_${resolution}_`;
