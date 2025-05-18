@@ -1,5 +1,5 @@
-import * as vitest from "vitest";
 import searchVideos from "../../../../routes/Search/Video/Multiple";
+import * as vitest from "vitest";
 vitest.describe("searchVideos", () => {
     const validQuery = "programming tutorials";
     const queryWithNoVideos = "very unlikely video search 1a2b3c4d5e f6g7h8i9j0";
