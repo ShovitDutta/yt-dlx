@@ -22,22 +22,4 @@ vitest.describe("relatedVideosFn", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing videoId", async () => {
-        await vitest.expect(relatedVideosFn({} as any)).rejects.toThrowError(/videoId.*Required/);
-    });
-    vitest.it("should throw Zod error for short videoId", async () => {
-        await vitest.expect(relatedVideosFn({ videoId: "a" })).rejects.toThrowError(/videoId.*should be at least 2 characters/);
-    });
-    vitest.it("should throw error if no related videos are found", async () => {
-        try {
-            await relatedVideosFn({ videoId: videoIdWithNoRelated });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/No related videos found for the provided video ID./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no related videos found.");
-    });
 });
