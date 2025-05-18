@@ -2,40 +2,53 @@ import { env } from "node:process";
 import YouTubeDLX from "../../../";
 import dotenv from "dotenv";
 import colors from "colors";
-console.clear();
+
 dotenv.config();
-function fetchSubscriptionsFeed(options: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const stream = YouTubeDLX.Account.SubscriptionsFeed(options);
-        stream
-            .on("data", data => {
-                console.log(colors.italic.green("@data:"), data);
-            })
-            .on("error", error => {
-                console.error(colors.italic.red("@error:"), error);
-                reject(error);
-            })
-            .on("end", () => {
-                resolve();
-            });
-    });
-}
+console.clear();
+
 (async () => {
-    if (!env.YouTubeDLX_COOKIES) {
+    const cookies = env.YouTubeDLX_COOKIES as string;
+
+    if (!cookies) {
         console.error(colors.red("Error: YouTubeDLX_COOKIES environment variable is not set. Please set it in your .env file or environment."));
         process.exit(1);
     }
-    const cookies = env.YouTubeDLX_COOKIES as string;
-    const testCases = [
-        { label: "1", options: { cookies } },
-        { label: "2", options: { cookies, verbose: true } },
-    ];
-    for (const testCase of testCases) {
-        try {
-            console.log(colors.bold.blue("@info"), `SubscriptionsFeed: (${testCase.label}): Fetch subscriptions feed`);
-            await fetchSubscriptionsFeed(testCase.options);
-        } catch (error) {
-            console.error(colors.red("@error:"), `Test case (${testCase.label}) failed:`, error);
-        }
+
+    try {
+        console.log("--- Running Basic Subscriptions Feed Example ---");
+        const result = await YouTubeDLX.Account.SubscriptionsFeed({ cookies });
+        console.log("Subscriptions Feed:", result);
+    } catch (error) {
+        console.error("Basic Subscriptions Feed Error:", error instanceof Error ? error.message : error);
     }
+    console.log("\n");
+
+    try {
+        console.log("--- Running Subscriptions Feed with Verbose Logging Example ---");
+        const result = await YouTubeDLX.Account.SubscriptionsFeed({ cookies, verbose: true });
+        console.log("Subscriptions Feed:", result);
+    } catch (error) {
+        console.error("Verbose Subscriptions Feed Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+
+    try {
+        console.log("--- Running Missing Cookies Example ---");
+        await YouTubeDLX.Account.SubscriptionsFeed({} as any);
+        console.log("This should not be reached - Missing Cookies Example.");
+    } catch (error) {
+        console.error("Expected Error (Missing Cookies):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+
+    try {
+        console.log("--- Running Invalid Cookies Example ---");
+        await YouTubeDLX.Account.SubscriptionsFeed({ cookies: "INVALID_OR_EXPIRED_COOKIES" });
+        console.log("This should not be reached - Invalid Cookies Example.");
+    } catch (error) {
+        console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+
+    console.log("\nAll Subscriptions Feed tests finished successfully.");
 })();

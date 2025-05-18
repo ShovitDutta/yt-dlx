@@ -2,40 +2,53 @@ import { env } from "node:process";
 import YouTubeDLX from "../../../";
 import dotenv from "dotenv";
 import colors from "colors";
-console.clear();
+
 dotenv.config();
-function fetchUnseenNotifications(options: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const stream = YouTubeDLX.Account.UnseenNotifications(options);
-        stream
-            .on("data", data => {
-                console.log(colors.italic.green("@data:"), data);
-            })
-            .on("error", error => {
-                console.error(colors.italic.red("@error:"), error);
-                reject(error);
-            })
-            .on("end", () => {
-                resolve();
-            });
-    });
-}
+console.clear();
+
 (async () => {
-    if (!env.YouTubeDLX_COOKIES) {
+    const cookies = env.YouTubeDLX_COOKIES as string;
+
+    if (!cookies) {
         console.error(colors.red("Error: YouTubeDLX_COOKIES environment variable is not set. Please set it in your .env file or environment."));
         process.exit(1);
     }
-    const cookies = env.YouTubeDLX_COOKIES as string;
-    const testCases = [
-        { label: "1", options: { cookies } },
-        { label: "2", options: { cookies, verbose: true } },
-    ];
-    for (const testCase of testCases) {
-        try {
-            console.log(colors.bold.blue("@info"), `UnseenNotifications: (${testCase.label}): Fetch unseen notifications count`);
-            await fetchUnseenNotifications(testCase.options);
-        } catch (error) {
-            console.error(colors.red("@error:"), `Test case (${testCase.label}) failed:`, error);
-        }
+
+    try {
+        console.log("--- Running Basic Unseen Notifications Fetch ---");
+        const result = await YouTubeDLX.Account.UnseenNotifications({ cookies });
+        console.log("Unseen Notifications Count:", result.data?.count);
+    } catch (error) {
+        console.error("Basic Unseen Notifications Error:", error instanceof Error ? error.message : error);
     }
+    console.log("\n");
+
+    try {
+        console.log("--- Running Unseen Notifications with Verbose Logging ---");
+        const result = await YouTubeDLX.Account.UnseenNotifications({ cookies, verbose: true });
+        console.log("Unseen Notifications Count (Verbose):", result.data?.count);
+    } catch (error) {
+        console.error("Unseen Notifications with Verbose Error:", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+
+    try {
+        console.log("--- Running Missing Cookies Error ---");
+        await YouTubeDLX.Account.UnseenNotifications({} as any);
+        console.log("This should not be reached - Missing Cookies Error.");
+    } catch (error) {
+        console.error("Expected Error (Missing Cookies):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+
+    try {
+        console.log("--- Running Invalid Cookies Error ---");
+        await YouTubeDLX.Account.UnseenNotifications({ cookies: "INVALID_OR_EXPIRED_COOKIES" });
+        console.log("This should not be reached - Invalid Cookies Error.");
+    } catch (error) {
+        console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
+    }
+    console.log("\n");
+
+    console.log("\nAll Unseen Notifications tests finished successfully.");
 })();

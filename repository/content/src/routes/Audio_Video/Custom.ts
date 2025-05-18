@@ -195,227 +195,103 @@ export default async function AudioVideoCustom({
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-
+import { describe, it, expect } from "vitest";
 import { createWriteStream } from "fs";
-(async () => {
-    try {
-        console.log("--- Running Basic Download Example ---");
-        const result = await AudioVideoCustom({ query: "your search query or url", resolution: "720p" });
-        if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
-    } catch (error) {
-        console.error("Basic Download Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Download with Output and Filter Example ---");
-        const result = await AudioVideoCustom({
-            query: "your search query or url",
-            output: "./custom_downloads",
-            filter: "grayscale",
-            resolution: "1080p",
-        });
-        if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
-    } catch (error) {
-        console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Download with All Options Example ---");
-        const result = await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "2160p",
-            output: "./full_downloads",
-            useTor: true,
-            verbose: true,
-            filter: "rotate90",
-            showProgress: true,
-        });
+describe("AudioVideoCustom", () => {
+    const query = "test query";
+    const resolution = "720p";
+    it("should handle basic download", async () => {
+        const result = await AudioVideoCustom({ query, resolution });
+        expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
-            console.log("\nDownload with All Options finished:", result.outputPath);
+            expect(result.outputPath).toMatch(/\.mkv$/);
         }
-    } catch (error) {
-        console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Fetch Metadata Only Example ---");
+    });
+    it("should handle download with output and filter", async () => {
+        const result = await AudioVideoCustom({ query, resolution: "1080p", output: "./custom_downloads_avcustom", filter: "grayscale" });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.mkv$/);
+        }
+    });
+    it("should handle download with all options", async () => {
         const result = await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "720p",
-            metadata: true,
-        });
-        if ("metadata" in result) {
-            console.log("Metadata Only:", result.metadata);
-        }
-    } catch (error) {
-        console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Fetch Metadata with Tor and Verbose Example ---");
-        const result = await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "720p",
-            metadata: true,
-            useTor: true,
-            verbose: true,
-        });
-        if ("metadata" in result) {
-            console.log("Metadata with Tor and Verbose:", result.metadata);
-        }
-    } catch (error) {
-        console.error("Metadata with Tor and Verbose Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Basic Stream Example ---");
-        const result = await AudioVideoCustom({ query: "your search query or url", resolution: "480p", stream: true });
-        if ("stream" in result && result.stream) {
-            console.log("Basic Streaming started. Piping to basic_stream.mkv...");
-            const outputStream = createWriteStream("basic_stream.mkv");
-            result.stream.pipe(outputStream);
-
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Basic Streaming finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Basic Stream error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
-        }
-    } catch (error) {
-        console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Stream with Filter Example ---");
-        const result = await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "720p",
-            stream: true,
-            filter: "invert",
-        });
-        if ("stream" in result && result.stream) {
-            console.log("Stream with Filter started. Piping to filtered_stream.mkv...");
-            const outputStream = createWriteStream("filtered_stream.mkv");
-            result.stream.pipe(outputStream);
-
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Stream with Filter finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Stream with Filter error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
-        }
-    } catch (error) {
-        console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Stream with All Options Example ---");
-        const result = await AudioVideoCustom({
-            query: "your search query or url",
+            query,
             resolution: "1440p",
-            stream: true,
-            useTor: true,
+            output: "./full_downloads_avcustom",
+            useTor: false,
             verbose: true,
-            filter: "flipHorizontal",
+            filter: "invert",
             showProgress: true,
         });
-        if ("stream" in result && result.stream) {
-            console.log("\nStream with All Options started. Piping to full_stream.mkv...");
-            const outputStream = createWriteStream("full_stream.mkv");
-            result.stream.pipe(outputStream);
-
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Stream with All Options finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Stream with All Options error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.mkv$/);
         }
-    } catch (error) {
-        console.error("\nStream with All Options Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Invalid Options Example (Metadata and Output) ---");
-        await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "720p",
-            metadata: true,
-            output: "./should_fail_dir",
-        } as any);
-        console.log("This should not be reached - Invalid Options Example.");
-    } catch (error) {
-        console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Invalid Options Example (Stream and Output) ---");
-        await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "720p",
-            stream: true,
-            output: "./should_fail_dir",
-        } as any);
-        console.log("This should not be reached - Invalid Options Example.");
-    } catch (error) {
-        console.error("Expected Error (Stream and Output):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Zod Validation Error Example (Missing Query) ---");
-        await AudioVideoCustom({
-            resolution: "720p",
-        } as any);
-        console.log("This should not be reached - Zod Validation Error Example.");
-    } catch (error) {
-        console.error("Expected Zod Error (Missing Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Zod Validation Error Example (Invalid Resolution) ---");
-        await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "500p" as any,
+    });
+    it("should fetch metadata only", async () => {
+        const result = await AudioVideoCustom({ query, resolution, metadata: true });
+        expect(result).toHaveProperty("metadata");
+        expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
+    });
+    it("should fetch metadata with Tor and verbose", async () => {
+        const result = await AudioVideoCustom({ query, resolution, metadata: true, useTor: false, verbose: true });
+        expect(result).toHaveProperty("metadata");
+    });
+    it("should handle basic stream", async () => {
+        const result = await AudioVideoCustom({ query, resolution: "480p", stream: true });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("basic_stream_avcustom.mkv");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable }).stream?.on("end", resolve);
         });
-        console.log("This should not be reached - Zod Validation Error Example.");
-    } catch (error) {
-        console.error("Expected Zod Error (Invalid Resolution):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-
-    try {
-        console.log("--- Running Download with Built-in Progress Example ---");
-        const result = await AudioVideoCustom({ query: "your search query or url", resolution: "720p", showProgress: true });
-        if ("outputPath" in result) console.log("\nDownload finished:", result.outputPath);
-    } catch (error) {
-        console.error("\nError:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+    });
+    it("should handle stream with filter", async () => {
+        const result = await AudioVideoCustom({ query, resolution: "720p", stream: true, filter: "flipVertical" });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("filtered_stream_avcustom.mkv");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable }).stream?.on("end", resolve);
+        });
+    });
+    it("should handle stream with all options", async () => {
+        const result = await AudioVideoCustom({
+            query: "your search query or url",
+            resolution: "1080p",
+            stream: true,
+            useTor: false,
+            verbose: true,
+            filter: "rotate270",
+            showProgress: true,
+        });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("full_stream_avcustom.mkv");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable })?.stream?.on("end", resolve);
+        });
+    });
+    it("should throw error for metadata with output", async () => {
+        await expect(AudioVideoCustom({ query, resolution, metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
+    });
+    it("should throw error for stream with output", async () => {
+        await expect(AudioVideoCustom({ query, resolution, stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(AudioVideoCustom({ resolution } as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for missing resolution", async () => {
+        await expect(AudioVideoCustom({ query } as any)).rejects.toThrowError(/resolution.*Required/);
+    });
+    it("should throw Zod error for invalid filter", async () => {
+        await expect(AudioVideoCustom({ query, resolution, filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
+    });
+    it("should throw Zod error for invalid resolution", async () => {
+        await expect(AudioVideoCustom({ query, resolution: "500p" as any })).rejects.toThrowError(/resolution.*invalid enum value/);
+    });
+});

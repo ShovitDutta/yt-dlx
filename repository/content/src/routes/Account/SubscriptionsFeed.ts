@@ -72,37 +72,3 @@ export default async function subscriptionsFeed({ cookies, verbose }: Subscripti
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Subscriptions Feed Example ---");
-        const result = await subscriptionsFeed({ cookies: "YOUR_COOKIES_HERE" });
-        console.log("Subscriptions Feed:", result);
-    } catch (error) {
-        console.error("Basic Subscriptions Feed Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Subscriptions Feed with Verbose Logging Example ---");
-        const result = await subscriptionsFeed({ cookies: "YOUR_COOKIES_HERE", verbose: true });
-        console.log("Subscriptions Feed:", result);
-    } catch (error) {
-        console.error("Verbose Subscriptions Feed Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing Cookies Example ---");
-        await subscriptionsFeed({} as any);
-        console.log("This should not be reached - Missing Cookies Example.");
-    } catch (error) {
-        console.error("Expected Error (Missing Cookies):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid Cookies Example ---");
-        await subscriptionsFeed({ cookies: "INVALID_OR_EXPIRED_COOKIES" });
-        console.log("This should not be reached - Invalid Cookies Example.");
-    } catch (error) {
-        console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();

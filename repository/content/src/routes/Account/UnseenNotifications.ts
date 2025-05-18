@@ -40,38 +40,3 @@ export default async function unseen_notifications(options: UnseenNotificationsO
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    const cookies = "YOUR_COOKIES_HERE";
-    try {
-        console.log("--- Running Basic Unseen Notifications Fetch ---");
-        const result = await unseen_notifications({ cookies });
-        console.log("Unseen Notifications Count:", result.data?.count);
-    } catch (error) {
-        console.error("Basic Unseen Notifications Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Unseen Notifications with Verbose Logging ---");
-        const result = await unseen_notifications({ cookies, verbose: true });
-        console.log("Unseen Notifications Count (Verbose):", result.data?.count);
-    } catch (error) {
-        console.error("Unseen Notifications with Verbose Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing Cookies Error ---");
-        await unseen_notifications({} as any);
-        console.log("This should not be reached - Missing Cookies Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing Cookies):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid Cookies Error ---");
-        await unseen_notifications({ cookies: "INVALID_OR_EXPIRED_COOKIES" });
-        console.log("This should not be reached - Invalid Cookies Error.");
-    } catch (error) {
-        console.error("Expected Error (Client Initialization Failed):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
