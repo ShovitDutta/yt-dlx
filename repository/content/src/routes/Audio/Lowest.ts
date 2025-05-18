@@ -315,9 +315,6 @@ const ZodSchema = z.object({
 
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
 
-ffmpeg.setFfmpegPath = () => {};
-ffmpeg.setFfprobePath = () => {};
-
 export default async function AudioLowest({
     query,
     output,
@@ -365,22 +362,20 @@ export default async function AudioLowest({
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         try {
             const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg command not found.`);
+            if (!paths.ffmpeg || !paths.ffprobe) {
+                throw new Error(`${colors.red("@error:")} yt-dlx executable not found.`);
             }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe command not found.`);
-            }
-            instance._getFfmpegPath = () => paths["yt-dlx"];
-            instance._getFfprobePath = () => paths["yt-dlx"];
-            instance._spawnFfmpeg = function (args, options) {
-                const fullArgs = ["--ffmpeg", ...args];
-                return spawn(paths["yt-dlx"], fullArgs, options);
-            };
-            instance._spawnFfprobe = function (args, options) {
-                const fullArgs = ["--ffprobe", ...args];
-                return spawn(paths["yt-dlx"], fullArgs, options);
-            };
+            instance.setFffmpegPath(paths["yt-dlx"]);
+            instance.setFfprobePath(paths["yt-dlx"]);
+            instance.on("start", (commandLine: string) => {
+                const isFfprobe = commandLine.includes("ffprobe");
+                const args = commandLine.split(" ").slice(1);
+                const fullArgs = isFfprobe ? ["--ffprobe", ...args] : ["--ffmpeg", ...args];
+                if (verbose) console.log(colors.green("@info:"), `Running ${isFfprobe ? "ffprobe" : "ffmpeg"} via yt-dlx:`, fullArgs.join(" "));
+                const proc = spawn(paths["yt-dlx"], fullArgs, { stdio: ["pipe", "pipe", "pipe"] });
+                instance.ffmpegProc = proc as any;
+                instance.ffprobeProc = proc as any;
+            });
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate yt-dlx: ${locatorError.message}`);
         }
