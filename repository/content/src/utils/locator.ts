@@ -62,9 +62,8 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
             console.error(colors.red("@error:"), "Could not reliably determine paths for ffmpeg, ffprobe, etc. from yt-dlx output.");
             return results;
         }
-        if (toolPaths.ffmpeg && typeof toolPaths.ffmpeg === "string" && toolPaths.ffmpeg !== "Not found in bundle") {
-            results.ffmpeg = toolPaths.ffmpeg;
-        } else {
+        if (toolPaths.ffmpeg && typeof toolPaths.ffmpeg === "string" && toolPaths.ffmpeg !== "Not found in bundle") results.ffmpeg = toolPaths.ffmpeg;
+        else {
             console.error(colors.red(` ✗ ffmpeg not found via yt-dlx output.`));
             console.error(colors.red("@error:"), "Please ensure FFmpeg is included in the yt-dlx bundle or accessible to the bundled executable.");
         }
