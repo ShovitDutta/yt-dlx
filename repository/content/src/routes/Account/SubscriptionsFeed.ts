@@ -72,41 +72,41 @@ export default async function subscriptions_feed({ cookies, verbose }: subscript
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-import { describe, it, expect } from "vitest";
 import { env } from "node:process";
+import * as vitest from "vitest";
 import dotenv from "dotenv";
 dotenv.config();
-describe("subscriptions_feed", () => {
+vitest.describe("subscriptions_feed", () => {
     const cookies = env.YouTubeDLX_COOKIES as string;
     if (!cookies) {
         console.warn("YouTubeDLX_COOKIES environment variable not set. Subscriptions feed tests requiring valid cookies will likely fail.");
     }
     const mockCookies = cookies || "dummy_cookies_for_tests";
-    it("should handle basic subscriptions feed fetch", async () => {
+    vitest.it("should handle basic subscriptions feed fetch", async () => {
         if (!cookies) {
             console.warn("Skipping basic fetch test due to missing YouTubeDLX_COOKIES.");
             return;
         }
         const result = await subscriptions_feed({ cookies: mockCookies });
-        expect(result).toHaveProperty("status");
-        expect(result.status).toBe("success");
-        expect(result).toHaveProperty("data");
-        expect(result.data).toHaveProperty("contents");
-        expect(Array.isArray(result.data?.contents)).toBe(true);
+        vitest.expect(result).toHaveProperty("status");
+        vitest.expect(result.status).toBe("success");
+        vitest.expect(result).toHaveProperty("data");
+        vitest.expect(result.data).toHaveProperty("contents");
+        vitest.expect(Array.isArray(result.data?.contents)).toBe(true);
     });
-    it("should handle subscriptions feed fetch with verbose logging", async () => {
+    vitest.it("should handle subscriptions feed fetch with verbose logging", async () => {
         if (!cookies) {
             console.warn("Skipping verbose fetch test due to missing YouTubeDLX_COOKIES.");
             return;
         }
         const result = await subscriptions_feed({ cookies: mockCookies, verbose: true });
-        expect(result.status).toBe("success");
-        expect(result.data).toBeInstanceOf(Object);
+        vitest.expect(result.status).toBe("success");
+        vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    it("should throw error for missing cookies (handled by explicit check)", async () => {
-        await expect(subscriptions_feed({ cookies: "" })).rejects.toThrowError(/Cookies not provided!/);
+    vitest.it("should throw error for missing cookies (handled by explicit check)", async () => {
+        await vitest.expect(subscriptions_feed({ cookies: "" })).rejects.toThrowError(/Cookies not provided!/);
     });
-    it("should throw Zod error for missing cookies (handled by ZodSchema)", async () => {
-        await expect(subscriptions_feed({} as any)).rejects.toThrowError(/cookies.*Required/);
+    vitest.it("should throw Zod error for missing cookies (handled by ZodSchema)", async () => {
+        await vitest.expect(subscriptions_feed({} as any)).rejects.toThrowError(/cookies.*Required/);
     });
 });

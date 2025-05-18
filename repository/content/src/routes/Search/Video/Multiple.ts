@@ -65,76 +65,76 @@ export default async function searchVideos({ query, minViews, maxViews, orderBy,
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-import { describe, it, expect } from "vitest";
-describe("searchVideos", () => {
+import * as vitest from "vitest";
+vitest.describe("searchVideos", () => {
     const validQuery = "programming tutorials";
     const queryWithNoVideos = "very unlikely video search 1a2b3c4d5e f6g7h8i9j0";
-    it("should handle basic video search", async () => {
+    vitest.it("should handle basic video search", async () => {
         const result = await searchVideos({ query: validQuery });
-        expect(Array.isArray(result)).toBe(true);
-        expect(result.length).toBeGreaterThan(0);
+        vitest.expect(Array.isArray(result)).toBe(true);
+        vitest.expect(result.length).toBeGreaterThan(0);
         if (result.length > 0) {
-            expect(result[0]).toHaveProperty("id");
-            expect(result[0]).toHaveProperty("title");
-            expect(result[0]).toHaveProperty("isLive");
+            vitest.expect(result[0]).toHaveProperty("id");
+            vitest.expect(result[0]).toHaveProperty("title");
+            vitest.expect(result[0]).toHaveProperty("isLive");
         }
     });
-    it("should handle search with verbose logging", async () => {
+    vitest.it("should handle search with verbose logging", async () => {
         const result = await searchVideos({ query: validQuery, verbose: true });
-        expect(Array.isArray(result)).toBe(true);
-        expect(result.length).toBeGreaterThan(0);
+        vitest.expect(Array.isArray(result)).toBe(true);
+        vitest.expect(result.length).toBeGreaterThan(0);
     });
-    it("should handle search with minimum views", async () => {
+    vitest.it("should handle search with minimum views", async () => {
         const result = await searchVideos({ query: validQuery, minViews: 1000 });
-        expect(Array.isArray(result)).toBe(true);
+        vitest.expect(Array.isArray(result)).toBe(true);
     });
-    it("should handle search with maximum views", async () => {
+    vitest.it("should handle search with maximum views", async () => {
         const result = await searchVideos({ query: validQuery, maxViews: 10000 });
-        expect(Array.isArray(result)).toBe(true);
+        vitest.expect(Array.isArray(result)).toBe(true);
     });
-    it("should handle search with view range", async () => {
+    vitest.it("should handle search with view range", async () => {
         const result = await searchVideos({ query: validQuery, minViews: 5000, maxViews: 50000 });
-        expect(Array.isArray(result)).toBe(true);
+        vitest.expect(Array.isArray(result)).toBe(true);
     });
-    it("should handle search sorted by relevance", async () => {
+    vitest.it("should handle search sorted by relevance", async () => {
         const result = await searchVideos({ query: validQuery, orderBy: "relevance" });
-        expect(Array.isArray(result)).toBe(true);
+        vitest.expect(Array.isArray(result)).toBe(true);
     });
-    it("should handle search sorted by view count", async () => {
+    vitest.it("should handle search sorted by view count", async () => {
         const result = await searchVideos({ query: validQuery, orderBy: "viewCount" });
-        expect(Array.isArray(result)).toBe(true);
+        vitest.expect(Array.isArray(result)).toBe(true);
     });
-    it("should handle search sorted by date", async () => {
+    vitest.it("should handle search sorted by date", async () => {
         const result = await searchVideos({ query: validQuery, orderBy: "date" });
-        expect(Array.isArray(result)).toBe(true);
+        vitest.expect(Array.isArray(result)).toBe(true);
     });
-    it("should throw Zod error for missing query", async () => {
-        await expect(searchVideos({} as any)).rejects.toThrowError(/query.*Required/);
+    vitest.it("should throw Zod error for missing query", async () => {
+        await vitest.expect(searchVideos({} as any)).rejects.toThrowError(/query.*Required/);
     });
-    it("should throw Zod error for short query", async () => {
-        await expect(searchVideos({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
+    vitest.it("should throw Zod error for short query", async () => {
+        await vitest.expect(searchVideos({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
     });
-    it("should throw Zod error for invalid orderBy", async () => {
-        await expect(searchVideos({ query: validQuery, orderBy: "popular" as any })).rejects.toThrowError(/orderBy.*invalid enum value/);
+    vitest.it("should throw Zod error for invalid orderBy", async () => {
+        await vitest.expect(searchVideos({ query: validQuery, orderBy: "popular" as any })).rejects.toThrowError(/orderBy.*invalid enum value/);
     });
-    it("should throw error if no videos found for the query", async () => {
+    vitest.it("should throw error if no videos found for the query", async () => {
         try {
             await searchVideos({ query: queryWithNoVideos });
         } catch (error: any) {
             if (error instanceof Error) {
-                expect(error.message).toMatch(/No videos found with the given criteria./);
+                vitest.expect(error.message).toMatch(/No videos found with the given criteria./);
                 return;
             }
             throw error;
         }
         throw new Error("Function did not throw expected error for no videos found.");
     });
-    it("should throw error if no videos found after applying extreme view filter", async () => {
+    vitest.it("should throw error if no videos found after applying extreme view filter", async () => {
         try {
             await searchVideos({ query: validQuery, minViews: 1000000000000 });
         } catch (error: any) {
             if (error instanceof Error) {
-                expect(error.message).toMatch(/No videos found with the given criteria./);
+                vitest.expect(error.message).toMatch(/No videos found with the given criteria./);
                 return;
             }
             throw error;

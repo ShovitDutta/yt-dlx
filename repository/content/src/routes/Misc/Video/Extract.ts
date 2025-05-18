@@ -248,70 +248,70 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-import { describe, it, expect } from "vitest";
-describe("extract", () => {
+import * as vitest from "vitest";
+vitest.describe("extract", () => {
     const validQuery = "test video";
     const queryThatShouldFail = "a query that should return no results 12345abcde";
-    it("should handle basic video extract", async () => {
+    vitest.it("should handle basic video extract", async () => {
         const result = await extract({ query: validQuery });
-        expect(result).toHaveProperty("data");
-        expect(result.data).toHaveProperty("meta_data");
-        expect(result.data.meta_data).toBeInstanceOf(Object);
-        expect(result.data).toHaveProperty("comments");
-        expect(Array.isArray(result.data.comments) || result.data.comments === null).toBe(true);
-        expect(result.data).toHaveProperty("transcript");
-        expect(Array.isArray(result.data.transcript) || result.data.transcript === null).toBe(true);
-        expect(result.data).toHaveProperty("BestAudioLow");
-        expect(result.data).toHaveProperty("ManifestLow");
+        vitest.expect(result).toHaveProperty("data");
+        vitest.expect(result.data).toHaveProperty("meta_data");
+        vitest.expect(result.data.meta_data).toBeInstanceOf(Object);
+        vitest.expect(result.data).toHaveProperty("comments");
+        vitest.expect(Array.isArray(result.data.comments) || result.data.comments === null).toBe(true);
+        vitest.expect(result.data).toHaveProperty("transcript");
+        vitest.expect(Array.isArray(result.data.transcript) || result.data.transcript === null).toBe(true);
+        vitest.expect(result.data).toHaveProperty("BestAudioLow");
+        vitest.expect(result.data).toHaveProperty("ManifestLow");
     });
-    it("should handle video extract with verbose logging", async () => {
+    vitest.it("should handle video extract with verbose logging", async () => {
         const result = await extract({ query: validQuery, verbose: true });
-        expect(result).toHaveProperty("data");
-        expect(result.data).toBeInstanceOf(Object);
+        vitest.expect(result).toHaveProperty("data");
+        vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    it("should handle video extract with useTor", async () => {
+    vitest.it("should handle video extract with useTor", async () => {
         const result = await extract({ query: validQuery, useTor: false });
-        expect(result).toHaveProperty("data");
-        expect(result.data).toBeInstanceOf(Object);
+        vitest.expect(result).toHaveProperty("data");
+        vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    it("should handle video extract with verbose and useTor", async () => {
+    vitest.it("should handle video extract with verbose and useTor", async () => {
         const result = await extract({ query: validQuery, verbose: true, useTor: false });
-        expect(result).toHaveProperty("data");
-        expect(result.data).toBeInstanceOf(Object);
+        vitest.expect(result).toHaveProperty("data");
+        vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    it("should throw Zod error for missing query", async () => {
-        await expect(extract({} as any)).rejects.toThrowError(/query.*Required/);
+    vitest.it("should throw Zod error for missing query", async () => {
+        await vitest.expect(extract({} as any)).rejects.toThrowError(/query.*Required/);
     });
-    it("should throw Zod error for short query", async () => {
-        await expect(extract({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
+    vitest.it("should throw Zod error for short query", async () => {
+        await vitest.expect(extract({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
     });
-    it("should throw error if unable to get response", async () => {
+    vitest.it("should throw error if unable to get response", async () => {
         try {
             await extract({ query: queryThatShouldFail });
         } catch (error: any) {
             if (error instanceof Error) {
-                expect(error.message).toMatch(/Unable to get response!/);
+                vitest.expect(error.message).toMatch(/Unable to get response!/);
                 return;
             }
             throw error;
         }
         throw new Error("Function did not throw expected error for no engine data.");
     });
-    it("should return comments as null if no comments found", async () => {
+    vitest.it("should return comments as null if no comments found", async () => {
         const videoWithNoCommentsQuery = "a video where comments are disabled";
         try {
             const result = await extract({ query: videoWithNoCommentsQuery });
-            expect(result.data.comments).toBeNull();
+            vitest.expect(result.data.comments).toBeNull();
         } catch (error) {
             console.warn(`Test for video with no comments failed for query "${videoWithNoCommentsQuery}". This might require a real video query with comments disabled.`, error);
             throw error;
         }
     });
-    it("should return transcript as null if no transcript found", async () => {
+    vitest.it("should return transcript as null if no transcript found", async () => {
         const videoWithNoTranscriptQuery = "a video with no transcript";
         try {
             const result = await extract({ query: videoWithNoTranscriptQuery });
-            expect(result.data.transcript).toBeNull();
+            vitest.expect(result.data.transcript).toBeNull();
         } catch (error) {
             console.warn(`Test for video with no transcript failed for query "${videoWithNoTranscriptQuery}". This might require a real video query with no transcript.`, error);
             throw error;

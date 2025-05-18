@@ -48,41 +48,41 @@ export default async function relatedVideosFn({ videoId }: RelatedVideosOptions)
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-import { describe, it, expect } from "vitest";
-describe("relatedVideosFn", () => {
+import * as vitest from "vitest";
+vitest.describe("relatedVideosFn", () => {
     const videoIdWithRelated = "dQw4w9WgXcQ";
     const videoIdWithNoRelated = "nonexistentvideoid123abc";
-    it("should handle basic related videos fetch", async () => {
+    vitest.it("should handle basic related videos fetch", async () => {
         try {
             const result = await relatedVideosFn({ videoId: videoIdWithRelated });
-            expect(Array.isArray(result)).toBe(true);
-            expect(result.length).toBeGreaterThan(0);
+            vitest.expect(Array.isArray(result)).toBe(true);
+            vitest.expect(result.length).toBeGreaterThan(0);
             if (result.length > 0) {
-                expect(result[0]).toHaveProperty("id");
-                expect(result[0]).toHaveProperty("title");
-                expect(result[0]).toHaveProperty("isLive");
-                expect(result[0]).toHaveProperty("duration");
-                expect(result[0]).toHaveProperty("uploadDate");
-                expect(result[0]).toHaveProperty("thumbnails");
-                expect(Array.isArray(result[0].thumbnails)).toBe(true);
+                vitest.expect(result[0]).toHaveProperty("id");
+                vitest.expect(result[0]).toHaveProperty("title");
+                vitest.expect(result[0]).toHaveProperty("isLive");
+                vitest.expect(result[0]).toHaveProperty("duration");
+                vitest.expect(result[0]).toHaveProperty("uploadDate");
+                vitest.expect(result[0]).toHaveProperty("thumbnails");
+                vitest.expect(Array.isArray(result[0].thumbnails)).toBe(true);
             }
         } catch (error) {
             console.warn(`Basic related videos fetch failed for ${videoIdWithRelated}. This test requires a real video ID with related videos.`, error);
             throw error;
         }
     });
-    it("should throw Zod error for missing videoId", async () => {
-        await expect(relatedVideosFn({} as any)).rejects.toThrowError(/videoId.*Required/);
+    vitest.it("should throw Zod error for missing videoId", async () => {
+        await vitest.expect(relatedVideosFn({} as any)).rejects.toThrowError(/videoId.*Required/);
     });
-    it("should throw Zod error for short videoId", async () => {
-        await expect(relatedVideosFn({ videoId: "a" })).rejects.toThrowError(/videoId.*should be at least 2 characters/);
+    vitest.it("should throw Zod error for short videoId", async () => {
+        await vitest.expect(relatedVideosFn({ videoId: "a" })).rejects.toThrowError(/videoId.*should be at least 2 characters/);
     });
-    it("should throw error if no related videos are found", async () => {
+    vitest.it("should throw error if no related videos are found", async () => {
         try {
             await relatedVideosFn({ videoId: videoIdWithNoRelated });
         } catch (error: any) {
             if (error instanceof Error) {
-                expect(error.message).toMatch(/No related videos found for the provided video ID./);
+                vitest.expect(error.message).toMatch(/No related videos found for the provided video ID./);
                 return;
             }
             throw error;

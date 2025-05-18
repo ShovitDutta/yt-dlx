@@ -219,72 +219,72 @@ export default async function AudioCustom({
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-import { describe, it, expect } from "vitest";
 import { createWriteStream } from "fs";
-describe("AudioCustom", () => {
+import * as vitest from "vitest";
+vitest.describe("AudioCustom", () => {
     const query = "test query";
-    it("should handle basic download", async () => {
+    vitest.it("should handle basic download", async () => {
         const result = await AudioCustom({ query, resolution: "high" });
-        expect(result).toHaveProperty("outputPath");
+        vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
-            expect(result.outputPath).toMatch(/\.avi$/);
+            vitest.expect(result.outputPath).toMatch(/\.avi$/);
         }
     });
-    it("should handle download with output and filter", async () => {
+    vitest.it("should handle download with output and filter", async () => {
         const result = await AudioCustom({ query, output: "./custom_downloads_audiocustom", filter: "bassboost", resolution: "medium" });
-        expect(result).toHaveProperty("outputPath");
+        vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
-            expect(result.outputPath).toMatch(/\.avi$/);
+            vitest.expect(result.outputPath).toMatch(/\.avi$/);
         }
     });
-    it("should handle download with all options", async () => {
+    vitest.it("should handle download with all options", async () => {
         const result = await AudioCustom({ query, resolution: "low", output: "./full_downloads_audiocustom", useTor: false, verbose: true, filter: "echo", showProgress: true });
-        expect(result).toHaveProperty("outputPath");
+        vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
-            expect(result.outputPath).toMatch(/\.avi$/);
+            vitest.expect(result.outputPath).toMatch(/\.avi$/);
         }
     });
-    it("should fetch metadata only", async () => {
+    vitest.it("should fetch metadata only", async () => {
         const result = await AudioCustom({ query, resolution: "high", metadata: true });
-        expect(result).toHaveProperty("metadata");
-        expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
+        vitest.expect(result).toHaveProperty("metadata");
+        vitest.expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
     });
-    it("should handle basic stream", async () => {
+    vitest.it("should handle basic stream", async () => {
         const result = await AudioCustom({ query, resolution: "low", stream: true });
-        expect(result).toHaveProperty("stream");
-        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect(result).toHaveProperty("stream");
+        vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("basic_stream_audiocustom.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
             (result as { stream: Readable }).stream?.on("end", resolve);
         });
     });
-    it("should handle stream with filter", async () => {
+    vitest.it("should handle stream with filter", async () => {
         const result = await AudioCustom({ query, resolution: "medium", stream: true, filter: "vaporwave" });
-        expect(result).toHaveProperty("stream");
-        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect(result).toHaveProperty("stream");
+        vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("filtered_stream_audiocustom.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
             (result as { stream: Readable }).stream?.on("end", resolve);
         });
     });
-    it("should throw error for metadata with output", async () => {
-        await expect(AudioCustom({ query: "test query", resolution: "high", metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
+    vitest.it("should throw error for metadata with output", async () => {
+        await vitest.expect(AudioCustom({ query: "test query", resolution: "high", metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
     });
-    it("should throw error for stream with output", async () => {
-        await expect(AudioCustom({ query: "test query", resolution: "high", stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
+    vitest.it("should throw error for stream with output", async () => {
+        await vitest.expect(AudioCustom({ query: "test query", resolution: "high", stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
     });
-    it("should throw Zod error for missing query", async () => {
-        await expect(AudioCustom({ resolution: "high" } as any)).rejects.toThrowError(/query.*Required/);
+    vitest.it("should throw Zod error for missing query", async () => {
+        await vitest.expect(AudioCustom({ resolution: "high" } as any)).rejects.toThrowError(/query.*Required/);
     });
-    it("should throw Zod error for missing resolution", async () => {
-        await expect(AudioCustom({ query: "test query" } as any)).rejects.toThrowError(/resolution.*Required/);
+    vitest.it("should throw Zod error for missing resolution", async () => {
+        await vitest.expect(AudioCustom({ query: "test query" } as any)).rejects.toThrowError(/resolution.*Required/);
     });
-    it("should throw Zod error for invalid filter", async () => {
-        await expect(AudioCustom({ query: "test query", resolution: "high", filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
+    vitest.it("should throw Zod error for invalid filter", async () => {
+        await vitest.expect(AudioCustom({ query: "test query", resolution: "high", filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
     });
-    it("should throw Zod error for invalid resolution", async () => {
-        await expect(AudioCustom({ query: "test query", resolution: "superhigh" as any })).rejects.toThrowError(/resolution.*invalid enum value/);
+    vitest.it("should throw Zod error for invalid resolution", async () => {
+        await vitest.expect(AudioCustom({ query: "test query", resolution: "superhigh" as any })).rejects.toThrowError(/resolution.*invalid enum value/);
     });
 });

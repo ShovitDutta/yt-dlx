@@ -69,73 +69,73 @@ export default async function videoData({ videoLink }: VideoDataOptions): Promis
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-import { describe, it, expect } from "vitest";
-describe("videoData", () => {
+import * as vitest from "vitest";
+vitest.describe("videoData", () => {
     const rawVideoId = "dQw4w9WgXcQ";
     const invalidVideoLink = "this is not a youtube link";
     const shortenedVideoLink = "https://youtu.be/dQw4w9WgXcQ";
     const validVideoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
     const nonexistentVideoLink = "https://www.youtube.com/watch?v=nonexistentvideoid123";
-    it("should handle basic video data fetch with standard link", async () => {
+    vitest.it("should handle basic video data fetch with standard link", async () => {
         try {
             const result = await videoData({ videoLink: validVideoLink });
-            expect(result).toHaveProperty("id");
-            expect(typeof result.id).toBe("string");
-            expect(result).toHaveProperty("title");
-            expect(typeof result.title).toBe("string");
-            expect(result).toHaveProperty("duration");
-            expect(typeof result.duration).toBe("number");
-            expect(result).toHaveProperty("viewCount");
-            expect(typeof result.viewCount).toBe("number");
-            expect(result).toHaveProperty("channelid");
-            expect(typeof result.channelid).toBe("string");
-            expect(result).toHaveProperty("channelname");
-            expect(typeof result.channelname).toBe("string");
+            vitest.expect(result).toHaveProperty("id");
+            vitest.expect(typeof result.id).toBe("string");
+            vitest.expect(result).toHaveProperty("title");
+            vitest.expect(typeof result.title).toBe("string");
+            vitest.expect(result).toHaveProperty("duration");
+            vitest.expect(typeof result.duration).toBe("number");
+            vitest.expect(result).toHaveProperty("viewCount");
+            vitest.expect(typeof result.viewCount).toBe("number");
+            vitest.expect(result).toHaveProperty("channelid");
+            vitest.expect(typeof result.channelid).toBe("string");
+            vitest.expect(result).toHaveProperty("channelname");
+            vitest.expect(typeof result.channelname).toBe("string");
         } catch (error) {
             console.warn(`Basic video data fetch failed for ${validVideoLink}. This might require a real video link.`, error);
             throw error;
         }
     });
-    it("should handle video data fetch with shortened link", async () => {
+    vitest.it("should handle video data fetch with shortened link", async () => {
         try {
             const result = await videoData({ videoLink: shortenedVideoLink });
-            expect(result).toHaveProperty("id");
-            expect(typeof result.id).toBe("string");
-            expect(result).toHaveProperty("title");
-            expect(typeof result.title).toBe("string");
-            expect(result).toHaveProperty("duration");
-            expect(typeof result.duration).toBe("number");
+            vitest.expect(result).toHaveProperty("id");
+            vitest.expect(typeof result.id).toBe("string");
+            vitest.expect(result).toHaveProperty("title");
+            vitest.expect(typeof result.title).toBe("string");
+            vitest.expect(result).toHaveProperty("duration");
+            vitest.expect(typeof result.duration).toBe("number");
         } catch (error) {
             console.warn(`Video data fetch failed for ${shortenedVideoLink}. This might require a real video link.`, error);
             throw error;
         }
     });
-    it("should handle video data fetch with raw video ID", async () => {
+    vitest.it("should handle video data fetch with raw video ID", async () => {
         try {
             const result = await videoData({ videoLink: rawVideoId });
-            expect(result).toHaveProperty("id");
-            expect(typeof result.id).toBe("string");
-            expect(result).toHaveProperty("title");
-            expect(typeof result.title).toBe("string");
-            expect(result).toHaveProperty("duration");
-            expect(typeof result.duration).toBe("number");
+            vitest.expect(result).toHaveProperty("id");
+            vitest.expect(typeof result.id).toBe("string");
+            vitest.expect(result).toHaveProperty("title");
+            vitest.expect(typeof result.title).toBe("string");
+            vitest.expect(result).toHaveProperty("duration");
+            vitest.expect(typeof result.duration).toBe("number");
         } catch (error) {
             console.warn(`Video data fetch failed for ${rawVideoId}. This might require a real video ID.`, error);
             throw error;
         }
     });
-    it("should throw Zod error for missing videoLink", async () => {
-        await expect(videoData({} as any)).rejects.toThrowError(/videoLink.*Required/);
+    vitest.it("should throw Zod error for missing videoLink", async () => {
+        await vitest.expect(videoData({} as any)).rejects.toThrowError(/videoLink.*Required/);
     });
-    it("should throw error for invalid videoLink format", async () => {
-        await expect(videoData({ videoLink: invalidVideoLink })).rejects.toThrowError(/Incorrect video link provided./);
+    vitest.it("should throw error for invalid videoLink format", async () => {
+        await vitest.expect(videoData({ videoLink: invalidVideoLink })).rejects.toThrowError(/Incorrect video link provided./);
     });
-    it("should throw error for a nonexistent video", async () => {
+    vitest.it("should throw error for a nonexistent video", async () => {
         try {
             await videoData({ videoLink: nonexistentVideoLink });
         } catch (error: any) {
             if (error instanceof Error) {
-                expect(error.message).toMatch(/Unable to fetch video data./);
+                vitest.expect(error.message).toMatch(/Unable to fetch video data./);
                 return;
             }
             throw error;
