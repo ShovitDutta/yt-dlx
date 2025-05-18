@@ -65,19 +65,23 @@ def run_executable(executable_name_without_ext, executable_path, args):
 
 def main():
     parser = argparse.ArgumentParser(description="yt-dlx: YouTube downloader utility with bundled executables")
-    parser.add_argument("--tor", nargs=argparse.REMAINDER, help="Run tor with the arguments...")
+    parser.add_argument("--ffprobe", nargs=argparse.REMAINDER, help="Run ffprobe with the arguments...")
     parser.add_argument("--ytprobe", nargs=argparse.REMAINDER, help="Run ytprobe with the arguments...")
+    parser.add_argument("--ffmpeg", nargs=argparse.REMAINDER, help="Run ffmpeg with the arguments...")
+    parser.add_argument("--tor", nargs=argparse.REMAINDER, help="Run tor with the arguments...")
     args = parser.parse_args()
-
     if sys.platform == "win32":
         tor_path = find_bundled_file("context/windows/TorBrowser/tor/tor.exe")
         tor_data_dir = find_bundled_file("context/windows/TorBrowser/data")
         ytprobe_path = find_bundled_file("context/windows/ytprobe.exe")
+        ffprobe_path = find_bundled_file("context/windows/ffprobe.exe")
+        ffmpeg_path = find_bundled_file("context/windows/ffmpeg.exe")
     else:
+        ffmpeg_path = find_bundled_file("context/linux/ffmpeg.bin")
+        ytprobe_path = find_bundled_file("context/linux/ytprobe.bin")
+        ffprobe_path = find_bundled_file("context/linux/ffprobe.bin")
         tor_path = find_bundled_file("context/linux/TorBrowser/tor/tor")
         tor_data_dir = find_bundled_file("context/linux/TorBrowser/data")
-        ytprobe_path = find_bundled_file("context/linux/ytprobe.bin")
-
     if args.tor is not None:
         if not tor_path:
             print("Error: Bundled Tor executable not found in expected location.", file=sys.stderr)
@@ -97,14 +101,20 @@ def main():
         run_executable("tor", tor_path, tor_subprocess_args)
     elif args.ytprobe is not None:
         run_executable("ytprobe", ytprobe_path, args.ytprobe)
+    elif args.ffmpeg is not None:
+        run_executable("ffmpeg", ffmpeg_path, args.ffmpeg)
+    elif args.ffprobe is not None:
+        run_executable("ffprobe", ffprobe_path, args.ffprobe)
     else:
         paths_info = {
+            "Running Python Executable": sys.executable,
+            "ffmpeg": ffmpeg_path if ffmpeg_path else "Not found in bundle",
             "tor_executable": tor_path if tor_path else "Not found in bundle",
-            "tor_data_directory": tor_data_dir if tor_data_dir else "Not found in bundle",
+            "ffprobe": ffprobe_path if ffprobe_path else "Not found in bundle",
             "ytprobe": ytprobe_path if ytprobe_path else "Not found in bundle",
+            "tor_data_directory": tor_data_dir if tor_data_dir else "Not found in bundle",
             "bundled_torrc_win": find_bundled_file("context/windows/TorBrowser/data/torrc") if sys.platform == "win32" else "N/A on this platform",
             "bundled_torrc_linux": find_bundled_file("context/linux/TorBrowser/data/torrc") if sys.platform != "win32" else "N/A on this platform",
-            "Running Python Executable": sys.executable
         }
         print(json.dumps(paths_info, indent=2))
 

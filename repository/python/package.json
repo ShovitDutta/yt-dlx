@@ -1,4 +1,5 @@
 {
+    "type": "module",
     "license": "Apache-2.0",
     "author": {
         "name": "Shovit Dutta",
@@ -11,7 +12,7 @@
     },
     "homepage": "https://yt-dlx-shovit.koyeb.src",
     "scripts": {
-        "windows": ".\\context\\windows\\venv\\python.exe .\\repack.py",
-        "linux": "python3 -m venv repository/python/context/linux/venv && ./repository/python/context/linux/venv/bin/python repository/python/repack.py"
+        "linux": "./context/linux/venv/bin/python ./repack.py && node ./quick.test.js",
+        "windows": "./context/windows/venv/python.exe ./repack.py && node ./quick.test.js"
     }
 }

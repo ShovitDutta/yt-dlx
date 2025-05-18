@@ -3,41 +3,34 @@ import os
 import sys
 import shutil
 import subprocess
-
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
-
-command = [
-    sys.executable, "-m", "PyInstaller",
-    "--onefile",
-    "--icon", "context/logo.jpg",
-    "main.py",
-    "--add-data", "logic.py:.",
-]
-
+command = [sys.executable, "-m", "PyInstaller", "--onefile", "--icon", "context/logo.jpg", "main.py", "--add-data", "logic.py:."]
 if sys.platform == "win32":
     command.extend([
         "--name", "yt-dlx.exe",
         "--add-data", "context/windows/TorBrowser:context/windows/TorBrowser",
         "--add-binary", "context/windows/ytprobe.exe:context/windows/",
+        "--add-binary", "context/windows/ffprobe.exe:context/windows/",
+        "--add-binary", "context/windows/ffmpeg.exe:context/windows/",
         "--add-data", "context/windows/venv:context/windows/venv",
     ])
     exe_name = "yt-dlx.exe"
 elif sys.platform.startswith("linux"):
     command.extend([
         "--name", "yt-dlx.bin",
-        "--add-data", "context/linux/TorBrowser:context/linux/TorBrowser",
-        "--add-binary", "context/linux/ytprobe.bin:context/linux/",
         "--add-data", "context/linux/venv:context/linux/venv",
+        "--add-binary", "context/linux/ffmpeg.bin:context/linux/",
+        "--add-binary", "context/linux/ffprobe.bin:context/linux/",
+        "--add-binary", "context/linux/ytprobe.bin:context/linux/",
+        "--add-data", "context/linux/TorBrowser:context/linux/TorBrowser",
     ])
     exe_name = "yt-dlx.bin"
 else:
     print(f"Unsupported platform: {sys.platform}", file=sys.stderr)
     sys.exit(1)
-
 print("Running PyInstaller command:")
 print(" ".join(command))
-
 try:
     subprocess.run(command, check=True)
     source_exe_path = os.path.join(script_dir, "dist", exe_name)

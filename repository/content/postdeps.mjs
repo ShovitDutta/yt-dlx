@@ -8,12 +8,7 @@ if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
 const binDL = async (url, filepath, binaryName, retries = 3) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
         const progressBar = new cliProgress.SingleBar(
-            {
-                format: `[${binaryName}] [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} Bytes`,
-                clearOnComplete: true,
-                stopOnComplete: true,
-                hideCursor: true,
-            },
+            { format: `[${binaryName}] [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} Bytes`, clearOnComplete: true, stopOnComplete: true, hideCursor: true },
             cliProgress.Presets.shades_classic,
         );
         try {
@@ -25,11 +20,7 @@ const binDL = async (url, filepath, binaryName, retries = 3) => {
                     console.error(`${colors.red("@error:")} Could not remove existing file for ${binaryName}: ${err.message}`);
                 }
             }
-            const response = await axios({
-                url,
-                method: "GET",
-                responseType: "stream",
-            });
+            const response = await axios({ url, method: "GET", responseType: "stream" });
             if (response.status !== 200) {
                 if (response.status === 416) {
                     console.log(`[${binaryName}]: Already fully downloaded.`);
@@ -76,33 +67,12 @@ const binDL = async (url, filepath, binaryName, retries = 3) => {
 const main = async () => {
     var binaries = [];
     if (process.platform === "linux") {
-        binaries = [
-            {
-                name: "yt-dlx.bin",
-                url: "",
-            },
-            {
-                name: "ffmpeg.bin",
-                url: "https://drive.usercontent.google.com/download?id=1mTJXoZ0JyOGREZIkd7YXTtnJyPeBR7-t&export=download&authuser=0&confirm=t&uuid=3c57889a-9438-4311-82b2-c04a7efd512e&at=APcmpoy7GW4zIFwQytaMrfqXuYav%3A1744944760404",
-            },
-            {
-                name: "ffprobe.bin",
-                url: "https://drive.usercontent.google.com/download?id=1JaLMy9MAvSPOWYGYrf2m4zzJUbDk4sig&export=download&authuser=0&confirm=t&uuid=abf65991-2d2a-4e4b-9364-0bdc2770c023&at=APcmpowjfOxnrt0KtqxHBmQ-0Y1y%3A1744944786413",
-            },
-        ];
+        binaries = [{ name: "yt-dlx.bin", url: "" }];
     } else if (process.platform === "win32") {
         binaries = [
             {
                 name: "yt-dlx.exe",
-                url: "https://drive.usercontent.google.com/download?id=1kgtfIHzPOyRLpLL8rpOmFqT6UR8K5R0a&export=download&authuser=0&confirm=t&uuid=8c37e41e-506a-49a8-a6ee-f72ef2bc8b7b&at=ALoNOgnlRL9v3mCSjSwg4tbEVE5M%3A1747380759992",
-            },
-            {
-                name: "ffmpeg.exe",
-                url: "https://drive.usercontent.google.com/download?id=1EcKV_ORRwJ-cKpjjiVl0y4oG5bNvp6SY&export=download&authuser=0&confirm=t&uuid=e338b1b2-fde5-45ab-876e-4db0f756eddb&at=APcmpozZLuKfkgmBz3wqCUF9RQxY%3A1744943836996",
-            },
-            {
-                name: "ffprobe.exe",
-                url: "https://drive.usercontent.google.com/download?id=1QZz_esQxglxHmyt9RWTSQH6co0rb-Klq&export=download&authuser=0&confirm=t&uuid=18ab1207-ba52-473a-9d0d-c411c70274e7&at=APcmpoxCaYqSqCg7g-F9LMdLrAlG%3A1744943860213",
+                url: "https://drive.usercontent.google.com/download?id=1Em3oWflxGABtlz9hgwNbDAFJvHqWQXsm&export=download&authuser=0&confirm=t&uuid=0f7d0449-8815-4bdd-894b-90d1f9046b5b&at=ALoNOgksLoVOeuadn5vKFG0HD6bn%3A1747544764031",
             },
         ];
     } else {

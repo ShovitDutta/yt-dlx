@@ -317,7 +317,7 @@ export default async function Engine({ query, useTor = false, verbose = false })
             description: i.description as string,
             channel_url: i.channel_url as string,
             webpage_url: i.webpage_url as string,
-            live_status: i.live_status as boolean,
+            live_status: i.live_status as string,
             upload_date: i.upload_date as string,
             uploader_id: i.uploader_id as string,
             original_url: i.original_url as string,
