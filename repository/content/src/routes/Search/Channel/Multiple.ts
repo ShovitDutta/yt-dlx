@@ -112,6 +112,7 @@ export default async function search_channels({ query }: z.infer<typeof ZodSchem
         if (!channels || channels.length === 0) {
             throw new Error(`${colors.red("@error: ")} No channels found for the provided query.`);
         }
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: channels };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -127,6 +128,5 @@ export default async function search_channels({ query }: z.infer<typeof ZodSchem
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
