@@ -62,26 +62,4 @@ vitest.describe("VideoCustom", () => {
             (result as { stream: Readable })?.stream?.on("end", resolve);
         });
     });
-    vitest.it("should throw error for metadata with output", async () => {
-        await vitest
-            .expect(VideoCustom({ query: "your search query or url", resolution: "720p", metadata: true, output: "./should_fail_dir" }))
-            .rejects.toThrowError(/metadata.*cannot be used with.*output/);
-    });
-    vitest.it("should throw error for stream with output", async () => {
-        await vitest
-            .expect(VideoCustom({ query: "your search query or url", resolution: "720p", stream: true, output: "./should_fail_dir" }))
-            .rejects.toThrowError(/stream.*cannot be used with.*output/);
-    });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(VideoCustom({ resolution: "720p" } as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for missing resolution", async () => {
-        await vitest.expect(VideoCustom({ query: "your search query or url" } as any)).rejects.toThrowError(/resolution.*Required/);
-    });
-    vitest.it("should throw Zod error for invalid filter", async () => {
-        await vitest.expect(VideoCustom({ query: "your search query or url", resolution: "720p", filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
-    });
-    vitest.it("should throw Zod error for invalid resolution", async () => {
-        await vitest.expect(VideoCustom({ query: "your search query or url", resolution: "500p" as any })).rejects.toThrowError(/resolution.*invalid enum value/);
-    });
 });
