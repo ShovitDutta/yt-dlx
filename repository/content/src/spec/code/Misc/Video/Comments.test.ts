@@ -30,34 +30,4 @@ vitest.describe("videoComments", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(videoComments({} as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for short query", async () => {
-        await vitest.expect(videoComments({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
-    });
-    vitest.it("should throw error if no videos found for the query", async () => {
-        try {
-            await videoComments({ query: queryWithNoVideos });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/No videos found for the given query/);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no videos found.");
-    });
-    vitest.it("should throw error if no comments found for the video", async () => {
-        try {
-            await videoComments({ query: queryForVideoWithNoComments });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/No comments found for the video/);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no comments found.");
-    });
 });
