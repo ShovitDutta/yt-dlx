@@ -5,7 +5,6 @@ export default defineConfig({
         environment: "node",
         include: ["spec/**/*.test.ts"],
         globals: true,
-
         // Optional: Configure file system paths or aliases if your project uses them.
         // This helps Vitest resolve module paths correctly.
         // For example, if you use a '@/' alias for your 'src' directory:
