@@ -1,50 +1,3 @@
-import * as fs from "fs";
-import colors from "colors";
-import * as path from "path";
-import { z, ZodError } from "zod";
-import ffmpeg from "fluent-ffmpeg";
-import Agent from "../../utils/Agent";
-import { locator } from "../../utils/locator";
-import { Readable, PassThrough } from "stream";
-function formatTime(seconds: number): string {
-    if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
-}
-function calculateETA(startTime: Date, percent: number): number {
-    const currentTime = new Date();
-    const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
-    if (percent <= 0) return NaN;
-    const totalTimeEstimate = (elapsedTime / percent) * 100;
-    const remainingTime = totalTimeEstimate - elapsedTime;
-    return remainingTime;
-}
-function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
-    let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
-    displayPercent = Math.min(Math.max(displayPercent, 0), 100);
-    const colorFn = displayPercent < 25 ? colors.red : displayPercent < 50 ? colors.yellow : colors.green;
-    const width = Math.floor((process.stdout.columns || 80) / 4);
-    const scomp = Math.round((width * displayPercent) / 100);
-    const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
-    const etaSeconds = calculateETA(startTime, displayPercent);
-    const etaFormatted = formatTime(etaSeconds);
-    process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
-}
-const ZodSchema = z.object({
-    query: z.string().min(2),
-    output: z.string().optional(),
-    useTor: z.boolean().optional(),
-    stream: z.boolean().optional(),
-    verbose: z.boolean().optional(),
-    metadata: z.boolean().optional(),
-    showProgress: z.boolean().optional(),
-    filter: z
-        .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
-        .optional(),
-});
-type AudioLowestOptions = z.infer<typeof ZodSchema>;
 /**
  * @shortdesc Downloads or streams the lowest quality audio from YouTube videos/queries with options for filters and output.
  *
@@ -308,6 +261,53 @@ type AudioLowestOptions = z.infer<typeof ZodSchema>;
  * //    console.error("Expected Error (FFmpeg Processing Error):", error instanceof Error ? error.message : error);
  * // }
  */
+import * as fs from "fs";
+import colors from "colors";
+import * as path from "path";
+import { z, ZodError } from "zod";
+import ffmpeg from "fluent-ffmpeg";
+import Agent from "../../utils/Agent";
+import { locator } from "../../utils/locator";
+import { Readable, PassThrough } from "stream";
+function formatTime(seconds: number): string {
+    if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
+}
+function calculateETA(startTime: Date, percent: number): number {
+    const currentTime = new Date();
+    const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
+    if (percent <= 0) return NaN;
+    const totalTimeEstimate = (elapsedTime / percent) * 100;
+    const remainingTime = totalTimeEstimate - elapsedTime;
+    return remainingTime;
+}
+function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
+    let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
+    displayPercent = Math.min(Math.max(displayPercent, 0), 100);
+    const colorFn = displayPercent < 25 ? colors.red : displayPercent < 50 ? colors.yellow : colors.green;
+    const width = Math.floor((process.stdout.columns || 80) / 4);
+    const scomp = Math.round((width * displayPercent) / 100);
+    const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
+    const etaSeconds = calculateETA(startTime, displayPercent);
+    const etaFormatted = formatTime(etaSeconds);
+    process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
+}
+const ZodSchema = z.object({
+    query: z.string().min(2),
+    output: z.string().optional(),
+    useTor: z.boolean().optional(),
+    stream: z.boolean().optional(),
+    verbose: z.boolean().optional(),
+    metadata: z.boolean().optional(),
+    showProgress: z.boolean().optional(),
+    filter: z
+        .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
+        .optional(),
+});
+type AudioLowestOptions = z.infer<typeof ZodSchema>;
 export default async function AudioLowest({
     query,
     output,
