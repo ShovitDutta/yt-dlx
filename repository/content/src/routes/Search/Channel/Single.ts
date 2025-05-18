@@ -101,9 +101,8 @@ export default async function channel_data({ channelLink }: z.infer<typeof ZodSc
         ZodSchema.parse({ channelLink });
         const youtube = new Client();
         const channelData: Channel | undefined = await youtube.getChannel(channelLink);
-        if (!channelData) {
-            throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
-        }
+        if (!channelData)            throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: channelData };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -119,6 +118,5 @@ export default async function channel_data({ channelLink }: z.infer<typeof ZodSc
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
