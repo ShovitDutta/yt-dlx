@@ -9,11 +9,11 @@ vitest.describe("VideoLowest", () => {
         vitest.expect(result).toHaveProperty("outputPath");
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await VideoLowest({ query, output: "./custom_downloads", filter: "grayscale" });
+        const result = await VideoLowest({ query, output: "output", filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
     });
     vitest.it("should handle download with all options", async () => {
-        const result = await VideoLowest({ query, output: "./full_downloads", useTor: false, verbose: true, filter: "invert", showProgress: true });
+        const result = await VideoLowest({ query, output: "output", useTor: false, verbose: true, filter: "invert", showProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
     });
     vitest.it("should fetch metadata only", async () => {
