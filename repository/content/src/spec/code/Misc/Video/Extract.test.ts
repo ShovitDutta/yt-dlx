@@ -1,3 +1,4 @@
+import extract from "../../../../routes/Misc/Video/Extract";
 import * as vitest from "vitest";
 vitest.describe("extract", () => {
     const validQuery = "test video";
