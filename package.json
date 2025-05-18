@@ -14,7 +14,7 @@
     "scripts": {
         "========================================================================== binders": "==========================================================================",
         "make": "yarn run renew && yarn run build",
-        "npm": "cd repository/content && yarn publish",
+        "push": "cd repository/content && yarn publish",
         "preinstall": "yarn global add rimraf expo-cli",
         "format": "prettier --write . && prettier --check .",
         "build": "yarn run document:build && yarn run content:build && yarn run desktop:build",
