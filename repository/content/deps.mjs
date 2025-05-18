@@ -91,7 +91,10 @@ const main = async () => {
                 name: "ffmpeg.exe",
                 url: "https://drive.usercontent.google.com/download?id=1soMstx1pqp8-eW0Q-2zHzOefnVb0sXKN&export=download&authuser=0&confirm=t&uuid=bd230a5e-b6cc-4a11-b96a-bad43e5aca78&at=ALoNOgkxB0P9cKDmDBRa11pKt4XM%3A1747581438761",
             },
-            { name: "ffprobe.exe", url: "" },
+            {
+                name: "ffprobe.exe",
+                url: "https://drive.usercontent.google.com/download?id=1p6QLsvDqnZM3DVLyL1YxyDjKQcyhiD_U&export=download&authuser=0&confirm=t&uuid=f01e1ed9-c7f9-4e7f-9c64-e7cba84c5632&at=ALoNOgkT_vvvrQA0VzugczoV8qAB%3A1747581657219",
+            },
         ];
     } else {
         console.error(`${colors.red("@error:")} Unsupported platform! Please use Linux or Windows.`);
