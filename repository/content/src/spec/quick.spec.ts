@@ -6,4 +6,5 @@ dotenv.config();
 console.clear();
 (async () => {
     const paths = await locator();
+    console.log(paths);
 })();
