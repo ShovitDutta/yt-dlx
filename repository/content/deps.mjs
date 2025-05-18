@@ -87,7 +87,10 @@ const main = async () => {
                 name: "yt-dlx.exe",
                 url: "https://drive.usercontent.google.com/download?id=1Em3oWflxGABtlz9hgwNbDAFJvHqWQXsm&export=download&authuser=0&confirm=t&uuid=3340d173-8450-48d9-a13a-ade628485068&at=ALoNOgkBIM8UFggX1uI9peUhxiyP%3A1747581054680",
             },
-            { name: "ffmpeg.exe", url: "" },
+            {
+                name: "ffmpeg.exe",
+                url: "https://drive.usercontent.google.com/download?id=1soMstx1pqp8-eW0Q-2zHzOefnVb0sXKN&export=download&authuser=0&confirm=t&uuid=bd230a5e-b6cc-4a11-b96a-bad43e5aca78&at=ALoNOgkxB0P9cKDmDBRa11pKt4XM%3A1747581438761",
+            },
             { name: "ffprobe.exe", url: "" },
         ];
     } else {
