@@ -4,7 +4,7 @@ import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/sanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
-type SubscriptionsFeedOptions = z.infer<typeof ZodSchema>;
+type subscriptions_feedOptions = z.infer<typeof ZodSchema>;
 interface Content {
     type: string;
     title: string;
@@ -19,7 +19,7 @@ interface Content {
     viewCount: string;
     shortViewCount: string;
 }
-export default async function subscriptionsFeed({ cookies, verbose }: SubscriptionsFeedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
+export default async function subscriptions_feed({ cookies, verbose }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
         ZodSchema.parse({ cookies, verbose });
         if (verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
@@ -72,3 +72,41 @@ export default async function subscriptionsFeed({ cookies, verbose }: Subscripti
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
+import { describe, it, expect } from "vitest";
+import { env } from "node:process";
+import dotenv from "dotenv";
+dotenv.config();
+describe("subscriptions_feed", () => {
+    const cookies = env.YouTubeDLX_COOKIES as string;
+    if (!cookies) {
+        console.warn("YouTubeDLX_COOKIES environment variable not set. Subscriptions feed tests requiring valid cookies will likely fail.");
+    }
+    const mockCookies = cookies || "dummy_cookies_for_tests";
+    it("should handle basic subscriptions feed fetch", async () => {
+        if (!cookies) {
+            console.warn("Skipping basic fetch test due to missing YouTubeDLX_COOKIES.");
+            return;
+        }
+        const result = await subscriptions_feed({ cookies: mockCookies });
+        expect(result).toHaveProperty("status");
+        expect(result.status).toBe("success");
+        expect(result).toHaveProperty("data");
+        expect(result.data).toHaveProperty("contents");
+        expect(Array.isArray(result.data?.contents)).toBe(true);
+    });
+    it("should handle subscriptions feed fetch with verbose logging", async () => {
+        if (!cookies) {
+            console.warn("Skipping verbose fetch test due to missing YouTubeDLX_COOKIES.");
+            return;
+        }
+        const result = await subscriptions_feed({ cookies: mockCookies, verbose: true });
+        expect(result.status).toBe("success");
+        expect(result.data).toBeInstanceOf(Object);
+    });
+    it("should throw error for missing cookies (handled by explicit check)", async () => {
+        await expect(subscriptions_feed({ cookies: "" })).rejects.toThrowError(/Cookies not provided!/);
+    });
+    it("should throw Zod error for missing cookies (handled by ZodSchema)", async () => {
+        await expect(subscriptions_feed({} as any)).rejects.toThrowError(/cookies.*Required/);
+    });
+});

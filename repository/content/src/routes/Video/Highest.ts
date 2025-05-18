@@ -198,147 +198,80 @@ export default async function VideoHighest({
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
+import { describe, it, expect } from "vitest";
 import { createWriteStream } from "fs";
-(async () => {
-    try {
-        console.log("--- Running Basic Download Example ---");
-        const result = await VideoHighest({ query: "your search query or url" });
-        if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
-    } catch (error) {
-        console.error("Basic Download Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Download with Output and Filter Example ---");
-        const result = await VideoHighest({ query: "your search query or url", output: "./custom_downloads", filter: "grayscale" });
-        if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
-    } catch (error) {
-        console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Download with All Options Example ---");
-        const result = await VideoHighest({ query: "your search query or url", output: "./full_downloads", useTor: true, verbose: true, filter: "invert", showProgress: true });
-        if ("outputPath" in result) console.log("\nDownload with All Options finished:", result.outputPath);
-    } catch (error) {
-        console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Fetch Metadata Only Example ---");
-        const result = await VideoHighest({ query: "your search query or url", metadata: true });
-        if ("metadata" in result) console.log("Metadata Only:", result.metadata);
-    } catch (error) {
-        console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Fetch Metadata with Tor and Verbose Example ---");
-        const result = await VideoHighest({ query: "your search query or url", metadata: true, useTor: true, verbose: true });
-        if ("metadata" in result) console.log("Metadata with Tor and Verbose:", result.metadata);
-    } catch (error) {
-        console.error("Metadata with Tor and Verbose Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Basic Stream Example ---");
-        const result = await VideoHighest({ query: "your search query or url", stream: true });
-        if ("stream" in result && result.stream) {
-            console.log("Basic Streaming started. Piping to basic_stream.mp4...");
-            const outputStream = createWriteStream("basic_stream.mp4");
-            result.stream.pipe(outputStream);
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Basic Streaming finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Basic Stream error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
+describe("VideoHighest", () => {
+    const query = "test query";
+    it("should handle basic download", async () => {
+        const result = await VideoHighest({ query });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.mp4$/);
         }
-    } catch (error) {
-        console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Stream with Filter Example ---");
-        const result = await VideoHighest({ query: "your search query or url", stream: true, filter: "rotate90" });
-        if ("stream" in result && result.stream) {
-            console.log("Stream with Filter started. Piping to filtered_stream.mp4...");
-            const outputStream = createWriteStream("filtered_stream.mp4");
-            result.stream.pipe(outputStream);
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Stream with Filter finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Stream with Filter error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
+    });
+    it("should handle download with output and filter", async () => {
+        const result = await VideoHighest({ query, output: "./custom_downloads_vhigh", filter: "grayscale" });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.mp4$/);
         }
-    } catch (error) {
-        console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Stream with All Options Example ---");
-        const result = await VideoHighest({ query: "your search query or url", stream: true, useTor: true, verbose: true, filter: "rotate180", showProgress: true });
-        if ("stream" in result && result.stream) {
-            console.log("\nStream with All Options started. Piping to full_stream.mp4...");
-            const outputStream = createWriteStream("full_stream.mp4");
-            result.stream.pipe(outputStream);
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Stream with All Options finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Stream with All Options error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
+    });
+    it("should handle download with all options", async () => {
+        const result = await VideoHighest({ query, output: "./full_downloads_vhigh", useTor: false, verbose: true, filter: "invert", showProgress: true });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.mp4$/);
         }
-    } catch (error) {
-        console.error("\nStream with All Options Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid Options Example (Metadata and Output) ---");
-        await VideoHighest({ query: "your search query or url", metadata: true, output: "./should_fail_dir" });
-        console.log("This should not be reached - Invalid Options Example.");
-    } catch (error) {
-        console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid Options Example (Stream and Output) ---");
-        await VideoHighest({ query: "your search query or url", stream: true, output: "./should_fail_dir" });
-        console.log("This should not be reached - Invalid Options Example.");
-    } catch (error) {
-        console.error("Expected Error (Stream and Output):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Zod Validation Error Example (Missing Query) ---");
-        await VideoHighest({} as any);
-        console.log("This should not be reached - Zod Validation Error Example.");
-    } catch (error) {
-        console.error("Expected Zod Error (Missing Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Zod Validation Error Example (Invalid Filter) ---");
-        await VideoHighest({ query: "your search query or url", filter: "nonexistentfilter" as any });
-        console.log("This should not be reached - Zod Validation Error Example.");
-    } catch (error) {
-        console.error("Expected Zod Error (Invalid Filter):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+    });
+    it("should fetch metadata only", async () => {
+        const result = await VideoHighest({ query, metadata: true });
+        expect(result).toHaveProperty("metadata");
+        expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
+    });
+    it("should fetch metadata with Tor and verbose", async () => {
+        const result = await VideoHighest({ query, metadata: true, useTor: false, verbose: true });
+        expect(result).toHaveProperty("metadata");
+    });
+    it("should handle basic stream", async () => {
+        const result = await VideoHighest({ query, stream: true });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("basic_stream_vhigh.mp4");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable }).stream?.on("end", resolve);
+        });
+    });
+    it("should handle stream with filter", async () => {
+        const result = await VideoHighest({ query, stream: true, filter: "rotate90" });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("filtered_stream_vhigh.mp4");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable }).stream?.on("end", resolve);
+        });
+    });
+    it("should handle stream with all options", async () => {
+        const result = await VideoHighest({ query: "your search query or url", stream: true, useTor: false, verbose: true, filter: "rotate180", showProgress: true });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("full_stream_vhigh.mp4");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable })?.stream?.on("end", resolve);
+        });
+    });
+    it("should throw error for metadata with output", async () => {
+        await expect(VideoHighest({ query: "test query", metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
+    });
+    it("should throw error for stream with output", async () => {
+        await expect(VideoHighest({ query: "test query", stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(VideoHighest({} as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for invalid filter", async () => {
+        await expect(VideoHighest({ query: "test query", filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
+    });
+});

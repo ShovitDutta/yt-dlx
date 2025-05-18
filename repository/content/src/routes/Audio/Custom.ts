@@ -219,100 +219,72 @@ export default async function AudioCustom({
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
+import { describe, it, expect } from "vitest";
 import { createWriteStream } from "fs";
-(async () => {
-    try {
-        console.log("--- Running Basic Download Example ---");
-        const result = await AudioCustom({ query: "your search query or url", resolution: "high" });
-        if ("outputPath" in result) console.log("Basic Download finished:", result.outputPath);
-    } catch (error) {
-        console.error("Basic Download Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Download with Output and Filter Example ---");
-        const result = await AudioCustom({ query: "your search query or url", output: "./custom_downloads", filter: "bassboost", resolution: "medium" });
-        if ("outputPath" in result) console.log("Download with Output and Filter finished:", result.outputPath);
-    } catch (error) {
-        console.error("Download with Output and Filter Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Download with All Options Example ---");
-        const result = await AudioCustom({ query: "your search query or url", resolution: "low", output: "./full_downloads", useTor: true, verbose: true, filter: "echo", showProgress: true });
-        if ("outputPath" in result) console.log("\nDownload with All Options finished:", result.outputPath);
-    } catch (error) {
-        console.error("\nDownload with All Options Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Fetch Metadata Only Example ---");
-        const result = await AudioCustom({ query: "your search query or url", resolution: "high", metadata: true });
-        if ("metadata" in result) console.log("Metadata Only:", result.metadata);
-    } catch (error) {
-        console.error("Metadata Only Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Basic Stream Example ---");
-        const result = await AudioCustom({ query: "your search query or url", resolution: "low", stream: true });
-        if ("stream" in result && result.stream) {
-            console.log("Basic Streaming started. Piping to basic_stream.avi...");
-            const outputStream = createWriteStream("basic_stream.avi");
-            result.stream.pipe(outputStream);
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Basic Streaming finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Basic Stream error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
+describe("AudioCustom", () => {
+    const query = "test query";
+    it("should handle basic download", async () => {
+        const result = await AudioCustom({ query, resolution: "high" });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.avi$/);
         }
-    } catch (error) {
-        console.error("Basic Stream Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Stream with Filter Example ---");
-        const result = await AudioCustom({ query: "your search query or url", resolution: "medium", stream: true, filter: "vaporwave" });
-        if ("stream" in result && result.stream) {
-            console.log("Stream with Filter started. Piping to filtered_stream.avi...");
-            const outputStream = createWriteStream("filtered_stream.avi");
-            result.stream.pipe(outputStream);
-            await new Promise<void>((resolve, reject) => {
-                result.stream.on("end", () => {
-                    console.log("Stream with Filter finished.");
-                    resolve();
-                });
-                result.stream.on("error", error => {
-                    console.error("Stream with Filter error:", error.message);
-                    result.stream.destroy(error);
-                    reject(error);
-                });
-            });
+    });
+    it("should handle download with output and filter", async () => {
+        const result = await AudioCustom({ query, output: "./custom_downloads_audiocustom", filter: "bassboost", resolution: "medium" });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.avi$/);
         }
-    } catch (error) {
-        console.error("Stream with Filter Setup Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid Options Example (Metadata and Output) ---");
-        await AudioCustom({ query: "your search query or url", resolution: "high", metadata: true, output: "./should_fail_dir" });
-        console.log("This should not be reached - Invalid Options Example.");
-    } catch (error) {
-        console.error("Expected Error (Metadata and Output):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Zod Validation Error Example (Invalid Resolution) ---");
-        await AudioCustom({ query: "your search query or url", resolution: "superhigh" as any });
-        console.log("This should not be reached - Zod Validation Error Example.");
-    } catch (error) {
-        console.error("Expected Zod Error (Invalid Resolution):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+    });
+    it("should handle download with all options", async () => {
+        const result = await AudioCustom({ query, resolution: "low", output: "./full_downloads_audiocustom", useTor: false, verbose: true, filter: "echo", showProgress: true });
+        expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            expect(result.outputPath).toMatch(/\.avi$/);
+        }
+    });
+    it("should fetch metadata only", async () => {
+        const result = await AudioCustom({ query, resolution: "high", metadata: true });
+        expect(result).toHaveProperty("metadata");
+        expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
+    });
+    it("should handle basic stream", async () => {
+        const result = await AudioCustom({ query, resolution: "low", stream: true });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("basic_stream_audiocustom.avi");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable }).stream?.on("end", resolve);
+        });
+    });
+    it("should handle stream with filter", async () => {
+        const result = await AudioCustom({ query, resolution: "medium", stream: true, filter: "vaporwave" });
+        expect(result).toHaveProperty("stream");
+        expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        const outputStream = createWriteStream("filtered_stream_audiocustom.avi");
+        (result as { stream: Readable }).stream?.pipe(outputStream);
+        await new Promise(resolve => {
+            (result as { stream: Readable }).stream?.on("end", resolve);
+        });
+    });
+    it("should throw error for metadata with output", async () => {
+        await expect(AudioCustom({ query: "test query", resolution: "high", metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
+    });
+    it("should throw error for stream with output", async () => {
+        await expect(AudioCustom({ query: "test query", resolution: "high", stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(AudioCustom({ resolution: "high" } as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for missing resolution", async () => {
+        await expect(AudioCustom({ query: "test query" } as any)).rejects.toThrowError(/resolution.*Required/);
+    });
+    it("should throw Zod error for invalid filter", async () => {
+        await expect(AudioCustom({ query: "test query", resolution: "high", filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
+    });
+    it("should throw Zod error for invalid resolution", async () => {
+        await expect(AudioCustom({ query: "test query", resolution: "superhigh" as any })).rejects.toThrowError(/resolution.*invalid enum value/);
+    });
+});
