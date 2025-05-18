@@ -1,3 +1,4 @@
+import search_channels from "../../../../routes/Search/Channel/Multiple";
 import * as vitest from "vitest";
 vitest.describe("search_channels", () => {
     const validQuery = "programming tutorials";
