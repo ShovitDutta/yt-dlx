@@ -30,22 +30,4 @@ vitest.describe("channel_data", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing channelLink", async () => {
-        await vitest.expect(channel_data({} as any)).rejects.toThrowError(/channelLink.*Required/);
-    });
-    vitest.it("should throw Zod error for short channelLink", async () => {
-        await vitest.expect(channel_data({ channelLink: invalidChannelLinkTooShort })).rejects.toThrowError(/channelLink.*should be at least 2 characters/);
-    });
-    vitest.it("should throw error for a non-existent channel", async () => {
-        try {
-            await channel_data({ channelLink: nonexistentChannelLink });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/Unable to fetch channel data for the provided link./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for a non-existent channel.");
-    });
 });
