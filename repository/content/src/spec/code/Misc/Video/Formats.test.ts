@@ -1,3 +1,4 @@
+import list_formats from "../../../../routes/Misc/Video/Formats";
 import * as vitest from "vitest";
 vitest.describe("list_formats", () => {
     const validQuery = "test video";
