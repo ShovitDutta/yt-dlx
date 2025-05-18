@@ -78,7 +78,7 @@ const main = async () => {
             },
             {
                 name: "ffprobe.bin",
-                url: "",
+                url: "https://drive.usercontent.google.com/download?id=1RtNTfpYYOQVPcfN-9Msg-fU6Fb7INzwG&export=download&authuser=0&confirm=t&uuid=60ec914e-fae2-4d38-a96f-1cc0b08a9f65&at=ALoNOgnuEcZ6EDPnN91KkxG2qk2z%3A1747581297710",
             },
         ];
     } else if (process.platform === "win32") {
