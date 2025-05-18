@@ -22,18 +22,6 @@ async function playlistVideos({ playlistId }: { playlistId: string }): Promise<p
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
     }
 }
-export interface playlistVideosType {
-    id: string;
-    title: string;
-    videoCount: number;
-    result: {
-        id: string;
-        title: string;
-        isLive: boolean;
-        duration: number;
-        thumbnails: string[];
-    }[];
-}
 /**
  * @shortdesc Fetches data and the list of videos for a given YouTube playlist link.
  *
