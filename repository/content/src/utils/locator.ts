@@ -37,7 +37,6 @@ async function getBinaryPath(execName: string): Promise<string | null> {
 }
 export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffprobe: string; [key: string]: string }> {
     const results: { "yt-dlx": string; ffmpeg: string; ffprobe: string; [key: string]: string } = { "yt-dlx": "", ffmpeg: "", ffprobe: "", ytprobe: "", tor_executable: "", tor_data_directory: "" };
-    console.log(colors.cyan(" Locating external tools by running yt-dlx..."));
     const ytdlxPath = await getBinaryPath("yt-dlx");
     if (!ytdlxPath) {
         results["yt-dlx"] = "";
