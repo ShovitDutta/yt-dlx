@@ -168,17 +168,3 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
 
     return results;
 }
-
-// Example Usage (from your original test file)
-/*
-import YouTubeDLX from ".."; // Adjust path as needed
-import dotenv from "dotenv";
-// import colors from "colors"; // Already imported in the locator function
-// import { locator } from "../utils/locator"; // Already defined above
-dotenv.config();
-console.clear();
-(async () => {
-    const paths = await locator();
-    console.log("\nFinal Paths Object:", paths); // Added label for clarity
-})();
-*/
