@@ -85,7 +85,7 @@ const main = async () => {
         binaries = [
             {
                 name: "yt-dlx.exe",
-                url: "",
+                url: "https://drive.usercontent.google.com/download?id=1Em3oWflxGABtlz9hgwNbDAFJvHqWQXsm&export=download&authuser=0&confirm=t&uuid=3340d173-8450-48d9-a13a-ade628485068&at=ALoNOgkBIM8UFggX1uI9peUhxiyP%3A1747581054680",
             },
             {
                 name: "ffmpeg.exe",
