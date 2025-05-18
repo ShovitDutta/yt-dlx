@@ -59,45 +59,56 @@ export default async function videoTranscript({ videoLink }: VideoTranscriptOpti
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Transcript Fetch Example ---");
-        const result = await videoTranscript({ videoLink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" });
-        console.log("Video Transcript:", result);
-    } catch (error) {
-        console.error("Basic Transcript Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Transcript Fetch with Shortened URL Example ---");
-        const result = await videoTranscript({ videoLink: "https://youtu.be/dQw4w9WgXcQ" });
-        console.log("Video Transcript:", result);
-    } catch (error) {
-        console.error("Shortened URL Transcript Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing videoLink Example ---");
-        await videoTranscript({} as any);
-        console.log("This should not be reached - Missing videoLink Example.");
-    } catch (error) {
-        console.error("Expected Error (Missing videoLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid videoLink Example ---");
-        await videoTranscript({ videoLink: "this is not a video link" });
-        console.log("This should not be reached - Invalid videoLink Example.");
-    } catch (error) {
-        console.error("Expected Error (Incorrect videoLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Transcript Available Example ---");
-        await videoTranscript({ videoLink: "https://www.youtube.com/watch?v=VIDEO_ID_WITHOUT_TRANSCRIPT" });
-        console.log("This should not be reached - No Transcript Example.");
-    } catch (error) {
-        console.error("Expected Error (No Transcript Available):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("videoTranscript", () => {
+    it("should handle basic transcript fetch", async () => {
+        const videoLink = "https://www.youtube.com/watch?v=example1";
+        try {
+            const result = await videoTranscript({ videoLink });
+            expect(Array.isArray(result)).toBe(true);
+            if (result.length > 0) {
+                expect(result[0]).toHaveProperty("text");
+                expect(result[0]).toHaveProperty("start");
+                expect(result[0]).toHaveProperty("duration");
+            }
+        } catch (error) {
+            console.warn(`Basic transcript fetch failed for ${videoLink}. This might require a real video link with a transcript.`, error);
+            throw error;
+        }
+    });
+    it("should handle transcript fetch with a different link format", async () => {
+        const videoLink = "https://youtu.be/example2";
+        try {
+            const result = await videoTranscript({ videoLink });
+            expect(Array.isArray(result)).toBe(true);
+            if (result.length > 0) {
+                expect(result[0]).toHaveProperty("text");
+                expect(result[0]).toHaveProperty("start");
+                expect(result[0]).toHaveProperty("duration");
+            }
+        } catch (error) {
+            console.warn(`Transcript fetch failed for ${videoLink}. This might require a real video link with a transcript.`, error);
+            throw error;
+        }
+    });
+    it("should throw Zod error for missing videoLink", async () => {
+        await expect(videoTranscript({} as any)).rejects.toThrowError(/videoLink.*Required/);
+    });
+    it("should throw error for invalid videoLink format", async () => {
+        const videoLink = "this is not a video link";
+        await expect(videoTranscript({ videoLink })).rejects.toThrowError(/Incorrect video link/);
+    });
+    it("should throw error if no transcript is available", async () => {
+        const videoLink = "https://www.youtube.com/watch?v=no_transcript_example";
+        try {
+            await videoTranscript({ videoLink });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/Unable to get transcript for this video!/);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no transcript available.");
+    });
+});

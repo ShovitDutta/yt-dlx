@@ -77,53 +77,65 @@ export default async function videoComments({ query, verbose }: VideoCommentsOpt
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Comments Fetch Example ---");
-        const result = await videoComments({ query: "video title or topic" });
-        console.log("Comments:", result);
-    } catch (error) {
-        console.error("Basic Comments Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Comments Fetch with Verbose Logging Example ---");
-        const result = await videoComments({ query: "another video query", verbose: true });
-        console.log("Comments:", result);
-    } catch (error) {
-        console.error("Verbose Comments Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing Query Example ---");
-        await videoComments({} as any);
-        console.log("This should not be reached - Missing Query Example.");
-    } catch (error) {
-        console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Short Query Example ---");
-        await videoComments({ query: "a" });
-        console.log("This should not be reached - Short Query Example.");
-    } catch (error) {
-        console.error("Expected Error (Query Too Short):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Videos Found Example ---");
-        await videoComments({ query: "very unlikely video search 1a2b3c4d5e" });
-        console.log("This should not be reached - No Videos Found Example.");
-    } catch (error) {
-        console.error("Expected Error (No Videos Found):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Comments Found Example ---");
-        await videoComments({ query: "a video known to have no comments" });
-        console.log("This should not be reached - No Comments Found Example.");
-    } catch (error) {
-        console.error("Expected Error (No Comments Found):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("videoComments", () => {
+    const validQuery = "trailer";
+    const queryWithNoVideos = "very unlikely video search 1a2b3c4d5e";
+    const queryForVideoWithNoComments = "a video known to have no comments";
+    it("should handle basic comments fetch", async () => {
+        try {
+            const result = await videoComments({ query: validQuery });
+            expect(Array.isArray(result)).toBe(true);
+            if (result.length > 0) {
+                expect(result[0]).toHaveProperty("comment_id");
+                expect(result[0]).toHaveProperty("comment");
+                expect(result[0]).toHaveProperty("author");
+            }
+        } catch (error) {
+            console.warn(`Basic comments fetch failed for query "${validQuery}". This test requires a real video query that returns a video with comments.`, error);
+            throw error;
+        }
+    });
+    it("should handle comments fetch with verbose logging", async () => {
+        try {
+            const result = await videoComments({ query: validQuery, verbose: true });
+            expect(Array.isArray(result)).toBe(true);
+            if (result.length > 0) {
+                expect(result[0]).toHaveProperty("comment_id");
+            }
+        } catch (error) {
+            console.warn(`Verbose comments fetch failed for query "${validQuery}". This test requires a real video query that returns a video with comments.`, error);
+            throw error;
+        }
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(videoComments({} as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for short query", async () => {
+        await expect(videoComments({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
+    });
+    it("should throw error if no videos found for the query", async () => {
+        try {
+            await videoComments({ query: queryWithNoVideos });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/No videos found for the given query/);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no videos found.");
+    });
+    it("should throw error if no comments found for the video", async () => {
+        try {
+            await videoComments({ query: queryForVideoWithNoComments });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/No comments found for the video/);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no comments found.");
+    });
+});

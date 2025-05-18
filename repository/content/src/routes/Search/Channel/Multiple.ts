@@ -50,38 +50,49 @@ export default async function search_channels({ query }: z.infer<typeof ZodSchem
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Channel Search ---");
-        const result = await search_channels({ query: "programming tutorials" });
-        console.log("Found channels:");
-        result.data.forEach(channel => console.log(`- ${channel.name} (${channel.id})`));
-    } catch (error) {
-        console.error("Basic Channel Search Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing Query Error ---");
-        await search_channels({} as any);
-        console.log("This should not be reached - Missing Query Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Short Query Error ---");
-        await search_channels({ query: "a" });
-        console.log("This should not be reached - Short Query Error.");
-    } catch (error) {
-        console.error("Expected Error (Query Too Short):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Results Query ---");
-        await search_channels({ query: "asdfghjklzxcvbnm1234567890qwer" });
-        console.log("This should not be reached - No Results Query.");
-    } catch (error) {
-        console.error("Expected Error (No Channels Found):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("search_channels", () => {
+    const validQuery = "programming tutorials";
+    const queryWithNoResults = "asdfghjklzxcvbnm1234567890qwer";
+    it("should handle basic channel search", async () => {
+        try {
+            const result = await search_channels({ query: validQuery });
+            expect(result).toHaveProperty("data");
+            expect(Array.isArray(result.data)).toBe(true);
+            expect(result.data.length).toBeGreaterThan(0);
+            if (result.data.length > 0) {
+                expect(result.data[0]).toHaveProperty("id");
+                expect(typeof result.data[0].id).toBe("string");
+                expect(result.data[0]).toHaveProperty("name");
+                expect(typeof result.data[0].name).toBe("string");
+                expect(result.data[0]).toHaveProperty("subscriberCount");
+                expect(typeof result.data[0].subscriberCount).toBe("number");
+                expect(result.data[0]).toHaveProperty("description");
+                expect(typeof result.data[0].description).toBe("string");
+                expect(result.data[0]).toHaveProperty("thumbnails");
+                expect(Array.isArray(result.data[0].thumbnails)).toBe(true);
+            }
+        } catch (error) {
+            console.warn(`Basic channel search failed for query "${validQuery}". This test requires a query that returns channel results.`, error);
+            throw error;
+        }
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(search_channels({} as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for short query", async () => {
+        await expect(search_channels({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
+    });
+    it("should throw error if no channels found for the query", async () => {
+        try {
+            await search_channels({ query: queryWithNoResults });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/No channels found for the provided query./);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no channels found.");
+    });
+});

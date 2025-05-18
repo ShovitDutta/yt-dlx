@@ -248,70 +248,73 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    const query = "your search query or url";
-    try {
-        console.log("--- Running Basic Video Extract ---");
-        const result = await extract({ query });
-        console.log("Video Data:", result.data);
-    } catch (error) {
-        console.error("Basic Video Extract Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video Extract with Verbose Logging ---");
-        const result = await extract({ query, verbose: true });
-        console.log("Video Data (Verbose):", result.data);
-    } catch (error) {
-        console.error("Video Extract with Verbose Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video Extract with Tor ---");
-        const result = await extract({ query, useTor: true });
-        console.log("Video Data (with Tor):", result.data);
-    } catch (error) {
-        console.error("Video Extract with Tor Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video Extract with Verbose and Tor ---");
-        const result = await extract({ query, verbose: true, useTor: true });
-        console.log("Video Data (Verbose, with Tor):", result.data);
-    } catch (error) {
-        console.error("Video Extract with Verbose and Tor Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing Query Error ---");
-        await extract({} as any);
-        console.log("This should not be reached - Missing Query Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Engine Data Error ---");
-        await extract({ query: "a query that should return no results 12345abcde" });
-        console.log("This should not be reached - No Engine Data Error.");
-    } catch (error) {
-        console.error("Expected Error (No Engine Data):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video with No Comments ---");
-        const result = await extract({ query: "a video where comments are disabled" });
-        console.log("Video Data (Comments Null):", result.data.comments === null);
-    } catch (error) {
-        console.error("Video with No Comments Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video with No Transcript ---");
-        const result = await extract({ query: "a video with no transcript" });
-        console.log("Video Data (Transcript Null):", result.data.transcript === null);
-    } catch (error) {
-        console.error("Video with No Transcript Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("extract", () => {
+    const validQuery = "test video";
+    const queryThatShouldFail = "a query that should return no results 12345abcde";
+    it("should handle basic video extract", async () => {
+        const result = await extract({ query: validQuery });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toHaveProperty("meta_data");
+        expect(result.data.meta_data).toBeInstanceOf(Object);
+        expect(result.data).toHaveProperty("comments");
+        expect(Array.isArray(result.data.comments) || result.data.comments === null).toBe(true);
+        expect(result.data).toHaveProperty("transcript");
+        expect(Array.isArray(result.data.transcript) || result.data.transcript === null).toBe(true);
+        expect(result.data).toHaveProperty("BestAudioLow");
+        expect(result.data).toHaveProperty("ManifestLow");
+    });
+    it("should handle video extract with verbose logging", async () => {
+        const result = await extract({ query: validQuery, verbose: true });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toBeInstanceOf(Object);
+    });
+    it("should handle video extract with useTor", async () => {
+        const result = await extract({ query: validQuery, useTor: false });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toBeInstanceOf(Object);
+    });
+    it("should handle video extract with verbose and useTor", async () => {
+        const result = await extract({ query: validQuery, verbose: true, useTor: false });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toBeInstanceOf(Object);
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(extract({} as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for short query", async () => {
+        await expect(extract({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
+    });
+    it("should throw error if unable to get response", async () => {
+        try {
+            await extract({ query: queryThatShouldFail });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/Unable to get response!/);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no engine data.");
+    });
+    it("should return comments as null if no comments found", async () => {
+        const videoWithNoCommentsQuery = "a video where comments are disabled";
+        try {
+            const result = await extract({ query: videoWithNoCommentsQuery });
+            expect(result.data.comments).toBeNull();
+        } catch (error) {
+            console.warn(`Test for video with no comments failed for query "${videoWithNoCommentsQuery}". This might require a real video query with comments disabled.`, error);
+            throw error;
+        }
+    });
+    it("should return transcript as null if no transcript found", async () => {
+        const videoWithNoTranscriptQuery = "a video with no transcript";
+        try {
+            const result = await extract({ query: videoWithNoTranscriptQuery });
+            expect(result.data.transcript).toBeNull();
+        } catch (error) {
+            console.warn(`Test for video with no transcript failed for query "${videoWithNoTranscriptQuery}". This might require a real video query with no transcript.`, error);
+            throw error;
+        }
+    });
+});

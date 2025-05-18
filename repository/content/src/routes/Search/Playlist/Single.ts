@@ -51,40 +51,48 @@ export default async function playlist_data({ playlistLink }: z.infer<typeof Zod
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    const playlistLink = "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID_HERE";
-    try {
-        console.log("--- Running Basic Playlist Data Fetch ---");
-        const result = await playlist_data({ playlistLink });
-        console.log("Playlist Data:", result.data);
-    } catch (error) {
-        console.error("Basic Playlist Data Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing playlistLink Error ---");
-        await playlist_data({} as any);
-        console.log("This should not be reached - Missing playlistLink Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing playlistLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid Playlist Link Error ---");
-        const invalidLink = "https://www.youtube.com/watch?v=SOME_VIDEO_ID";
-        await playlist_data({ playlistLink: invalidLink });
-        console.log("This should not be reached - Invalid Playlist Link Error.");
-    } catch (error) {
-        console.error("Expected Error (Incorrect Playlist Link):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Non-Existent Playlist Error ---");
-        const nonExistentPlaylistLink = "https://www.youtube.com/playlist?list=NON_EXISTENT_PLAYLIST_ID_12345";
-        await playlist_data({ playlistLink: nonExistentPlaylistLink });
-        console.log("This should not be reached - Non-Existent Playlist Error.");
-    } catch (error) {
-        console.error("Expected Error (Unable to Retrieve Playlist Information):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("playlist_data", () => {
+    const validPlaylistLink = "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID_HERE";
+    const invalidPlaylistLink = "https://www.youtube.com/watch?v=SOME_VIDEO_ID";
+    const nonExistentPlaylistLink = "https://www.youtube.com/playlist?list=NON_EXISTENT_PLAYLIST_ID_12345";
+    it("should handle basic playlist data fetch", async () => {
+        try {
+            const result = await playlist_data({ playlistLink: validPlaylistLink });
+            expect(result).toHaveProperty("data");
+            expect(result.data).toHaveProperty("id");
+            expect(typeof result.data.id).toBe("string");
+            expect(result.data).toHaveProperty("title");
+            expect(typeof result.data.title).toBe("string");
+            expect(result.data).toHaveProperty("videoCount");
+            expect(typeof result.data.videoCount).toBe("number");
+            expect(result.data).toHaveProperty("result");
+            expect(Array.isArray(result.data.result)).toBe(true);
+            if (result.data.result.length > 0) {
+                expect(result.data.result[0]).toHaveProperty("id");
+                expect(result.data.result[0]).toHaveProperty("title");
+            }
+        } catch (error) {
+            console.warn(`Basic playlist data fetch failed for ${validPlaylistLink}. This might require a real playlist link.`, error);
+            throw error;
+        }
+    });
+    it("should throw Zod error for missing playlistLink", async () => {
+        await expect(playlist_data({} as any)).rejects.toThrowError(/playlistLink.*Required/);
+    });
+    it("should throw error for invalid playlist link format", async () => {
+        await expect(playlist_data({ playlistLink: invalidPlaylistLink })).rejects.toThrowError(/Incorrect playlist link provided./);
+    });
+    it("should throw error for a non-existent playlist", async () => {
+        try {
+            await playlist_data({ playlistLink: nonExistentPlaylistLink });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/Unable to retrieve playlist information./);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for a non-existent playlist.");
+    });
+});

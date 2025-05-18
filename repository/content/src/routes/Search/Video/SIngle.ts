@@ -69,53 +69,77 @@ export default async function videoData({ videoLink }: VideoDataOptions): Promis
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Video Data Fetch Example ---");
-        const result = await videoData({ videoLink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" });
-        console.log("Video Data:", result);
-    } catch (error) {
-        console.error("Basic Video Data Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video Data Fetch with Shortened URL Example ---");
-        const result = await videoData({ videoLink: "https://youtu.be/dQw4w9WgXcQ" });
-        console.log("Video Data:", result);
-    } catch (error) {
-        console.error("Shortened URL Video Data Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Video Data Fetch with Video ID Example ---");
-        const result = await videoData({ videoLink: "dQw4w9WgXcQ" });
-        console.log("Video Data:", result);
-    } catch (error) {
-        console.error("Video ID Video Data Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing videoLink Example ---");
-        await videoData({} as any);
-        console.log("This should not be reached - Missing videoLink Example.");
-    } catch (error) {
-        console.error("Expected Error (Missing videoLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid videoLink Example ---");
-        await videoData({ videoLink: "this is not a youtube link" });
-        console.log("This should not be reached - Invalid videoLink Example.");
-    } catch (error) {
-        console.error("Expected Error (Incorrect videoLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Nonexistent Video Example ---");
-        await videoData({ videoLink: "https://www.youtube.com/watch?v=nonexistentvideo123" });
-        console.log("This should not be reached - Nonexistent Video Example.");
-    } catch (error) {
-        console.error("Expected Error (Unable to Fetch Video Data):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("videoData", () => {
+    const rawVideoId = "dQw4w9WgXcQ";
+    const invalidVideoLink = "this is not a youtube link";
+    const shortenedVideoLink = "https://youtu.be/dQw4w9WgXcQ";
+    const validVideoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const nonexistentVideoLink = "https://www.youtube.com/watch?v=nonexistentvideoid123";
+    it("should handle basic video data fetch with standard link", async () => {
+        try {
+            const result = await videoData({ videoLink: validVideoLink });
+            expect(result).toHaveProperty("id");
+            expect(typeof result.id).toBe("string");
+            expect(result).toHaveProperty("title");
+            expect(typeof result.title).toBe("string");
+            expect(result).toHaveProperty("duration");
+            expect(typeof result.duration).toBe("number");
+            expect(result).toHaveProperty("viewCount");
+            expect(typeof result.viewCount).toBe("number");
+            expect(result).toHaveProperty("channelid");
+            expect(typeof result.channelid).toBe("string");
+            expect(result).toHaveProperty("channelname");
+            expect(typeof result.channelname).toBe("string");
+        } catch (error) {
+            console.warn(`Basic video data fetch failed for ${validVideoLink}. This might require a real video link.`, error);
+            throw error;
+        }
+    });
+    it("should handle video data fetch with shortened link", async () => {
+        try {
+            const result = await videoData({ videoLink: shortenedVideoLink });
+            expect(result).toHaveProperty("id");
+            expect(typeof result.id).toBe("string");
+            expect(result).toHaveProperty("title");
+            expect(typeof result.title).toBe("string");
+            expect(result).toHaveProperty("duration");
+            expect(typeof result.duration).toBe("number");
+        } catch (error) {
+            console.warn(`Video data fetch failed for ${shortenedVideoLink}. This might require a real video link.`, error);
+            throw error;
+        }
+    });
+    it("should handle video data fetch with raw video ID", async () => {
+        try {
+            const result = await videoData({ videoLink: rawVideoId });
+            expect(result).toHaveProperty("id");
+            expect(typeof result.id).toBe("string");
+            expect(result).toHaveProperty("title");
+            expect(typeof result.title).toBe("string");
+            expect(result).toHaveProperty("duration");
+            expect(typeof result.duration).toBe("number");
+        } catch (error) {
+            console.warn(`Video data fetch failed for ${rawVideoId}. This might require a real video ID.`, error);
+            throw error;
+        }
+    });
+    it("should throw Zod error for missing videoLink", async () => {
+        await expect(videoData({} as any)).rejects.toThrowError(/videoLink.*Required/);
+    });
+    it("should throw error for invalid videoLink format", async () => {
+        await expect(videoData({ videoLink: invalidVideoLink })).rejects.toThrowError(/Incorrect video link provided./);
+    });
+    it("should throw error for a nonexistent video", async () => {
+        try {
+            await videoData({ videoLink: nonexistentVideoLink });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/Unable to fetch video data./);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for a nonexistent video.");
+    });
+});

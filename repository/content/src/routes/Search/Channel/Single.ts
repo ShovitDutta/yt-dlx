@@ -28,46 +28,52 @@ export default async function channel_data({ channelLink }: z.infer<typeof ZodSc
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    const channelLink = "https://www.youtube.com/channel/UC-9-kyTW8ZkZNSB7LxqIENA";
-    try {
-        console.log("--- Running Channel Data Fetch with Link ---");
-        const result = await channel_data({ channelLink });
-        console.log("Channel Data:", result.data);
-    } catch (error) {
-        console.error("Channel Data Fetch with Link Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Channel Data Fetch with ID ---");
-        const result = await channel_data({ channelLink: "UC-9-kyTW8ZkZNSB7LxqIENA" });
-        console.log("Channel Data:", result.data);
-    } catch (error) {
-        console.error("Channel Data Fetch with ID Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing channelLink Error ---");
-        await channel_data({} as any);
-        console.log("This should not be reached - Missing channelLink Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing channelLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Invalid channelLink Length Error ---");
-        await channel_data({ channelLink: "ab" });
-        console.log("This should not be reached - Invalid channelLink Length Error.");
-    } catch (error) {
-        console.error("Expected Error (Invalid channelLink Length):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Non-Existent Channel Error ---");
-        await channel_data({ channelLink: "https://www.youtube.com/channel/NON_EXISTENT_CHANNEL_ID" });
-        console.log("This should not be reached - Non-Existent Channel Error.");
-    } catch (error) {
-        console.error("Expected Error (Channel Not Found):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("channel_data", () => {
+    const validChannelId = "UC-9-kyTW8ZkZNSB7LxqIENA";
+    const validChannelLink = `https://www.youtube.com/channel/${validChannelId}`;
+    const invalidChannelLinkTooShort = "ab";
+    const nonexistentChannelLink = "https://www.youtube.com/channel/nonexistentchannel123";
+    it("should handle channel data fetch with a valid channel ID", async () => {
+        try {
+            const result = await channel_data({ channelLink: validChannelId });
+            expect(result).toHaveProperty("data");
+            expect(result.data).toBeInstanceOf(Channel);
+            expect(result.data.id).toBe(validChannelId);
+            expect(typeof result.data.name).toBe("string");
+        } catch (error) {
+            console.warn(`Channel data fetch failed for ID "${validChannelId}". This test requires a real, existing channel ID.`, error);
+            throw error;
+        }
+    });
+    it("should handle channel data fetch with a valid channel link", async () => {
+        try {
+            const result = await channel_data({ channelLink: validChannelLink });
+            expect(result).toHaveProperty("data");
+            expect(result.data).toBeInstanceOf(Channel);
+            expect(result.data.id).toBe(validChannelId);
+            expect(typeof result.data.name).toBe("string");
+        } catch (error) {
+            console.warn(`Channel data fetch failed for link "${validChannelLink}". This test requires a real, existing channel link.`, error);
+            throw error;
+        }
+    });
+    it("should throw Zod error for missing channelLink", async () => {
+        await expect(channel_data({} as any)).rejects.toThrowError(/channelLink.*Required/);
+    });
+    it("should throw Zod error for short channelLink", async () => {
+        await expect(channel_data({ channelLink: invalidChannelLinkTooShort })).rejects.toThrowError(/channelLink.*should be at least 2 characters/);
+    });
+    it("should throw error for a non-existent channel", async () => {
+        try {
+            await channel_data({ channelLink: nonexistentChannelLink });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/Unable to fetch channel data for the provided link./);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for a non-existent channel.");
+    });
+});

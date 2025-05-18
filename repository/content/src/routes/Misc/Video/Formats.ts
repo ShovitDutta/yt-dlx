@@ -60,45 +60,55 @@ export default async function list_formats({ query, verbose }: z.infer<typeof Zo
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Format List ---");
-        const result = await list_formats({ query: "your search query or url" });
-        console.log("Available Formats:", result.data);
-    } catch (error) {
-        console.error("Basic Format List Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Format List with Verbose Logging ---");
-        const result = await list_formats({ query: "your search query or url", verbose: true });
-        console.log("Available Formats (Verbose):", result.data);
-    } catch (error) {
-        console.error("Format List with Verbose Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing Query Error ---");
-        await list_formats({} as any);
-        console.log("This should not be reached - Missing Query Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Short Query Error ---");
-        await list_formats({ query: "a" });
-        console.log("This should not be reached - Short Query Error.");
-    } catch (error) {
-        console.error("Expected Error (Query Too Short):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Engine Data Error ---");
-        await list_formats({ query: "a query that should return no results 12345abcde" });
-        console.log("This should not be reached - No Engine Data Error.");
-    } catch (error) {
-        console.error("Expected Error (No Engine Data):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("list_formats", () => {
+    const validQuery = "test video";
+    it("should handle basic format list fetch", async () => {
+        const result = await list_formats({ query: validQuery });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toHaveProperty("ManifestLow");
+        expect(Array.isArray(result.data.ManifestLow)).toBe(true);
+        expect(result.data).toHaveProperty("ManifestHigh");
+        expect(Array.isArray(result.data.ManifestHigh)).toBe(true);
+        expect(result.data).toHaveProperty("AudioLow");
+        expect(Array.isArray(result.data.AudioLow)).toBe(true);
+        expect(result.data).toHaveProperty("VideoLow");
+        expect(Array.isArray(result.data.VideoLow)).toBe(true);
+        expect(result.data).toHaveProperty("VideoHigh");
+        expect(Array.isArray(result.data.VideoHigh)).toBe(true);
+        expect(result.data).toHaveProperty("AudioHigh");
+        expect(Array.isArray(result.data.AudioHigh)).toBe(true);
+        expect(result.data).toHaveProperty("VideoLowHDR");
+        expect(Array.isArray(result.data.VideoLowHDR)).toBe(true);
+        expect(result.data).toHaveProperty("AudioLowDRC");
+        expect(Array.isArray(result.data.AudioLowDRC)).toBe(true);
+        expect(result.data).toHaveProperty("AudioHighDRC");
+        expect(Array.isArray(result.data.AudioHighDRC)).toBe(true);
+        expect(result.data).toHaveProperty("VideoHighHDR");
+        expect(Array.isArray(result.data.VideoHighHDR)).toBe(true);
+    });
+    it("should handle format list fetch with verbose logging", async () => {
+        const result = await list_formats({ query: validQuery, verbose: true });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toBeInstanceOf(Object);
+    });
+    it("should throw Zod error for missing query", async () => {
+        await expect(list_formats({} as any)).rejects.toThrowError(/query.*Required/);
+    });
+    it("should throw Zod error for short query", async () => {
+        await expect(list_formats({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
+    });
+    it("should throw error if unable to get response from YouTube", async () => {
+        const queryThatShouldFail = "a query that should return no results 12345abcde";
+        try {
+            await list_formats({ query: queryThatShouldFail });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/Unable to get response from YouTube./);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no engine data.");
+    });
+});

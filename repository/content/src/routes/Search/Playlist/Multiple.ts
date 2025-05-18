@@ -52,53 +52,53 @@ export default async function search_playlists({ playlistLink }: z.infer<typeof 
         console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Basic Playlist Search ---");
-        const result = await search_playlists({ playlistLink: "lofi hip hop" });
-        console.log("First Playlist Found:", result.data);
-    } catch (error) {
-        console.error("Basic Playlist Search Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Playlist Search with Different Query ---");
-        const result = await search_playlists({ playlistLink: "workout music" });
-        console.log("First Playlist Found:", result.data);
-    } catch (error) {
-        console.error("Playlist Search with Different Query Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Short Query Error ---");
-        await search_playlists({ playlistLink: "a" } as any);
-        console.log("This should not be reached - Short Query Error.");
-    } catch (error) {
-        console.error("Expected Error (Short Query):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Playlist Link Error ---");
-        await search_playlists({ playlistLink: "https://www.youtube.com/playlist?list=SOME_PLAYLIST_ID" });
-        console.log("This should not be reached - Playlist Link Error.");
-    } catch (error) {
-        console.error("Expected Error (Input is Playlist Link):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running No Results Query ---");
-        await search_playlists({ playlistLink: "a query with no playlist results 12345xyz" });
-        console.log("This should not be reached - No Results Query.");
-    } catch (error) {
-        console.error("Expected Error (No Playlists Found):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-    try {
-        console.log("--- Running Missing playlistLink Error ---");
-        await search_playlists({} as any);
-        console.log("This should not be reached - Missing playlistLink Error.");
-    } catch (error) {
-        console.error("Expected Error (Missing playlistLink):", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();
+import { describe, it, expect } from "vitest";
+describe("search_playlists", () => {
+    const validQuery = "lofi hip hop";
+    const anotherValidQuery = "workout music";
+    const shortQuery = "a";
+    const playlistLinkInput = "https://www.youtube.com/playlist?list=PLys0_41fX5XgI7P9Q07L4B_I3D8M4qG4z";
+    const videoLinkInput = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const queryWithNoResults = "very unlikely playlist search 1a2b3c4d5e";
+    it("should handle basic playlist search", async () => {
+        const result = await search_playlists({ playlistLink: validQuery });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toHaveProperty("id");
+        expect(typeof result.data.id).toBe("string");
+        expect(result.data).toHaveProperty("title");
+        expect(typeof result.data.title).toBe("string");
+        expect(result.data).toHaveProperty("videoCount");
+        expect(typeof result.data.videoCount).toBe("number");
+        expect(result.data).toHaveProperty("thumbnails");
+        expect(Array.isArray(result.data.thumbnails)).toBe(true);
+    });
+    it("should handle playlist search with a different query", async () => {
+        const result = await search_playlists({ playlistLink: anotherValidQuery });
+        expect(result).toHaveProperty("data");
+        expect(result.data).toHaveProperty("id");
+    });
+    it("should throw Zod error for missing playlistLink", async () => {
+        await expect(search_playlists({} as any)).rejects.toThrowError(/playlistLink.*Required/);
+    });
+    it("should throw Zod error for short playlistLink query", async () => {
+        await expect(search_playlists({ playlistLink: shortQuery })).rejects.toThrowError(/playlistLink.*should be at least 2 characters/);
+    });
+    it("should throw error if input is detected as a YouTube ID (playlist link)", async () => {
+        await expect(search_playlists({ playlistLink: playlistLinkInput })).rejects.toThrowError(/Use playlist_data\(\) for playlist link!/);
+    });
+    it("should throw error if input is detected as a YouTube ID (video link)", async () => {
+        await expect(search_playlists({ playlistLink: videoLinkInput })).rejects.toThrowError(/Use playlist_data\(\) for playlist link!/);
+    });
+    it("should throw error if no playlists found for the query", async () => {
+        try {
+            await search_playlists({ playlistLink: queryWithNoResults });
+        } catch (error: any) {
+            if (error instanceof Error) {
+                expect(error.message).toMatch(/No playlists found for the provided query./);
+                return;
+            }
+            throw error;
+        }
+        throw new Error("Function did not throw expected error for no playlists found.");
+    });
+});
