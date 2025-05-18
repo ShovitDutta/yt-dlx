@@ -1,3 +1,4 @@
+import videoComments from "../../../../routes/Misc/Video/Comments";
 import * as vitest from "vitest";
 vitest.describe("videoComments", () => {
     const validQuery = "trailer";
