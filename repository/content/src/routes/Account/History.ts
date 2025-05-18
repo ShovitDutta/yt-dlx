@@ -288,7 +288,7 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
             case "old-to-new":
                 if (result.data?.Shorts)
                     result.data.Shorts.sort((a, b) => {
-                        if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
+                        if (!a?.videoId || !b?.videoId) return 0;
                         return a.videoId.localeCompare(b.videoId);
                     });
                 if (result.data?.Videos)
@@ -305,7 +305,7 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
                     });
                 if (result.data?.Videos)
                     result.data.Videos.sort((a, b) => {
-                        if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
+                        if (!a?.videoId || !b?.videoId) return 0;
                         return b.videoId.localeCompare(a.videoId);
                     });
                 break;
