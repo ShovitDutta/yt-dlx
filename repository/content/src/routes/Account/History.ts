@@ -288,18 +288,24 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
             case "old-to-new":
                 if (result.data?.Shorts)
                     result.data.Shorts.sort((a, b) => {
-                        if (!a.videoId || !b.videoId) return 0;
+                        if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
                         return a.videoId.localeCompare(b.videoId);
                     });
-                if (result.data?.Videos) result.data.Videos.sort((a, b) => a.videoId.localeCompare(b.videoId));
+                if (result.data?.Videos) result.data.Videos.sort((a, b) => {
+                    if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
+                    return a.videoId.localeCompare(b.videoId);
+                });
                 break;
             case "new-to-old":
                 if (result.data?.Shorts)
                     result.data.Shorts.sort((a, b) => {
-                        if (!a.videoId || !b.videoId) return 0;
+                        if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
                         return b.videoId.localeCompare(a.videoId);
                     });
-                if (result.data?.Videos) result.data.Videos.sort((a, b) => b.videoId.localeCompare(a.videoId));
+                if (result.data?.Videos) result.data.Videos.sort((a, b) => {
+                    if (!a?.videoId || !b?.videoId) return 0; // Add check for undefined a, b, or videoId
+                    return b.videoId.localeCompare(a.videoId);
+                });
                 break;
         }
         if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
