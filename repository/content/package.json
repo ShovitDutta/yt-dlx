@@ -1,6 +1,6 @@
 {
     "name": "yt-dlx",
-    "version": "19.0.0",
+    "version": "19.0.1",
     "license": "Apache-2.0",
     "main": "package/cjs/src/index.js",
     "types": "package/types/index.d.ts",
@@ -78,7 +78,7 @@
         "make": "yarn install --frozen-lockfile",
         "package": "pkg . --output yt-dlx-standalone",
         "prepublishOnly": "rimraf package && yarn build",
-        "postinstall": "node deps.mjs && shx chmod -R +x .",
+        "postinstall": "node postdeps.mjs && shx chmod -R +x .",
         "test:quick": "yarn build && node package/cjs/src/spec/quick.spec.js",
         "test:express": "yarn build && node package/cjs/src/spec/express.spec.js",
         "build": "rimraf package/cjs package/esm package/types && tsc -p ./src/config/cjs.json && tsc -p ./src/config/esm.json && tsc -p ./src/config/types.json"
