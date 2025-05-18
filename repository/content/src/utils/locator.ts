@@ -80,9 +80,7 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
         }
         if (toolPaths.tor_executable && typeof toolPaths.tor_executable === "string" && toolPaths.tor_executable !== "Not found in bundle") {
             results.tor_executable = toolPaths.tor_executable;
-        } else {
-            console.warn(colors.yellow(` @warning: Tor executable not found via yt-dlx output. Tor proxy features will not work.`));
-        }
+        } else console.warn(colors.yellow(` @warning: Tor executable not found via yt-dlx output. Tor proxy features will not work.`));
         if (toolPaths.tor_data_directory && typeof toolPaths.tor_data_directory === "string" && toolPaths.tor_data_directory !== "Not found in bundle") {
             results.tor_data_directory = toolPaths.tor_data_directory;
         } else {
