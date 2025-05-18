@@ -12,14 +12,14 @@ vitest.describe("AudioVideoLowest", () => {
         }
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await AudioVideoLowest({ query, output: "./custom_downloads_avlow", filter: "grayscale" });
+        const result = await AudioVideoLowest({ query, output: "output", filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
         }
     });
     vitest.it("should handle download with all options", async () => {
-        const result = await AudioVideoLowest({ query, output: "./full_downloads_avlow", useTor: false, verbose: true, filter: "invert", showProgress: true });
+        const result = await AudioVideoLowest({ query, output: "output", useTor: false, verbose: true, filter: "invert", showProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
