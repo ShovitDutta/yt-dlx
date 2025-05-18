@@ -57,20 +57,16 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
             console.error(colors.red("@error:"), "Could not reliably determine paths for ffmpeg, ffprobe, etc. from yt-dlx output.");
             return results;
         }
-        if (toolPaths.ffmpeg && typeof toolPaths.ffmpeg === "string" && toolPaths.ffmpeg !== "Not found in bundle") results.ffmpeg = toolPaths.ffmpeg;
-        else console.error(colors.red("@error:"), "Please ensure FFmpeg is included in the yt-dlx bundle or accessible to the bundled executable.");
-        if (toolPaths.ffprobe && typeof toolPaths.ffprobe === "string" && toolPaths.ffprobe !== "Not found in bundle") results.ffprobe = toolPaths.ffprobe;
-        else console.error(colors.red("@error:"), "Please ensure FFmpeg (which includes ffprobe) is included in the yt-dlx bundle or accessible to the bundled executable.");
-        if (toolPaths.ytprobe && typeof toolPaths.ytprobe === "string" && toolPaths.ytprobe !== "Not found in bundle") results.ytprobe = toolPaths.ytprobe;
-        else console.warn(colors.yellow(` @warning: ytprobe not found via yt-dlx output. This might affect some features.`));
-        if (toolPaths.tor_executable && typeof toolPaths.tor_executable === "string" && toolPaths.tor_executable !== "Not found in bundle") results.tor_executable = toolPaths.tor_executable;
-        else console.warn(colors.yellow(` @warning: Tor executable not found via yt-dlx output. Tor proxy features will not work.`));
-        if (toolPaths.tor_data_directory && typeof toolPaths.tor_data_directory === "string" && toolPaths.tor_data_directory !== "Not found in bundle") {
-            results.tor_data_directory = toolPaths.tor_data_directory;
-        } else console.warn(colors.yellow(` @warning: Tor data directory not found via yt-dlx output. Tor proxy features will not work.`));
+        results.ffmpeg = toolPaths.ffmpeg || "";
+        results.ffprobe = toolPaths.ffprobe || "";
+        results.ytprobe = toolPaths.ytprobe && typeof toolPaths.ytprobe === "string" && toolPaths.ytprobe !== "Not found in bundle" ? toolPaths.ytprobe : "";
+        results.tor_executable = toolPaths.tor_executable && typeof toolPaths.tor_executable === "string" && toolPaths.tor_executable !== "Not found in bundle" ? toolPaths.tor_executable : "";
+        results.tor_data_directory =
+            toolPaths.tor_data_directory && typeof toolPaths.tor_data_directory === "string" && toolPaths.tor_data_directory !== "Not found in bundle" ? toolPaths.tor_data_directory : "";
+        if (!results.ffmpeg) console.error(colors.red("@error:"), "FFmpeg command not provided by yt-dlx.");
+        if (!results.ffprobe) console.error(colors.red("@error:"), "FFprobe command not provided by yt-dlx.");
     } catch (execError: any) {
         console.error(colors.red("@error:"), `Failed to run yt-dlx executable at "${ytdlxPath}" to get paths:`, execError.message);
-        console.error(colors.red("@error:"), "Cannot locate ffmpeg, ffprobe, etc. due to execution failure.");
         results.ffmpeg = "";
         results.ffprobe = "";
         results.ytprobe = "";
@@ -79,7 +75,6 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
     }
     if (results.ffmpeg === "" || results.ffprobe === "") {
         console.error(colors.red("@error:"), "One or more essential external tools (ffmpeg, ffprobe) were not found via yt-dlx output.");
-        console.error(colors.red("@error:"), "Ensure your yt-dlx bundle includes FFmpeg or can access it from its runtime environment.");
     }
     return results;
 }
