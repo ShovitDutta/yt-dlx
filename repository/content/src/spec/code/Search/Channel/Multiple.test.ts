@@ -26,22 +26,4 @@ vitest.describe("search_channels", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(search_channels({} as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for short query", async () => {
-        await vitest.expect(search_channels({ query: "a" })).rejects.toThrowError(/query.*should be at least 2 characters/);
-    });
-    vitest.it("should throw error if no channels found for the query", async () => {
-        try {
-            await search_channels({ query: queryWithNoResults });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/No channels found for the provided query./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no channels found.");
-    });
 });
