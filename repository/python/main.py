@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+
 def find_venv_python():
     if getattr(sys, "frozen", False):
         base_path = sys._MEIPASS
@@ -15,6 +16,7 @@ def find_venv_python():
         return venv_python_path
     else:
         return None
+
 if __name__ == "__main__":
     venv_python = find_venv_python()
     app_script_name = "logic.py"
