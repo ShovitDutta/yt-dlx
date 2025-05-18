@@ -415,6 +415,7 @@ export default async function AudioVideoHighest({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream };
         } else {
             const filenameBase = `yt-dlx_AudioVideoHighest_`;
@@ -444,6 +445,7 @@ export default async function AudioVideoHighest({
                 });
                 instance.run();
             });
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {
@@ -460,6 +462,5 @@ export default async function AudioVideoHighest({
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
