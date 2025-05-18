@@ -3,7 +3,6 @@ import os
 import sys
 import shutil
 import subprocess
-
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 command = [sys.executable, "-m", "PyInstaller", "--onefile", "--icon", "context/logo.jpg", "main.py", "--add-data", "logic.py:."]
