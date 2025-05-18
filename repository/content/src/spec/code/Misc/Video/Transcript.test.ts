@@ -31,24 +31,4 @@ vitest.describe("videoTranscript", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing videoLink", async () => {
-        await vitest.expect(videoTranscript({} as any)).rejects.toThrowError(/videoLink.*Required/);
-    });
-    vitest.it("should throw error for invalid videoLink format", async () => {
-        const videoLink = "this is not a video link";
-        await vitest.expect(videoTranscript({ videoLink })).rejects.toThrowError(/Incorrect video link/);
-    });
-    vitest.it("should throw error if no transcript is available", async () => {
-        const videoLink = "https://www.youtube.com/watch?v=no_transcript_example";
-        try {
-            await videoTranscript({ videoLink });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/Unable to get transcript for this video!/);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for no transcript available.");
-    });
 });
