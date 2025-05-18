@@ -112,9 +112,7 @@ const main = async () => {
                 unlinkSync(filepath);
             }
         }
-        if (!isFullyDownloaded) {
-            await binDL(binary.url, filepath, binary.name);
-        }
+        if (!isFullyDownloaded) await binDL(binary.url, filepath, binary.name);
     }
 };
 main();
