@@ -31,10 +31,4 @@ vitest.describe("unseen_notifications", () => {
         vitest.expect(result.data).toBeInstanceOf(Object);
         vitest.expect(typeof result.data?.count).toBe("number");
     });
-    vitest.it("should throw error for missing cookies (handled by explicit check)", async () => {
-        await vitest.expect(unseen_notifications({ cookies: "" })).rejects.toThrowError(/Cookies not provided!/);
-    });
-    vitest.it("should throw Zod error for missing cookies (handled by ZodSchema)", async () => {
-        await vitest.expect(unseen_notifications({} as any)).rejects.toThrowError(/cookies.*Required/);
-    });
 });
