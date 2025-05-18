@@ -373,8 +373,11 @@ export default async function AudioLowest({
                 const fullArgs = isFfprobe ? ["--ffprobe", ...args] : ["--ffmpeg", ...args];
                 if (verbose) console.log(colors.green("@info:"), `Running ${isFfprobe ? "ffprobe" : "ffmpeg"} via yt-dlx:`, fullArgs.join(" "));
                 const proc = spawn(paths["yt-dlx"], fullArgs, { stdio: ["pipe", "pipe", "pipe"] });
-                instance.ffmpegProc = proc as any;
-                instance.ffprobeProc = proc as any;
+                if (isFfprobe) {
+                    instance.emit("ffprobeProc", proc);
+                } else {
+                    instance.emit("ffmpegProc", proc);
+                }
             });
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate yt-dlx: ${locatorError.message}`);
