@@ -12,14 +12,14 @@ vitest.describe("AudioVideoHighest", () => {
         }
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await AudioVideoHighest({ query, output: "./custom_downloads_avhigh", filter: "grayscale" });
+        const result = await AudioVideoHighest({ query, output: "output", filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
         }
     });
     vitest.it("should handle download with all options", async () => {
-        const result = await AudioVideoHighest({ query, output: "./full_downloads_avhigh", useTor: false, verbose: true, filter: "flipHorizontal", showProgress: true });
+        const result = await AudioVideoHighest({ query, output: "output", useTor: false, verbose: true, filter: "flipHorizontal", showProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
