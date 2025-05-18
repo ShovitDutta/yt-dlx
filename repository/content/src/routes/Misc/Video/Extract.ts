@@ -378,6 +378,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             comments,
             transcript,
         };
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: payload };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -393,6 +394,5 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
