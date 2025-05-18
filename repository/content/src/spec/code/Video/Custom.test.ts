@@ -9,14 +9,14 @@ vitest.describe("VideoCustom", () => {
         vitest.expect(result).toHaveProperty("outputPath");
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await VideoCustom({ query, resolution: "1080p", output: "./custom_downloads", filter: "grayscale" });
+        const result = await VideoCustom({ query, resolution: "1080p", output: "output", filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
     });
     vitest.it("should handle download with all options", async () => {
         const result = await VideoCustom({
             query: "your search query or url",
             resolution: "720p",
-            output: "./full_downloads",
+            output: "output",
             useTor: false,
             verbose: true,
             filter: "flipHorizontal",
