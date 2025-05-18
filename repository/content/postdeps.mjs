@@ -113,9 +113,7 @@ const main = async () => {
             }
         }
         if (!isFullyDownloaded) {
-            try {
-                await binDL(binary.url, filepath, binary.name);
-            } catch (error) {}
+            await binDL(binary.url, filepath, binary.name);
         }
     }
 };
