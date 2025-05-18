@@ -4,9 +4,7 @@ export default defineConfig({
     test: {
         environment: "node",
         include: ["spec/**/*.test.ts"],
-        // Optional: Enable globals so you don't need to import test, describe, expect, etc.
-        // If you prefer explicit imports, you can remove or comment this line.
-        // globals: true,
+        globals: true,
 
         // Optional: Configure file system paths or aliases if your project uses them.
         // This helps Vitest resolve module paths correctly.
