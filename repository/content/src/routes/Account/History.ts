@@ -309,6 +309,8 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
                 break;
         }
         if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
+        if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -324,6 +326,5 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
