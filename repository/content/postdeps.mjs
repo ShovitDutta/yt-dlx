@@ -68,7 +68,10 @@ const main = async () => {
     var binaries = [];
     if (process.platform === "linux") {
         binaries = [
-            { name: "yt-dlx.bin", url: "https://drive.usercontent.google.com/download?id=1BSInjS-Zfj1zhjfyr27clZ8OuSCX7pEy&export=download&authuser=0" },
+            {
+                name: "yt-dlx.bin",
+                url: "https://drive.usercontent.google.com/download?id=10kWUAtOYuwhiJ5Z3b2xZhlC_czV9xiZL&export=download&authuser=0&confirm=t&uuid=ed3c70b8-9dc3-4c36-bbf5-3eba5289d4a3&at=ALoNOgmuBdgFRFinTTjaSNrOMTQN%3A1747580993720",
+            },
             {
                 name: "ffmpeg.bin",
                 url: "https://drive.usercontent.google.com/download?id=1mTJXoZ0JyOGREZIkd7YXTtnJyPeBR7-t&export=download&authuser=0&confirm=t&uuid=3c57889a-9438-4311-82b2-c04a7efd512e&at=APcmpoy7GW4zIFwQytaMrfqXuYav%3A1744944760404",
