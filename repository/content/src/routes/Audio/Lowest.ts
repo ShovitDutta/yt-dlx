@@ -269,6 +269,8 @@ import ffmpeg from "fluent-ffmpeg";
 import Agent from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
+import { spawn } from "child_process";
+
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -276,6 +278,7 @@ function formatTime(seconds: number): string {
     const secs = Math.floor(seconds % 60);
     return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
 }
+
 function calculateETA(startTime: Date, percent: number): number {
     const currentTime = new Date();
     const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
@@ -284,6 +287,7 @@ function calculateETA(startTime: Date, percent: number): number {
     const remainingTime = totalTimeEstimate - elapsedTime;
     return remainingTime;
 }
+
 function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
     let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
     displayPercent = Math.min(Math.max(displayPercent, 0), 100);
@@ -295,6 +299,7 @@ function progbar({ percent, timemark, startTime }: { percent: number | undefined
     const etaFormatted = formatTime(etaSeconds);
     process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
 }
+
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -307,7 +312,12 @@ const ZodSchema = z.object({
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
+
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
+
+ffmpeg.setFfmpegPath = () => {};
+ffmpeg.setFfprobePath = () => {};
+
 export default async function AudioLowest({
     query,
     output,
@@ -356,15 +366,23 @@ export default async function AudioLowest({
         try {
             const paths = await locator();
             if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+                throw new Error(`${colors.red("@error:")} ffmpeg command not found.`);
             }
             if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+                throw new Error(`${colors.red("@error:")} ffprobe command not found.`);
             }
-            instance.setFfmpegPath(paths.ffmpeg);
-            instance.setFfprobePath(paths.ffprobe);
+            instance._getFfmpegPath = () => paths["yt-dlx"];
+            instance._getFfprobePath = () => paths["yt-dlx"];
+            instance._spawnFfmpeg = function (args, options) {
+                const fullArgs = ["--ffmpeg", ...args];
+                return spawn(paths["yt-dlx"], fullArgs, options);
+            };
+            instance._spawnFfprobe = function (args, options) {
+                const fullArgs = ["--ffprobe", ...args];
+                return spawn(paths["yt-dlx"], fullArgs, options);
+            };
         } catch (locatorError: any) {
-            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
+            throw new Error(`${colors.red("@error:")} Failed to locate yt-dlx: ${locatorError.message}`);
         }
         if (!engineData.BestAudioLow?.url) {
             throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found.`);
