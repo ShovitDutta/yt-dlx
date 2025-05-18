@@ -42,8 +42,6 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
     if (!ytdlxPath) {
         results["yt-dlx"] = "";
         console.error(colors.red(` ✗ yt-dlx executable not found.`));
-        console.error(colors.red("@error:"), "yt-dlx executable not found using relative paths or system PATH. Make sure it's installed correctly.");
-        console.error(colors.red("@error:"), "Cannot locate ffmpeg, ffprobe, etc. because yt-dlx was not found.");
         return results;
     }
     results["yt-dlx"] = ytdlxPath;
