@@ -108,8 +108,6 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
     if (results.ffmpeg === "" || results.ffprobe === "") {
         console.error(colors.red("@error:"), "One or more essential external tools (ffmpeg, ffprobe) were not found via yt-dlx output.");
         console.error(colors.red("@error:"), "Ensure your yt-dlx bundle includes FFmpeg or can access it from its runtime environment.");
-    } else {
-        console.log(colors.green("All essential external tools located successfully via yt-dlx."));
-    }
+    } else console.log(colors.green("All essential external tools located successfully via yt-dlx."));
     return results;
 }
