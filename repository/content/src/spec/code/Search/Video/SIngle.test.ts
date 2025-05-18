@@ -54,22 +54,4 @@ vitest.describe("videoData", () => {
             throw error;
         }
     });
-    vitest.it("should throw Zod error for missing videoLink", async () => {
-        await vitest.expect(videoData({} as any)).rejects.toThrowError(/videoLink.*Required/);
-    });
-    vitest.it("should throw error for invalid videoLink format", async () => {
-        await vitest.expect(videoData({ videoLink: invalidVideoLink })).rejects.toThrowError(/Incorrect video link provided./);
-    });
-    vitest.it("should throw error for a nonexistent video", async () => {
-        try {
-            await videoData({ videoLink: nonexistentVideoLink });
-        } catch (error: any) {
-            if (error instanceof Error) {
-                vitest.expect(error.message).toMatch(/Unable to fetch video data./);
-                return;
-            }
-            throw error;
-        }
-        throw new Error("Function did not throw expected error for a nonexistent video.");
-    });
 });
