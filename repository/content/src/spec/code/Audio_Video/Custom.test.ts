@@ -13,7 +13,7 @@ vitest.describe("AudioVideoCustom", () => {
         }
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "1080p", output: "./custom_downloads_avcustom", filter: "grayscale" });
+        const result = await AudioVideoCustom({ query, resolution: "1080p", output: "output", filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
@@ -23,7 +23,7 @@ vitest.describe("AudioVideoCustom", () => {
         const result = await AudioVideoCustom({
             query,
             resolution: "1440p",
-            output: "./full_downloads_avcustom",
+            output: "output",
             useTor: false,
             verbose: true,
             filter: "invert",
