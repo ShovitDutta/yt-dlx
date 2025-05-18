@@ -362,9 +362,7 @@ export default async function AudioLowest({
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         try {
             const paths = await locator();
-            if (!paths.ffmpeg || !paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} yt-dlx executable not found.`);
-            }
+            if (!paths.ffmpeg || !paths.ffprobe) throw new Error(`${colors.red("@error:")} yt-dlx executable not found.`);
             instance.setFfmpegPath(paths["yt-dlx"]);
             instance.setFfprobePath(paths["yt-dlx"]);
             instance.on("start", (commandLine: string) => {
