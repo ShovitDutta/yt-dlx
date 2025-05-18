@@ -1,40 +1,29 @@
 import colors from "colors";
 import * as path from "path";
 import * as fsx from "fs-extra";
-import { exec } from "child_process"; // Import child_process for running external commands
-import { promisify } from "util"; // To use exec with await
+import { exec } from "child_process";
+import { promisify } from "util";
 
-const execPromise = promisify(exec); // Promisify exec for async usage
+const execPromise = promisify(exec);
 
-// Keep the getBinaryPath function as it is, it's needed to find yt-dlx itself
 async function getBinaryPath(execName: string): Promise<string | null> {
     const isWindows = process.platform === "win32";
-    // Check for common executable extensions on Windows
     const extensions = isWindows ? ["", ".exe", ".cmd", ".bat", ".com"] : [""];
-    // The specific extensions from original logic (.exe, .bin) are included via the `ext` variable logic below,
-    // but checking common windows extensions in PATH search is still valuable.
 
-    // 1. Check specific relative paths (original logic)
     try {
         const ext = isWindows ? ".exe" : process.platform === "linux" ? ".bin" : "";
         const nodeModulesPath = path.join(process.cwd(), "node_modules", "yt-dlx", "package");
         const binaryPath1 = path.join(nodeModulesPath, execName + ext);
         try {
             await fsx.access(binaryPath1, fsx.constants.X_OK);
-            return binaryPath1; // Found in node_modules relative path
+            return binaryPath1;
         } catch {
             const devPath = path.join(process.cwd(), "package", execName + ext);
             await fsx.access(devPath, fsx.constants.X_OK);
-            return devPath; // Found in development relative path
+            return devPath;
         }
-    } catch (e) {
-        // These relative paths didn't work, continue to check PATH if necessary
-        // console.warn(`Failed to find ${execName} in relative paths: ${e.message}`); // Optional: log why relative paths failed
-    }
+    } catch (e) {}
 
-    // 2. Check system PATH (Simplified check for finding yt-dlx itself if needed,
-    //    the primary method now is running yt-dlx to get other paths)
-    //    We still need this to find yt-dlx if it's globally installed.
     const pathEnv = process.env.PATH;
     if (pathEnv) {
         const pathDirs = pathEnv.split(path.delimiter);
@@ -43,39 +32,33 @@ async function getBinaryPath(execName: string): Promise<string | null> {
                 const fullPath = path.join(dir, execName + currentExt);
                 try {
                     await fsx.access(fullPath, fsx.constants.X_OK);
-                    return fullPath; // Found in PATH
-                } catch {
-                    // Not found or not executable in this path directory
-                }
+                    return fullPath;
+                } catch {}
             }
         }
     }
 
-    // Not found in relative paths or PATH
     return null;
 }
 
-// Modify the main locator function to run the found yt-dlx executable
 export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffprobe: string; [key: string]: string }> {
     const results: { "yt-dlx": string; ffmpeg: string; ffprobe: string; [key: string]: string } = {
         "yt-dlx": "",
         ffmpeg: "",
         ffprobe: "",
-        ytprobe: "", // Add ytprobe to results as the python code returns it
-        tor_executable: "", // Add tor_executable
-        tor_data_directory: "", // Add tor_data_directory
+        ytprobe: "",
+        tor_executable: "",
+        tor_data_directory: "",
     };
 
     console.log(colors.cyan(" Locating external tools by running yt-dlx..."));
 
-    // First, locate the yt-dlx executable itself
     const ytdlxPath = await getBinaryPath("yt-dlx");
 
     if (!ytdlxPath) {
         results["yt-dlx"] = "";
         console.error(colors.red(` ✗ yt-dlx executable not found.`));
         console.error(colors.red("@error:"), "yt-dlx executable not found using relative paths or system PATH. Make sure it's installed correctly.");
-        // We can't find other tools if we can't run yt-dlx
         console.error(colors.red("@error:"), "Cannot locate ffmpeg, ffprobe, etc. because yt-dlx was not found.");
         return results;
     }
@@ -83,34 +66,26 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
     results["yt-dlx"] = ytdlxPath;
     console.log(colors.green(` ✓ Found yt-dlx:`), ytdlxPath);
 
-    // Now, run yt-dlx without arguments to get the paths of other tools
     console.log(colors.cyan(` Running "${ytdlxPath}" to get paths...`));
     try {
-        // Use execPromise to run the command and capture output
-        const { stdout, stderr } = await execPromise(`"${ytdlxPath}"`); // Quote path in case it has spaces
+        const { stdout, stderr } = await execPromise(`"${ytdlxPath}"`);
 
         if (stderr) {
             console.warn(colors.yellow(" Warning from yt-dlx when getting paths:"), stderr);
         }
 
-        // Attempt to parse the stdout as JSON
         let toolPaths: any = {};
         try {
             toolPaths = JSON.parse(stdout);
-            // console.log("Parsed paths from yt-dlx:", toolPaths); // Debugging line
         } catch (jsonError) {
             console.error(colors.red("@error:"), "Failed to parse JSON output from yt-dlx:", jsonError);
-            console.error(colors.red(" Raw stdout:"), stdout.substring(0, 500) + (stdout.length > 500 ? "..." : "")); // Print start of stdout
-            console.error(colors.red(" Raw stderr:"), stderr.substring(0, 500) + (stderr.length > 500 ? "..." : "")); // Print start of stderr if any
+            console.error(colors.red(" Raw stdout:"), stdout.substring(0, 500) + (stdout.length > 500 ? "..." : ""));
+            console.error(colors.red(" Raw stderr:"), stderr.substring(0, 500) + (stderr.length > 500 ? "..." : ""));
 
-            // Since we failed to parse, we cannot find other tools reliably
             console.error(colors.red("@error:"), "Could not reliably determine paths for ffmpeg, ffprobe, etc. from yt-dlx output.");
-            // Return results with only yt-dlx path found so far
             return results;
         }
 
-        // Transfer found paths from the parsed JSON to our results object
-        // Check if the key exists and the value is not the "Not found in bundle" string
         if (toolPaths.ffmpeg && typeof toolPaths.ffmpeg === "string" && toolPaths.ffmpeg !== "Not found in bundle") {
             results.ffmpeg = toolPaths.ffmpeg;
             console.log(colors.green(` ✓ Found ffmpeg via yt-dlx:`), results.ffmpeg);
@@ -156,11 +131,13 @@ export async function locator(): Promise<{ "yt-dlx": string; ffmpeg: string; ffp
         results.tor_executable = "";
         results.tor_data_directory = "";
     }
+
     if (results.ffmpeg === "" || results.ffprobe === "") {
         console.error(colors.red("@error:"), "One or more essential external tools (ffmpeg, ffprobe) were not found via yt-dlx output.");
         console.error(colors.red("@error:"), "Ensure your yt-dlx bundle includes FFmpeg or can access it from its runtime environment.");
     } else {
         console.log(colors.green("All essential external tools located successfully via yt-dlx."));
     }
+
     return results;
 }
