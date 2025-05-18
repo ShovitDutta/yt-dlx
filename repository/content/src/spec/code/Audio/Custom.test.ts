@@ -1,4 +1,6 @@
+import AudioCustom from "../../../routes/Audio/Custom";
 import { createWriteStream } from "fs";
+import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioCustom", () => {
     const query = "test query";
