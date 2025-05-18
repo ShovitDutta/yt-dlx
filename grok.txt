@@ -535,3 +535,6 @@ export default async function AudioLowest({
 
 
 I NEED YOUR HELP. WELL THE CURRENT USAGE OF FFMPEG AND FFPROBE DOESN'T WORK.
+Error: @error: FFmpeg download error: spawn C:\Users\psycosis\AppData\Local\Temp\_MEI141682\context\windows\ffmpeg.exe ENOENT
+
+FOR THE FIX WE NEED TO USE 
