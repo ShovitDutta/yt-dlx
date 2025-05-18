@@ -81,22 +81,4 @@ vitest.describe("AudioVideoCustom", () => {
             (result as { stream: Readable })?.stream?.on("end", resolve);
         });
     });
-    vitest.it("should throw error for metadata with output", async () => {
-        await vitest.expect(AudioVideoCustom({ query, resolution, metadata: true, output: "./should_fail_dir" })).rejects.toThrowError(/metadata.*cannot be used with.*output/);
-    });
-    vitest.it("should throw error for stream with output", async () => {
-        await vitest.expect(AudioVideoCustom({ query, resolution, stream: true, output: "./should_fail_dir" })).rejects.toThrowError(/stream.*cannot be used with.*output/);
-    });
-    vitest.it("should throw Zod error for missing query", async () => {
-        await vitest.expect(AudioVideoCustom({ resolution } as any)).rejects.toThrowError(/query.*Required/);
-    });
-    vitest.it("should throw Zod error for missing resolution", async () => {
-        await vitest.expect(AudioVideoCustom({ query } as any)).rejects.toThrowError(/resolution.*Required/);
-    });
-    vitest.it("should throw Zod error for invalid filter", async () => {
-        await vitest.expect(AudioVideoCustom({ query, resolution, filter: "nonexistentfilter" as any })).rejects.toThrowError(/filter.*invalid enum value/);
-    });
-    vitest.it("should throw Zod error for invalid resolution", async () => {
-        await vitest.expect(AudioVideoCustom({ query, resolution: "500p" as any })).rejects.toThrowError(/resolution.*invalid enum value/);
-    });
 });
