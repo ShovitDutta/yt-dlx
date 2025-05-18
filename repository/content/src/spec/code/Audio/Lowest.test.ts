@@ -12,14 +12,14 @@ vitest.describe("AudioLowest", () => {
         }
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await AudioLowest({ query, output: "./custom_downloads_al", filter: "bassboost" });
+        const result = await AudioLowest({ query, output: "output", filter: "bassboost" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
         }
     });
     vitest.it("should handle download with all options", async () => {
-        const result = await AudioLowest({ query, output: "./full_downloads_al", useTor: false, verbose: true, filter: "vaporwave", showProgress: true });
+        const result = await AudioLowest({ query, output: "output", useTor: false, verbose: true, filter: "vaporwave", showProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
