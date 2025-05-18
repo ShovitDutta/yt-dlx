@@ -161,6 +161,7 @@ export default async function videoComments({ query, verbose }: VideoCommentsOpt
     try {
         ZodSchema.parse({ query, verbose });
         const comments = await fetchVideoComments({ query, verbose });
+        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return comments;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -176,6 +177,5 @@ export default async function videoComments({ query, verbose }: VideoCommentsOpt
             throw new Error(unexpectedError);
         }
     } finally {
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
