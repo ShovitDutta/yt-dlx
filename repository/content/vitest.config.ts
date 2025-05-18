@@ -5,6 +5,7 @@ export default defineConfig({
         environment: "node",
         include: ["spec/**/*.test.ts"],
         globals: true,
+        // resolve: {
         //   alias: {
         //     '@/': new URL('./src/', import.meta.url).pathname,
         //   },
