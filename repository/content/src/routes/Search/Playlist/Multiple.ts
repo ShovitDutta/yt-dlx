@@ -19,6 +19,102 @@ async function searchPlaylists({ query }: { query: string }): Promise<searchPlay
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
     }
 }
+/**
+ * @shortdesc Searches for YouTube playlists based on a text query.
+ *
+ * @description This function searches YouTube for playlists that match the provided text query.
+ * It returns detailed information about the first playlist found in the search results.
+ *
+ * It uses the `youtubei.js` library internally to perform the playlist search.
+ * Note that the input parameter `playlistLink` is used as a *search query*, not a direct playlist URL or ID.
+ * If the input string appears to be a YouTube video or playlist ID/URL, the function will throw an error,
+ * advising the use of a dedicated function for fetching data by ID/URL (`playlist_data()`).
+ *
+ * The function requires a query string of at least 2 characters.
+ *
+ * The function supports the following configuration options:
+ * - **PlaylistLink:** A string representing the search query for playlists. Must be at least 2 characters long. **Required**.
+ * - **Verbose:** An optional boolean value. While defined in the schema, this parameter is currently not used in the function's logic. Defaults to `false`.
+ *
+ * The function returns a Promise that resolves with an object containing the data of the first matching playlist (`{ data: searchPlaylistsType }`).
+ * The `searchPlaylistsType` object includes the playlist's `id`, `title`, `videoCount`, and `thumbnails`.
+ *
+ * @param {object} options - The configuration options for searching playlists.
+ * @param {string} options.playlistLink - The search query for YouTube playlists (minimum 2 characters). **Required**.
+ * @param {boolean} [options.verbose=false] - Enable verbose logging (Note: Currently not used in function logic).
+ *
+ * @returns {Promise<{ data: searchPlaylistsType }>} A Promise that resolves with an object containing the data of the first playlist found.
+ *
+ * @throws {Error}
+ * - Throws a `ZodError` if the input options fail schema validation (e.g., missing required `playlistLink`, `playlistLink` is less than 2 characters).
+ * - Throws an `Error` if the provided `playlistLink` is detected as a YouTube video or playlist ID/URL, suggesting `playlist_data()` instead.
+ * - Throws an `Error` if the search returns no playlists for the provided query.
+ * - Throws an `Error` if the internal `youtubei.js` client fails during the search operation.
+ * - Throws an `Error` if processing the search results fails to extract the expected playlist data.
+ * - Throws a generic `Error` for any other unexpected issues.
+ *
+ * @example
+ * // 1. Performing a basic playlist search
+ * try {
+ * const result = await search_playlists({ playlistLink: "lofi hip hop" });
+ * console.log("First found playlist:", result.data);
+ * } catch (error) {
+ * console.error("Basic Search Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 2. Performing a playlist search with a different query
+ * try {
+ * const result = await search_playlists({ playlistLink: "workout music" });
+ * console.log("First found playlist:", result.data);
+ * } catch (error) {
+ * console.error("Another Search Error:", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 3. Example of Zod Validation Error (Missing playlistLink - will throw ZodError)
+ * try {
+ * await search_playlists({} as any); // Using 'as any' to simulate missing required parameter
+ * } catch (error) {
+ * console.error("Expected Error (Missing playlistLink):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 4. Example of Zod Validation Error (Short playlistLink query - will throw ZodError)
+ * try {
+ * await search_playlists({ playlistLink: "a" }); // Query is less than minimum length (2)
+ * } catch (error) {
+ * console.error("Expected Error (Query Too Short):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 5. Example of input detected as a YouTube ID (will throw Error)
+ * // This function is for searching, not fetching data by ID/URL.
+ * try {
+ * await search_playlists({ playlistLink: "PLynO1h3t3nJ62R63IjfV5o6d6f6d6f6d6" }); // Example playlist ID
+ * } catch (error) {
+ * console.error("Expected Error (Input is a YouTube ID):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 6. Example of no playlists found for the query (will throw Error)
+ * // Use a query very unlikely to match any playlist.
+ * try {
+ * await search_playlists({ playlistLink: "very unlikely playlist search 1a2b3c4d5e" });
+ * } catch (error) {
+ * console.error("Expected Error (No Playlists Found):", error instanceof Error ? error.message : error);
+ * }
+ *
+ * @example
+ * // 7. Example of an unexpected error during the search process
+ * // This is harder to trigger predictably with a simple example.
+ * // try {
+ * //    // Use a query that might somehow cause an internal issue with the client
+ * //    await search_playlists({ playlistLink: "query causing internal error" });
+ * // } catch (error) {
+ * //    console.error("Expected Unexpected Error:", error instanceof Error ? error.message : error);
+ * // }
+ */
 export default async function search_playlists({ playlistLink }: z.infer<typeof ZodSchema>): Promise<{ data: searchPlaylistsType }> {
     try {
         ZodSchema.parse({ playlistLink });
