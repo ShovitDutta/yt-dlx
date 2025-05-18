@@ -1,3 +1,4 @@
+import videoTranscript from "../../../../routes/Misc/Video/Transcript";
 import * as vitest from "vitest";
 vitest.describe("videoTranscript", () => {
     vitest.it("should handle basic transcript fetch", async () => {
