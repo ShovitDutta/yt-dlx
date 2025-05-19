@@ -26,7 +26,7 @@ vitest.describe("AudioVideoCustom", () => {
             filter: "invert",
             output: "output",
             showProgress: true,
-            resolution: "1440p30",
+            resolution: "720p60",
         });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
