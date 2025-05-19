@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return values. Also, the `VideoSearchResult` interface could benefit from JSDoc comments on its properties. Consider adding pagination to handle a large number of search results.
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";

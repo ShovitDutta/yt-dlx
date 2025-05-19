@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, consider adding pagination to handle videos with a large number of comments. The `fetchVideoComments` function could also benefit from more specific error handling, such as distinguishing between network errors and API errors.
 import path from "path";
 import colors from "colors";
 import { z, ZodError } from "zod";

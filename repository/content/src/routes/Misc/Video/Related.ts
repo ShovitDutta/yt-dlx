@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, the `RelatedVideosType` interface could benefit from JSDoc comments on its properties. Consider adding pagination to handle a large number of related videos.
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";

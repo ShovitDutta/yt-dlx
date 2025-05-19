@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, the `searchPlaylistsType` interface could benefit from JSDoc comments on its properties. Consider adding pagination to handle a large number of search results. The function `searchPlaylists` takes `query` as parameter, but the function `search_playlists` takes `playlistLink` as parameter, which is confusing.
 import colors from "colors";
 import { Client } from "youtubei";
 import { z, ZodError } from "zod";

@@ -9,15 +9,15 @@ export default interface EngineOutput {
     BestAudioHigh: AudioFormat;
     AudioLow: AudioFormat[];
     AudioHigh: AudioFormat[];
-    AudioLowDRC: AudioFormat[];
-    AudioHighDRC: AudioFormat[];
+    AudioLowDRC?: AudioFormat[];
+    AudioHighDRC?: AudioFormat[];
     BestVideoLow: VideoFormat;
     BestVideoHigh: VideoFormat;
     VideoLow: VideoFormat[];
     VideoHigh: VideoFormat[];
-    VideoLowHDR: VideoFormat[];
-    VideoHighHDR: VideoFormat[];
+    VideoLowHDR?: VideoFormat[];
+    VideoHighHDR?: VideoFormat[];
     ManifestLow: ManifestFormat[];
     ManifestHigh: ManifestFormat[];
-    allFormats: any[];
+    allFormats: (AudioFormat | VideoFormat | ManifestFormat)[];
 }

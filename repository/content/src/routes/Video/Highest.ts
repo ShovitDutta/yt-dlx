@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return value. Also, consider using a more robust error handling mechanism for FFmpeg operations, such as logging errors to a file or using a dedicated error tracking service. The `formatTime` and `calculateETA` functions could also benefit from JSDoc comments. Refactor the code to share common logic with `src/routes/Video/Custom.ts`.
 import * as fs from "fs";
 import colors from "colors";
 import * as path from "path";

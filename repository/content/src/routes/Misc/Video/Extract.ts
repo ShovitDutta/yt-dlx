@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, the various interfaces could benefit from JSDoc comments on their properties. Consider adding more specific error handling for the `fetchCommentsByVideoId` and `fetchVideoTranscript` functions, such as distinguishing between network errors and API errors. The helper functions could also benefit from JSDoc comments.
 import path from "path";
 import colors from "colors";
 import { Client } from "youtubei";

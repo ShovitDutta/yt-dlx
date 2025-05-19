@@ -18,7 +18,7 @@ export default interface VideoInfo {
     like_count: number;
     comment_count: number;
     channel_follower_count: number;
-    upload_date: string;
+    upload_date?: string | null;
     uploader_id: string;
     original_url: string;
     uploader_url: string;

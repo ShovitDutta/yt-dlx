@@ -1,5 +1,3 @@
-// Suggestion: Add JSDoc comments to the function, explaining its purpose and return value. Also, consider making the help message more dynamic by fetching it from a configuration file or an external source, allowing for easier updates. Remove the IIFE at the end of the file.
-// Suggestion: Add JSDoc comments to the function, explaining its purpose and return value. Also, consider making the help message more dynamic by fetching it from a configuration file or an external source, allowing for easier updates.
 import colors from "colors";
 export default async function help(): Promise<string> {
     try {

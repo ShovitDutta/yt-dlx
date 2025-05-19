@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, the `playlistVideosType` interface could benefit from JSDoc comments on its properties. Consider adding pagination to handle playlists with a large number of videos.
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";

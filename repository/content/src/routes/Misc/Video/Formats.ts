@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return value. Also, the interfaces could benefit from JSDoc comments on their properties.
 import colors from "colors";
 import { z, ZodError } from "zod";
 import Tuber from "../../../utils/Agent";
@@ -9,7 +8,7 @@ interface ManifestFormat {
     tbr: number;
 }
 interface OtherFormat {
-    filesizeP?: string | number;
+    filesizeP?: string | number | null;
     format_note?: string;
 }
 interface ListFormatsData {

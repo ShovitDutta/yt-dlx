@@ -1,4 +1,3 @@
-// Suggestion: Add more detailed JSDoc comments to the function, explaining its purpose, parameters, and return value. The `Content` interface could benefit from JSDoc comments on its properties. Consider adding pagination to handle large subscription feed data sets more efficiently.
 import colors from "colors";
 import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";

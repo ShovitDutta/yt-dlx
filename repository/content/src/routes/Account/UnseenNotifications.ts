@@ -1,4 +1,3 @@
-// Suggestion: Add more detailed JSDoc comments to the function, explaining its purpose, parameters, and return value.
 import colors from "colors";
 import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";

@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the `YouTubeDLX` object and its properties to provide better documentation and type information. Consider using a more modular approach by exporting individual functions or classes instead of grouping them under a single object.
 import progbar from "./utils/progbar";
 import YouTubeID from "./utils/YouTubeId";
 import help from "./routes/Misc/System/Help";

@@ -136,7 +136,13 @@ function MapManifest(i: any) {
         format: i.format as string,
     };
 }
-export default async function Engine({ query, useTor = false, verbose = false }) {
+function FilterFormats(formats: any[]) {
+    return formats.filter(i => {
+        return !i.format_note.includes("DRC") && !i.format_note.includes("HDR");
+    });
+}
+const config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
+export default async function Engine({ query, useTor = false, verbose = false, retryConfig = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 } }) {
     let torProcess: any = null;
     const located = await getLocatedPaths();
     const ytDlxPath = located["yt-dlx"];
@@ -169,7 +175,6 @@ export default async function Engine({ query, useTor = false, verbose = false })
     var BestAudioHigh: AudioFormat | any = null;
     var BestVideoLow: VideoFormat | any = null;
     var BestVideoHigh: VideoFormat | any = null;
-    var config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
     const ytprobeArgs = [
         "--ytprobe",
         "--dump-single-json",
@@ -270,11 +275,6 @@ export default async function Engine({ query, useTor = false, verbose = false })
             }
         }
     });
-    function FilterFormats(formats: any[]) {
-        return formats.filter(i => {
-            return !i.format_note.includes("DRC") && !i.format_note.includes("HDR");
-        });
-    }
     var payLoad: EngineOutput = {
         BestAudioLow: (() => {
             var i = BestAudioLow || ({} as AudioFormat);

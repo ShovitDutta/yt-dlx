@@ -1,7 +1,7 @@
 // Suggestion: Add JSDoc comments to each property of the interface to provide more context and explain the meaning of each field.
 export default interface VideoFormat {
     filesize: number;
-    filesizeP: string | number;
+    filesizeP?: string | number | null;
     format_note: string;
     fps: number;
     height: number;
@@ -10,7 +10,7 @@ export default interface VideoFormat {
     url: string;
     ext: string;
     vcodec: string;
-    dynamic_range: string;
+    dynamic_range?: string | null;
     container: string;
     resolution: string;
     aspect_ratio: number;
