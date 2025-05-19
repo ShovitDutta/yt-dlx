@@ -105,8 +105,8 @@ export default async function AudioVideoCustom({
         if (!engineData.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
         instance.addInput(engineData.BestAudioHigh.url);
         instance.withOutputFormat("matroska");
-        const resolutionWithoutP = resolution.replace("p", "");
-        const vdata = engineData.ManifestHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolutionWithoutP));
+        const targetHeight = parseInt(resolution.replace("p", ""), 10);
+        const vdata = engineData.ManifestHigh?.find((i: { height: number }) => i.height === targetHeight);
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
