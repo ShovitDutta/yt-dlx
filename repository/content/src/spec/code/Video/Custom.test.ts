@@ -35,7 +35,7 @@ vitest.describe("VideoCustom", () => {
         vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should handle basic stream", async () => {
-        const result = await VideoCustom({ query, resolution: "480p", stream: true });
+        const result = await VideoCustom({ query, resolution: "720p", stream: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
