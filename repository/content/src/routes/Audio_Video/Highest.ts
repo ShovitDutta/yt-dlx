@@ -6,7 +6,6 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
-
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -14,7 +13,6 @@ function formatTime(seconds: number): string {
     const secs = Math.floor(seconds % 60);
     return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
 }
-
 function calculateETA(startTime: Date, percent: number): number {
     const currentTime = new Date();
     const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
@@ -23,7 +21,6 @@ function calculateETA(startTime: Date, percent: number): number {
     const remainingTime = totalTimeEstimate - elapsedTime;
     return remainingTime;
 }
-
 function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
     let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
     displayPercent = Math.min(Math.max(displayPercent, 0), 100);
@@ -35,7 +32,6 @@ function progbar({ percent, timemark, startTime }: { percent: number | undefined
     const etaFormatted = formatTime(etaSeconds);
     process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
 }
-
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -46,22 +42,7 @@ const ZodSchema = z.object({
     showProgress: z.boolean().optional(),
     filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
-
 type AudioVideoHighestOptions = z.infer<typeof ZodSchema>;
-
-interface MetadataResult {
-    metaData: any;
-    AudioHighF: any;
-    AudioHighDRC: any;
-    VideoHighF: any;
-    VideoHighHDR: any;
-    ManifestHigh: any;
-    filename: string;
-}
-
-type OutputPathResult = { outputPath: string };
-type StreamResult = { stream: Readable; filename: string };
-
 export default async function AudioVideoHighest({
     query,
     output,
@@ -71,7 +52,7 @@ export default async function AudioVideoHighest({
     metadata,
     verbose,
     showProgress,
-}: AudioVideoHighestOptions): Promise<MetadataResult | OutputPathResult | StreamResult> {
+}: AudioVideoHighestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, metadata, verbose, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
@@ -87,24 +68,20 @@ export default async function AudioVideoHighest({
         if (!engineData.metaData) {
             throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
         }
-
-        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
-        const filenameBase = `yt-dlx_AudioVideoHighest_`;
-        let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
-
         if (metadata) {
-            const metadataResult: MetadataResult = {
-                metaData: engineData.metaData,
-                AudioHighF: engineData.AudioHighF,
-                AudioHighDRC: engineData.AudioHighDRC,
-                VideoHighF: engineData.VideoHighF,
-                VideoHighHDR: engineData.VideoHighHDR,
-                ManifestHigh: engineData.ManifestHigh,
-                filename: filename,
+            return {
+                metadata: {
+                    metaData: engineData.metaData,
+                    AudioHighF: engineData.AudioHighF,
+                    AudioHighDRC: engineData.AudioHighDRC,
+                    VideoHighF: engineData.VideoHighF,
+                    VideoHighHDR: engineData.VideoHighHDR,
+                    ManifestHigh: engineData.ManifestHigh,
+                    filename: `yt-dlx_AudioVideoHighest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                },
             };
-            return metadataResult;
         }
-
+        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -163,6 +140,8 @@ export default async function AudioVideoHighest({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_AudioVideoHighest_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
@@ -181,9 +160,10 @@ export default async function AudioVideoHighest({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            const streamResult: StreamResult = { stream: passthroughStream, filename: filename };
-            return streamResult;
+            return { stream: passthroughStream };
         } else {
+            const filenameBase = `yt-dlx_AudioVideoHighest_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, filename);
             instance.output(outputPath);
             await new Promise<void>((resolve, reject) => {
