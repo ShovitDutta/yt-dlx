@@ -10,8 +10,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Video URL is required' }, { status: 400 });
     }
 
+    const decodedVideoUrl = decodeURIComponent(videoUrl);
+
     // Call the YouTubeDLX.Video.Lowest function to download the video
-    const result = await YouTubeDLX.Video.Lowest({ query: videoUrl, ...options });
+    const result = await YouTubeDLX.Video.Lowest({ query: decodedVideoUrl, ...options });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
