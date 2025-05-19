@@ -24,7 +24,9 @@ interface GlassCardProps {
     children: React.ReactNode;
     className?: string;
 }
-const GlassCard = ({ children, className = "" }: GlassCardProps) => <div className={`bg-neutral-900/60 backdrop-blur-lg rounded-xl shadow-lg border border-neutral-900/50 ${className}`}>{children}</div>;
+const GlassCard = ({ children, className = "" }: GlassCardProps) => (
+    <div className={`bg-neutral-900/60 backdrop-blur-lg rounded-xl shadow-lg border border-neutral-900/50 ${className}`}>{children}</div>
+);
 
 interface SearchBarProps {
     onSearch: (query: string) => void;
@@ -314,8 +316,8 @@ export default function Home() {
     const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
     const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [sectionPages, setSectionPages] = useState<{ [key: string]: number }>({});
+    const [sectionHasMore, setSectionHasMore] = useState<{ [key: string]: boolean }>({});
 
     const contentSections: ContentSection[] = [
         {
