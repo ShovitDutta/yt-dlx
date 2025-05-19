@@ -10,8 +10,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Channel link is required' }, { status: 400 });
     }
 
+    const decodedChannelLink = decodeURIComponent(channelLink);
+
     // Call the YouTubeDLX.Search.Channel.Single function to get channel data
-    const result = await YouTubeDLX.Search.Channel.Single({ channelLink: channelLink });
+    const result = await YouTubeDLX.Search.Channel.Single({ channelLink: decodedChannelLink });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
