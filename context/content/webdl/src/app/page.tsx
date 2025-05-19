@@ -250,8 +250,9 @@ interface VideoSectionProps {
     icon: React.ReactNode;
     videos: VideoType[];
     isLoading: boolean;
+    lastVideoElementRef?: React.Ref<HTMLDivElement>;
 }
-const VideoSection = ({ title, message, icon, videos, isLoading }: VideoSectionProps) => {
+const VideoSection = ({ title, message, icon, videos, isLoading, lastVideoElementRef }: VideoSectionProps) => {
     return (
         <AnimatePresence>
             {isLoading ? (
@@ -271,11 +272,21 @@ const VideoSection = ({ title, message, icon, videos, isLoading }: VideoSectionP
                             </motion.p>
 
                             <div className="flex flex-wrap h-80 overflow-x-auto gap-6">
-                                {videos.map((video, index) => (
-                                    <div key={video.videoId} className="flex-shrink-0 w-64">
-                                        <VideoCard video={video} />
-                                    </div>
-                                ))}
+                                {videos.map((video, index) => {
+                                    if (videos.length === index + 1 && lastVideoElementRef) {
+                                        return (
+                                            <div ref={lastVideoElementRef} key={video.videoId} className="flex-shrink-0 w-64">
+                                                <VideoCard video={video} />
+                                            </div>
+                                        );
+                                    } else {
+                                        return (
+                                            <div key={video.videoId} className="flex-shrink-0 w-64">
+                                                <VideoCard video={video} />
+                                            </div>
+                                        );
+                                    }
+                                })}
                             </div>
                         </GlassCard>
                     </motion.div>
