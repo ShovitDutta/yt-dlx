@@ -32,7 +32,7 @@ vitest.describe("AudioCustom", () => {
         vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should handle basic stream", async () => {
-        const result = await AudioCustom({ query, resolution: "low", stream: true });
+        const result = await AudioCustom({ query, resolution: "high", stream: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
