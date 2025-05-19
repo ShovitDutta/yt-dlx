@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioVideoHighest", () => {
-    const query = "https://youtu.be/Fv2Y1odMjvE?si=L5bMK8Ny5fSlwseA";
+    const query = "https://youtu.be/dQw4w9WgXcQ";
     vitest.it("should handle basic download", async () => {
         const result = await AudioVideoHighest({ query });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -41,7 +41,9 @@ vitest.describe("AudioVideoHighest", () => {
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
+        if ("filename" in result) {
+            vitest.expect(result.filename).toBeTypeOf("string");
+        }
         const outputStream = createWriteStream("basic_stream_avhigh.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -53,7 +55,9 @@ vitest.describe("AudioVideoHighest", () => {
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
+        if ("filename" in result) {
+            vitest.expect(result.filename).toBeTypeOf("string");
+        }
         const outputStream = createWriteStream("filtered_stream_avhigh.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -65,7 +69,9 @@ vitest.describe("AudioVideoHighest", () => {
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
+        if ("filename" in result) {
+            vitest.expect(result.filename).toBeTypeOf("string");
+        }
         const outputStream = createWriteStream("full_stream_avhigh.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {

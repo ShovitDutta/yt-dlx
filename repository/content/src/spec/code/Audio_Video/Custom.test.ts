@@ -3,17 +3,16 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioVideoCustom", () => {
-    const resolution = "720p";
-    const query = "https://youtu.be/Fv2Y1odMjvE?si=L5bMK8Ny5fSlwseA";
+    const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     vitest.it("should handle basic download", async () => {
-        const result = await AudioVideoCustom({ query, resolution });
+        const result = await AudioVideoCustom({ query, resolution: "720p60" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
         }
     });
     vitest.it("should handle download with output and filter", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "1080p", output: "output", filter: "grayscale" });
+        const result = await AudioVideoCustom({ query, resolution: "720p60", output: "output", filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
@@ -27,7 +26,7 @@ vitest.describe("AudioVideoCustom", () => {
             filter: "invert",
             output: "output",
             showProgress: true,
-            resolution: "1440p",
+            resolution: "1440p30",
         });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
@@ -35,18 +34,18 @@ vitest.describe("AudioVideoCustom", () => {
         }
     });
     vitest.it("should fetch metadata only", async () => {
-        const result = await AudioVideoCustom({ query, resolution, metadata: true });
+        const result = await AudioVideoCustom({ query, resolution: "720p60", metadata: true });
         vitest.expect(result).toHaveProperty("metadata");
         vitest.expect((result as { metadata: any }).metadata).toBeInstanceOf(Object);
         vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should fetch metadata with Tor and verbose", async () => {
-        const result = await AudioVideoCustom({ query, resolution, metadata: true, useTor: false, verbose: true });
+        const result = await AudioVideoCustom({ query, resolution: "720p60", metadata: true, useTor: false, verbose: true });
         vitest.expect(result).toHaveProperty("metadata");
         vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should handle basic stream", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "480p", stream: true });
+        const result = await AudioVideoCustom({ query, resolution: "480p30", stream: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
@@ -58,7 +57,7 @@ vitest.describe("AudioVideoCustom", () => {
         });
     });
     vitest.it("should handle stream with filter", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "720p", stream: true, filter: "flipVertical" });
+        const result = await AudioVideoCustom({ query, resolution: "720p30", stream: true, filter: "flipVertical" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
@@ -76,7 +75,7 @@ vitest.describe("AudioVideoCustom", () => {
             useTor: false,
             verbose: true,
             showProgress: true,
-            resolution: "1080p",
+            resolution: "1080p30",
             filter: "rotate270",
         });
         vitest.expect(result).toHaveProperty("stream");

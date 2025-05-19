@@ -18,4 +18,5 @@ export default interface EngineOutput {
     VideoHighHDR: VideoFormat[];
     ManifestLow: ManifestFormat[];
     ManifestHigh: ManifestFormat[];
+    allFormats: any[];
 }

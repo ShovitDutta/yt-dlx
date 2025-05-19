@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioCustom", () => {
-    const query = "https://youtu.be/Fv2Y1odMjvE?si=L5bMK8Ny5fSlwseA";
+    const query = "https://youtu.be/dQw4w9WgXcQ";
     vitest.it("should handle basic download", async () => {
         const result = await AudioCustom({ query, resolution: "high" });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -36,7 +36,9 @@ vitest.describe("AudioCustom", () => {
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
+        if ("filename" in result) {
+            vitest.expect(result.filename).toBeTypeOf("string");
+        }
         const outputStream = createWriteStream("basic_stream_audiocustom.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -48,7 +50,9 @@ vitest.describe("AudioCustom", () => {
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
+        if ("filename" in result) {
+            vitest.expect(result.filename).toBeTypeOf("string");
+        }
         const outputStream = createWriteStream("filtered_stream_audiocustom.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {

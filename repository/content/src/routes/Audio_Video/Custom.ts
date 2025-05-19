@@ -40,7 +40,7 @@ var ZodSchema = z.object({
     verbose: z.boolean().optional(),
     metadata: z.boolean().optional(),
     filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-    resolution: z.enum(["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "3072p", "4320p", "6480p", "8640p", "12000p"]),
+    resolution: z.string().regex(/^\d+p(\d+)?$/),
     showProgress: z.boolean().optional(),
 });
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
@@ -105,13 +105,28 @@ export default async function AudioVideoCustom({
         if (!engineData.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
         instance.addInput(engineData.BestAudioHigh.url);
         instance.withOutputFormat("matroska");
-        const targetHeight = parseInt(resolution.replace("p", ""), 10);
-        // Search for the video format in all formats instead of just ManifestHigh
-        const vdata = engineData.allFormats?.find((i: any) => i.height === targetHeight && i.vcodec !== 'none');
+        const resolutionRegex = /(\d+)p(\d+)?/;
+        const resolutionMatch = resolution.match(resolutionRegex);
+        const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
+        const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
+
+        const vdata = engineData.allFormats?.find((i: any) => {
+            const height = i.height;
+            const fps = i.fps;
+            const vcodec = i.vcodec;
+
+            let heightMatches = height === targetHeight;
+            let fpsMatches = targetFps === null || fps === targetFps;
+
+            return heightMatches && fpsMatches && vcodec !== 'none';
+        });
+
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
-        } else throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
+        } else {
+            throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
+        }
         const filterMap: Record<string, string[]> = {
             invert: ["negate"],
             flipVertical: ["vflip"],
