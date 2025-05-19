@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
     }
 
+    const decodedQuery = decodeURIComponent(query);
+
     let options = {};
     if (optionsString) {
       try {
@@ -21,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Call the YouTubeDLX.Search.Channel.Multiple function to search for channels
-    const result = await YouTubeDLX.Search.Channel.Multiple({ query: query, ...options });
+    const result = await YouTubeDLX.Search.Channel.Multiple({ query: decodedQuery, ...options });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
