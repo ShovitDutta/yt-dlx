@@ -63,7 +63,7 @@ vitest.describe("VideoCustom", () => {
         });
     });
     vitest.it("should handle stream with all options", async () => {
-        const result = await VideoCustom({ query, resolution: "720p", stream: true, useTor: false, verbose: true, filter: "rotate180", showProgress: true });
+        const result = await VideoCustom({ query, stream: true, useTor: false, verbose: true, filter: "rotate180", showProgress: true, resolution: "720p" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
