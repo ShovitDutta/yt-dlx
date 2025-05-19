@@ -351,35 +351,39 @@ export default function Home() {
     ];
 
     const observer = useRef<IntersectionObserver | null>(null);
+    const videoElementRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
     const [searchQuery, setSearchQuery] = useState("");
 
-    const lastVideoElementRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            if (isSearchLoading) return;
-            if (observer.current) observer.current.disconnect();
-            observer.current = new IntersectionObserver(entries => {
-                if (entries[0].isIntersecting && hasMore) {
-                    loadMoreVideos();
+    const observeLastVideoElement = useCallback(
+        (sectionId: string) => (node: HTMLDivElement | null) => {
+            if (observer.current) {
+                if (videoElementRefs.current.has(sectionId) && videoElementRefs.current.get(sectionId)) {
+                    observer.current.unobserve(videoElementRefs.current.get(sectionId)!);
                 }
-            });
-            if (node) observer.current.observe(node);
+                if (node) {
+                    observer.current.observe(node);
+                    videoElementRefs.current.set(sectionId, node);
+                } else {
+                    videoElementRefs.current.delete(sectionId);
+                }
+            }
         },
-        [isSearchLoading, hasMore],
+        [],
     );
 
-    const loadMoreVideos = useCallback(() => {
-        setPage(prevPage => prevPage + 1);
+    const loadMoreVideos = useCallback((sectionId: string) => {
+        setSectionPages(prev => ({ ...prev, [sectionId]: (prev[sectionId] || 1) + 1 }));
     }, []);
 
     const handleSearch = useCallback(async (query: string) => {
         setIsSearchLoading(true);
-        setPage(1);
+        setSectionPages(prev => ({ ...prev, search: 1 }));
         setSearchQuery(query);
         try {
             const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}&page=1`);
             const data = await response.json();
             setSearchResults(data.result);
-            setHasMore(data.result.length > 0);
+            setSectionHasMore(prev => ({ ...prev, search: data.result.length > 0 }));
         } catch (error) {
             console.error("Error searching videos:", error);
         } finally {
@@ -388,14 +392,14 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        if (page > 1) {
+        if (sectionPages.search > 1) {
             const fetchMoreSearchResults = async () => {
                 setIsSearchLoading(true);
                 try {
-                    const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(searchQuery)}&page=${page}`);
+                    const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(searchQuery)}&page=${sectionPages.search}`);
                     const data = await response.json();
                     setSearchResults(prev => [...prev, ...data.result]);
-                    setHasMore(data.result.length > 0);
+                    setSectionHasMore(prev => ({ ...prev, search: data.result.length > 0 }));
                 } catch (error) {
                     console.error("Error loading more videos:", error);
                 } finally {
@@ -405,15 +409,16 @@ export default function Home() {
 
             fetchMoreSearchResults();
         }
-    }, [page]);
+    }, [sectionPages.search, searchQuery]);
 
     const fetchSectionVideos = useCallback(
-        async (section: ContentSection) => {
+        async (section: ContentSection, page: number) => {
             setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
             try {
-                const response = await fetch(section.endpoint);
+                const response = await fetch(`${section.endpoint}&page=${page}`);
                 const data = await response.json();
-                setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
+                setSectionVideos(prev => ({ ...prev, [section.id]: [...(prev[section.id] || []), ...data.result] }));
+                setSectionHasMore(prev => ({ ...prev, [section.id]: data.result.length > 0 }));
             } catch (error) {
                 console.error(`Error fetching videos for ${section.title}:`, error);
             } finally {
@@ -424,10 +429,29 @@ export default function Home() {
     );
 
     useEffect(() => {
-        contentSections.forEach(section => {
-            fetchSectionVideos(section);
+        observer.current = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionId = (entry.target as HTMLElement).dataset.sectionId;
+                    if (sectionId && sectionHasMore[sectionId] && !sectionsLoading[sectionId]) {
+                        loadMoreVideos(sectionId);
+                    }
+                }
+            });
         });
-    }, [fetchSectionVideos]);
+
+        contentSections.forEach(section => {
+            setSectionPages(prev => ({ ...prev, [section.id]: 1 }));
+            setSectionHasMore(prev => ({ ...prev, [section.id]: true }));
+            fetchSectionVideos(section, 1);
+        });
+
+        return () => {
+            if (observer.current) {
+                observer.current.disconnect();
+            }
+        };
+    }, [fetchSectionVideos, contentSections, sectionHasMore, sectionsLoading, loadMoreVideos]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
