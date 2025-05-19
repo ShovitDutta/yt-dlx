@@ -133,6 +133,9 @@ export default async function AudioVideoCustom({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
