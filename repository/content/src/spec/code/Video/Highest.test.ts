@@ -5,7 +5,7 @@ import * as vitest from "vitest";
 vitest.describe("VideoHighest", () => {
     const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     vitest.it("should handle basic download", async () => {
-        const result = await VideoHighest({ query, resolution: "720p60" });
+        const result = await VideoHighest({ query });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mp4$/);
