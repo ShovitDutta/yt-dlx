@@ -64,7 +64,7 @@ const SearchResults = ({ searchResults }: { searchResults: VideoType[] }) => {
         <h2 className="text-2xl font-bold mb-4 text-white">Search Results</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {searchResults.map((video) => (
-            <div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
+            <motion.div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
               {video.thumbnails && video.thumbnails.length > 0 ? (
                 <Image src={video.thumbnails[0].url} alt={video.title} width={320} height={180} className="rounded-md mb-2" />
               ) : (
@@ -73,7 +73,7 @@ const SearchResults = ({ searchResults }: { searchResults: VideoType[] }) => {
               <h3 className="text-lg font-semibold text-white">{video.title}</h3>
               <p className="text-gray-400">{video.authorName}</p>
               <p className="text-gray-400">{video.viewCount} views</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </motion.div>
@@ -91,7 +91,7 @@ const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
       <h2 className="text-2xl font-bold mb-4 text-white">Home Feed</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {homeFeed.map((video) => (
-          <div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
+          <motion.div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
             {video.thumbnails && video.thumbnails.length > 0 ? (
               <Image src={video.thumbnails[0].url} alt={video.title} width={320} height={180} className="rounded-md mb-2" />
             ) : (
@@ -100,7 +100,7 @@ const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
             <h3 className="text-lg font-semibold text-white">{video.title}</h3>
             <p className="text-gray-400">{video.authorName}</p>
             <p className="text-gray-400">{video.viewCount} views</p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </motion.div>
