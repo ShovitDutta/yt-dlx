@@ -76,7 +76,7 @@ export default async function AudioHighest({
                     metaData: engineData.metaData,
                     AudioHighF: engineData.AudioHighF,
                     AudioHighDRC: engineData.AudioHighDRC,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_AudioHighest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 },
             };
         }
