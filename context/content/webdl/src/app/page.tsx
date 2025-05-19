@@ -2,8 +2,8 @@
 import Image from "next/image";
 import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper } from "react-icons/fa";
 import { useState, useCallback, useEffect, useRef } from "react";
+import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper } from "react-icons/fa";
 interface VideoType {
     type: string;
     title: string;
@@ -41,14 +41,10 @@ const SearchBar = ({ onSearch, region, setRegion }: SearchBarProps) => {
     };
     return (
         <motion.div className="mb-8 sticky top-0 z-10 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            {" "}
             <GlassCard className="p-2">
-                {" "}
                 <div className="flex items-center">
-                    {" "}
                     <div className="relative flex-grow">
-                        {" "}
-                        <motion.div className="absolute inset-0 rounded-l-md" animate={{ boxShadow: isSearchFocused ? "0 0 0 2px rgba(255, 0, 0, 0.5)" : "none" }} />{" "}
+                        <motion.div className="absolute inset-0 rounded-l-md" animate={{ boxShadow: isSearchFocused ? "0 0 0 2px rgba(255, 0, 0, 0.5)" : "none" }} />
                         <input
                             type="text"
                             className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none"
@@ -58,52 +54,43 @@ const SearchBar = ({ onSearch, region, setRegion }: SearchBarProps) => {
                             onFocus={() => setIsSearchFocused(true)}
                             onBlur={() => setIsSearchFocused(false)}
                             onKeyDown={handleKeyDown}
-                        />{" "}
-                    </div>{" "}
+                        />
+                    </div>
                     <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        {" "}
-                        <FaSearch />{" "}
-                    </motion.button>{" "}
+                        <FaSearch />
+                    </motion.button>
                     <motion.div className="ml-4" whileHover={{ scale: 1.05 }}>
-                        {" "}
                         <select
                             className="px-4 py-3 rounded-md bg-neutral-900/70 text-white border border-neutral-900/50 focus:outline-none focus:ring-2 focus:ring-red-500"
                             value={region}
                             onChange={e => setRegion(e.target.value)}>
-                            {" "}
                             {regions.map(region => (
                                 <option key={region.code} value={region.name}>
-                                    {" "}
-                                    {region.name}{" "}
+                                    {region.name}
                                 </option>
-                            ))}{" "}
-                        </select>{" "}
-                    </motion.div>{" "}
-                </div>{" "}
-            </GlassCard>{" "}
+                            ))}
+                        </select>
+                    </motion.div>
+                </div>
+            </GlassCard>
         </motion.div>
     );
 };
 const Sidebar = () => {
     return (
         <motion.div className="hidden md:block w-20 lg:w-56 fixed left-0 top-0 h-full" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            {" "}
             <GlassCard className="h-full py-8 px-2 lg:px-4">
-                {" "}
                 <div className="flex flex-col items-center lg:items-start gap-8">
-                    {" "}
                     <div className="flex items-center justify-center lg:justify-start w-full mb-6">
-                        {" "}
                         <motion.div className="w-10 h-10 bg-red-600 rounded-md flex items-center justify-center" whileHover={{ scale: 1.1 }}>
-                            {" "}
-                            <span className="text-white text-xl font-bold">YT</span>{" "}
-                        </motion.div>{" "}
-                        <span className="hidden lg:block ml-2 text-xl font-bold text-white">VidStream</span>{" "}
-                    </div>{" "}
-                    <SidebarItem icon={<FaFire />} text="Trending" active /> <SidebarItem icon={<FaHistory />} text="History" /> <SidebarItem icon={<FaThumbsUp />} text="Liked" />{" "}
-                    <SidebarItem icon={<FaRegBookmark />} text="Saved" />{" "}
-                </div>{" "}
-            </GlassCard>{" "}
+                            <span className="text-white text-xl font-bold">YT</span>
+                        </motion.div>
+                        <span className="hidden lg:block ml-2 text-xl font-bold text-white">VidStream</span>
+                    </div>
+                    <SidebarItem icon={<FaFire />} text="Trending" active /> <SidebarItem icon={<FaHistory />} text="History" /> <SidebarItem icon={<FaThumbsUp />} text="Liked" />
+                    <SidebarItem icon={<FaRegBookmark />} text="Saved" />
+                </div>
+            </GlassCard>
         </motion.div>
     );
 };
@@ -115,8 +102,7 @@ interface SidebarItemProps {
 const SidebarItem = ({ icon, text, active = false }: SidebarItemProps) => {
     return (
         <motion.div className={`flex items-center w-full p-2 rounded-lg cursor-pointer ${active ? "bg-red-600/40" : "hover:bg-neutral-900/50"}`} whileHover={{ scale: 1.05 }}>
-            {" "}
-            <div className="text-xl text-orange-300 flex justify-center lg:justify-start w-full lg:w-auto">{icon}</div> <span className="hidden lg:block ml-3 text-orange-300">{text}</span>{" "}
+            <div className="text-xl text-orange-300 flex justify-center lg:justify-start w-full lg:w-auto">{icon}</div> <span className="hidden lg:block ml-3 text-orange-300">{text}</span>
         </motion.div>
     );
 };
@@ -134,74 +120,59 @@ const VideoCard = ({ video }: VideoCardProps) => {
             className="relative overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            {" "}
             <GlassCard className="overflow-hidden relative h-full">
-                {" "}
                 <div className="relative">
-                    {" "}
                     {video.thumbnails && video.thumbnails.length > 0 ? (
                         <>
-                            {" "}
-                            <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />{" "}
-                            <motion.div className="absolute inset-0 bg-red-600/20" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />{" "}
+                            <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />
+                            <motion.div className="absolute inset-0 bg-red-600/20" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
                         </>
                     ) : (
                         <div className="w-full h-[220px] bg-neutral-900 rounded-t-xl" />
-                    )}{" "}
+                    )}
                     <motion.div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs text-white" initial={{ opacity: 0.6 }} whileHover={{ opacity: 1 }}>
-                        {" "}
-                        {video.shortViewCount}{" "}
-                    </motion.div>{" "}
-                </div>{" "}
+                        {video.shortViewCount}
+                    </motion.div>
+                </div>
                 <div className="p-4">
-                    {" "}
                     <div className="flex">
-                        {" "}
                         {video.authorThumbnails && video.authorThumbnails.length > 0 ? (
                             <div className="flex-shrink-0 mr-3">
-                                {" "}
                                 <motion.div className="w-10 h-10 rounded-full overflow-hidden" whileHover={{ scale: 1.1 }}>
-                                    {" "}
-                                    <Image src={video.authorThumbnails[0].url} alt={video.authorName} width={40} height={40} className="object-cover" />{" "}
-                                </motion.div>{" "}
+                                    <Image src={video.authorThumbnails[0].url} alt={video.authorName} width={40} height={40} className="object-cover" />
+                                </motion.div>
                             </div>
-                        ) : null}{" "}
+                        ) : null}
                         <div>
-                            {" "}
-                            <h3 className="text-lg font-semibold text-white line-clamp-2">{video.title}</h3> <p className="text-orange-400 mt-1">{video.authorName}</p>{" "}
+                            <h3 className="text-lg font-semibold text-white line-clamp-2">{video.title}</h3> <p className="text-orange-400 mt-1">{video.authorName}</p>
                             <div className="flex items-center text-orange-500 text-sm mt-1">
-                                {" "}
-                                <span>{video.viewCount} views</span>{" "}
-                            </div>{" "}
-                        </div>{" "}
-                    </div>{" "}
+                                <span>{video.viewCount} views</span>
+                            </div>
+                        </div>
+                    </div>
                     <motion.div
                         className="mt-2 text-sm text-orange-400 line-clamp-2"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: isHovered ? 1 : 0, height: isHovered ? "auto" : 0 }}
                         transition={{ duration: 0.3 }}>
-                        {" "}
-                        {video.description}{" "}
-                    </motion.div>{" "}
-                </div>{" "}
-            </GlassCard>{" "}
+                        {video.description}
+                    </motion.div>
+                </div>
+            </GlassCard>
             {isHovered && (
                 <motion.div
                     className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-3 bg-gradient-to-t from-neutral-900/90 to-transparent"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}>
-                    {" "}
                     <motion.button className="bg-neutral-900/80 hover:bg-neutral-900/80 p-2 rounded-full" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        {" "}
-                        <FaThumbsUp className="text-white" />{" "}
-                    </motion.button>{" "}
+                        <FaThumbsUp className="text-white" />
+                    </motion.button>
                     <motion.button className="bg-neutral-900/80 hover:bg-neutral-900/80 p-2 rounded-full" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        {" "}
-                        <FaRegBookmark className="text-white" />{" "}
-                    </motion.button>{" "}
+                        <FaRegBookmark className="text-white" />
+                    </motion.button>
                 </motion.div>
-            )}{" "}
+            )}
         </motion.div>
     );
 };
@@ -213,41 +184,34 @@ interface SearchResultsProps {
 const SearchResults = ({ searchResults, isLoading, lastVideoElementRef }: SearchResultsProps) => {
     return (
         <AnimatePresence>
-            {" "}
             {isLoading && searchResults.length === 0 ? (
                 <motion.div className="flex justify-center items-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {" "}
-                    <LoadingSpinner />{" "}
+                    <LoadingSpinner />
                 </motion.div>
             ) : (
                 searchResults.length > 0 && (
                     <motion.div className="mb-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                        {" "}
                         <GlassCard className="p-6">
-                            {" "}
                             <motion.h2 className="text-2xl font-bold mb-6 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
-                                {" "}
-                                <FaSearch className="mr-2" /> Search Results{" "}
-                            </motion.h2>{" "}
+                                <FaSearch className="mr-2" /> Search Results
+                            </motion.h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {" "}
                                 {searchResults.map((video, index) => {
                                     if (searchResults.length === index + 1) {
                                         return (
                                             <div ref={lastVideoElementRef} key={video.videoId}>
-                                                {" "}
-                                                <VideoCard video={video} />{" "}
+                                                <VideoCard video={video} />
                                             </div>
                                         );
                                     } else {
                                         return <VideoCard key={video.videoId} video={video} />;
                                     }
-                                })}{" "}
-                            </div>{" "}
-                        </GlassCard>{" "}
+                                })}
+                            </div>
+                        </GlassCard>
                     </motion.div>
                 )
-            )}{" "}
+            )}
         </AnimatePresence>
     );
 };
@@ -262,50 +226,41 @@ interface VideoSectionProps {
 const VideoSection = ({ title, message, icon, videos, isLoading, lastVideoElementRef }: VideoSectionProps) => {
     return (
         <AnimatePresence>
-            {" "}
             {isLoading ? (
                 <motion.div className="flex justify-center items-center py-8 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {" "}
-                    <LoadingSpinner />{" "}
+                    <LoadingSpinner />
                 </motion.div>
             ) : (
                 videos.length > 0 && (
                     <motion.div className="mb-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                        {" "}
                         <GlassCard className="p-6">
-                            {" "}
                             <motion.h2 className="text-2xl font-bold mb-2 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
-                                {" "}
-                                {icon} {title}{" "}
-                            </motion.h2>{" "}
+                                {icon} {title}
+                            </motion.h2>
                             <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-                                {" "}
-                                {message}{" "}
-                            </motion.p>{" "}
+                                {message}
+                            </motion.p>
                             <div className="flex flex-wrap h-80 overflow-x-auto gap-6">
-                                {" "}
                                 {videos.map((video, index) => {
                                     if (videos.length === index + 1 && lastVideoElementRef) {
                                         return (
                                             <div ref={lastVideoElementRef} key={video.videoId} className="flex-shrink-0 w-64">
-                                                {" "}
-                                                <VideoCard video={video} />{" "}
+                                                <VideoCard video={video} />
                                             </div>
                                         );
                                     } else {
                                         return (
                                             <div key={video.videoId} className="flex-shrink-0 w-64">
-                                                {" "}
-                                                <VideoCard video={video} />{" "}
+                                                <VideoCard video={video} />
                                             </div>
                                         );
                                     }
-                                })}{" "}
-                            </div>{" "}
-                        </GlassCard>{" "}
+                                })}
+                            </div>
+                        </GlassCard>
                     </motion.div>
                 )
-            )}{" "}
+            )}
         </AnimatePresence>
     );
 };
@@ -446,14 +401,11 @@ export default function Home() {
     }, [fetchSectionVideos, contentSections, sectionHasMore, sectionsLoading, loadMoreVideos]);
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
-            {" "}
-            <div className="fixed inset-0 bg-red-900/10 pointer-events-none" /> <div className="fixed inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none" /> <Sidebar />{" "}
+            <div className="fixed inset-0 bg-red-900/10 pointer-events-none" /> <div className="fixed inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none" /> <Sidebar />
             <div className="md:ml-20 lg:ml-56">
-                {" "}
                 <div className="container mx-auto px-4 py-6">
-                    {" "}
-                    <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />{" "}
-                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={observeLastVideoElement("search")} />{" "}
+                    <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />
+                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={observeLastVideoElement("search")} />
                     {contentSections.map(section => (
                         <VideoSection
                             key={section.id}
@@ -464,15 +416,14 @@ export default function Home() {
                             isLoading={sectionsLoading[section.id]}
                             lastVideoElementRef={observeLastVideoElement(section.id)}
                         />
-                    ))}{" "}
+                    ))}
                     {isSearchLoading && (
                         <div className="flex justify-center my-6">
-                            {" "}
-                            <LoadingSpinner />{" "}
+                            <LoadingSpinner />
                         </div>
-                    )}{" "}
-                </div>{" "}
-            </div>{" "}
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
