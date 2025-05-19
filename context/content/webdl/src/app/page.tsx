@@ -270,9 +270,11 @@ const VideoSection = ({ title, message, icon, videos, isLoading }: VideoSectionP
                                 {message}
                             </motion.p>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="flex flex-wrap h-80 overflow-x-auto gap-6">
                                 {videos.map((video, index) => (
-                                    <VideoCard key={video.videoId} video={video} />
+                                    <div key={video.videoId} className="flex-shrink-0 w-64">
+                                        <VideoCard video={video} />
+                                    </div>
                                 ))}
                             </div>
                         </GlassCard>
