@@ -86,7 +86,7 @@ const SearchResults = ({ searchResults, isLoading }: { searchResults: VideoType[
   );
 };
 
-const HomeFeed = ({ homeFeed, isLoading }: { homeFeed: VideoType[]; isLoading: boolean }) => {
+const HomeFeed = ({ homeFeed, isLoading, onGetHomeFeed }: { homeFeed: VideoType[]; isLoading: boolean; onGetHomeFeed: () => void }) => {
   return (
     isLoading ? (
       <p className="text-white">Loading home feed...</p>
@@ -97,6 +97,12 @@ const HomeFeed = ({ homeFeed, isLoading }: { homeFeed: VideoType[]; isLoading: b
       transition={{ delay: 1, duration: 0.5 }}
     >
       <h2 className="text-2xl font-bold mb-4 text-white">Home Feed</h2>
+      <button
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline mb-4"
+        onClick={onGetHomeFeed}
+      >
+        Get Home Feed
+      </button>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {homeFeed.map((video) => (
           <div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
@@ -119,17 +125,10 @@ const HomeFeed = ({ homeFeed, isLoading }: { homeFeed: VideoType[]; isLoading: b
 export default function Home() {
   const [searchResults, setSearchResults] = useState<VideoType[]>([]);
   const [homeFeed, setHomeFeed] = useState<VideoType[]>([]);
-  const [isHomeFeedLoading, setIsHomeFeedLoading] = useState(true);
+  const [isHomeFeedLoading, setIsHomeFeedLoading] = useState(false);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
-  const [cookies, setCookies] = useState<string | null>(null);
-
-  useEffect(() => {
-    const storedCookies = localStorage.getItem('youtubeCookies');
-    if (storedCookies) {
-      setCookies(storedCookies);
-    }
-  }, []);
+  const [cookies, setCookies] = useState<string | null>(localStorage.getItem('youtubeCookies'));
 
   const handleSearch = useCallback(async (query: string) => {
     setIsSearchLoading(true);
@@ -178,7 +177,7 @@ export default function Home() {
         <SearchBar onSearch={handleSearch} />
         <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
         {cookies ? (
-          <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} />
+          <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} onGetHomeFeed={handleGetHomeFeed} />
         ) : (
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline mb-4"
