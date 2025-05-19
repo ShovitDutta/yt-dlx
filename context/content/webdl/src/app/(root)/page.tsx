@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
-import { useAppStore } from "@/store";
+import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState, useMemo, memo, Fragment } from "react";
-import { FaSearch, FaFire, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
+import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
+import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
     type: string;
@@ -27,6 +27,84 @@ const GlassCard = memo(({ children, className = "" }: { className?: string; chil
 const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const SearchBar = ({ onSearch, region, setRegion }: { region: string; onSearch: (query: string) => void; setRegion: (region: string) => void }) => {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const handleSearch = () => {
+        if (searchQuery.trim()) onSearch(searchQuery);
+    };
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") handleSearch();
+    };
+    return (
+        <motion.div className="mb-8 sticky top-0 z-10 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <GlassCard className="p-2 rounded-3xl border-2 border-red-800">
+                <div className="flex items-center">
+                    <div className="relative flex-grow">
+                        <motion.div className="absolute inset-0 rounded-l-md" animate={{ boxShadow: isSearchFocused ? "0 0 0 2px rgba(255, 0, 0, 0.5)" : "none" }} />
+                        <input
+                            type="text"
+                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none"
+                            placeholder="Search videos..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            onFocus={() => setIsSearchFocused(true)}
+                            onBlur={() => setIsSearchFocused(false)}
+                            onKeyDown={handleKeyDown}
+                        />
+                    </div>
+                    <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <FaSearch />
+                    </motion.button>
+                    <motion.div className="ml-4" whileHover={{ scale: 1.05 }}>
+                        <select
+                            className="px-4 py-3 rounded-md bg-neutral-900/70 text-white border border-neutral-900/50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            value={region}
+                            onChange={e => setRegion(e.target.value)}>
+                            {regions.map(region => (
+                                <option key={region.code} value={region.name}>
+                                    {region.name}
+                                </option>
+                            ))}
+                        </select>
+                    </motion.div>
+                </div>
+            </GlassCard>
+        </motion.div>
+    );
+};
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const Sidebar = () => {
+    return (
+        <motion.div
+            className="hidden md:block w-20 lg:w-56 fixed left-0 top-0 h-full border-r-2 border-red-800"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}>
+            <GlassCard className="h-full py-8 px-2 lg:px-4">
+                <div className="flex flex-col items-center lg:items-start gap-8">
+                    <div className="flex items-center justify-center lg:justify-start w-full mb-6">
+                        <motion.div className="w-10 h-10 bg-red-600 rounded-md flex items-center justify-center" whileHover={{ scale: 1.1 }}>
+                            <span className="text-white text-xl font-bold">YT</span>
+                        </motion.div>
+                        <span className="hidden lg:block ml-2 text-xl font-bold text-white">VidStream</span>
+                    </div>
+                    <SidebarItem icon={<FaFire />} text="Trending" active /> <SidebarItem icon={<FaHistory />} text="History" /> <SidebarItem icon={<FaThumbsUp />} text="Liked" />
+                    <SidebarItem icon={<FaRegBookmark />} text="Saved" />
+                </div>
+            </GlassCard>
+        </motion.div>
+    );
+};
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const SidebarItem = memo(({ icon, text, active = false }: { text: string; active?: boolean; icon: React.ReactNode }) => {
+    return (
+        <motion.div className={`flex items-center w-full p-2 rounded-lg cursor-pointer ${active ? "bg-red-600/40" : "hover:bg-neutral-900/50"}`} whileHover={{ scale: 1.05 }}>
+            <div className="text-xl text-orange-300 flex justify-center lg:justify-start w-full lg:w-auto">{icon}</div> <span className="hidden lg:block ml-3 text-orange-300">{text}</span>
+        </motion.div>
+    );
+});
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const VideoCard = memo(({ video }: { video: VideoType }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -165,8 +243,12 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
-    const { region, searchResults, isSearchLoading, sectionVideos, sectionsLoading } = useAppStore();
-
+    const [region, setRegion] = useState("India");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [searchResults, setSearchResults] = useState<VideoType[]>([]);
+    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
+    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -228,19 +310,48 @@ export default function Home() {
         ],
         [region],
     );
-
-    // Removed handleSearch and fetchSectionVideos as they are now in layout.tsx
-
-    // Removed useEffect as it is now in layout.tsx
-
+    const handleSearch = useCallback(
+        async (query: string) => {
+            setIsSearchLoading(true);
+            setSearchQuery(query);
+            try {
+                const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                setSearchResults(data.result);
+            } catch (error) {
+                console.error("Error searching videos:", error);
+            } finally {
+                setIsSearchLoading(false);
+            }
+        },
+        [setIsSearchLoading, setSearchQuery, setSearchResults, searchQuery],
+    );
+    const fetchSectionVideos = useCallback(
+        async (section: ContentSection) => {
+            setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
+            try {
+                const response = await fetch(section.endpoint);
+                const data = await response.json();
+                setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
+            } catch (error) {
+                console.error(`Error fetching videos for ${section.title}:`, error);
+            } finally {
+                setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
+            }
+        },
+        [region, setSectionsLoading, setSectionVideos],
+    );
+    useEffect(() => {
+        contentSections.forEach(section => fetchSectionVideos(section));
+    }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
             <div className="fixed inset-0 bg-red-900/10 pointer-events-none" />
             <div className="fixed inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none" />
-            {/* Sidebar and SearchBar are now in layout.tsx */}
+            <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
-                    {/* SearchBar is now in layout.tsx */}
+                    <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
                         <VideoSection
