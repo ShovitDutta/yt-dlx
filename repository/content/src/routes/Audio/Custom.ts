@@ -8,12 +8,20 @@ import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
 import TubeResponse from "../../interfaces/TubeResponse";
 import AudioFormat from "../../interfaces/AudioFormat";
+import VideoInfo from "../../interfaces/VideoInfo";
+interface AudioTubeResponseData {
+    metaData: VideoInfo;
+    BestAudioLow: AudioFormat;
+    BestAudioHigh: AudioFormat;
+    AudioLowDRC: AudioFormat;
+    AudioHighDRC: AudioFormat;
+}
 interface AudioCustomMetadata {
-    metaData: TubeResponse["metaData"];
-    BestAudioLow: TubeResponse["BestAudioLow"];
-    BestAudioHigh: TubeResponse["BestAudioHigh"];
-    AudioLowDRC: TubeResponse["AudioLowDRC"];
-    AudioHighDRC: TubeResponse["AudioHighDRC"];
+    metaData: VideoInfo;
+    BestAudioLow: AudioFormat;
+    BestAudioHigh: AudioFormat;
+    AudioLowDRC: AudioFormat;
+    AudioHighDRC: AudioFormat;
     filename: string;
 }
 function formatTime(seconds: number): string {
