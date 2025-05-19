@@ -10,8 +10,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Video link is required' }, { status: 400 });
     }
 
+    const decodedVideoLink = decodeURIComponent(videoLink);
+
     // Call the YouTubeDLX.Search.Video.Single function to get video data
-    const result = await YouTubeDLX.Search.Video.Single({ videoLink: videoLink });
+    const result = await YouTubeDLX.Search.Video.Single({ videoLink: decodedVideoLink });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
