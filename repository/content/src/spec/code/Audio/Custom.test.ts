@@ -46,7 +46,7 @@ vitest.describe("AudioCustom", () => {
         });
     });
     vitest.it("should handle stream with filter", async () => {
-        const result = await AudioCustom({ query, resolution: "medium", stream: true, filter: "vaporwave" });
+        const result = await AudioCustom({ query, resolution: "high", stream: true, filter: "vaporwave" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
