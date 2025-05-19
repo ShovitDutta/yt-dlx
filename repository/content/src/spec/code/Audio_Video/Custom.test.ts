@@ -48,7 +48,9 @@ vitest.describe("AudioVideoCustom", () => {
     vitest.it("should handle basic stream", async () => {
         const result = await AudioVideoCustom({ query, resolution: "480p", stream: true });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("basic_stream_avcustom.mkv");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -58,7 +60,9 @@ vitest.describe("AudioVideoCustom", () => {
     vitest.it("should handle stream with filter", async () => {
         const result = await AudioVideoCustom({ query, resolution: "720p", stream: true, filter: "flipVertical" });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("filtered_stream_avcustom.mkv");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -76,7 +80,9 @@ vitest.describe("AudioVideoCustom", () => {
             filter: "rotate270",
         });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("full_stream_avcustom.mkv");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
