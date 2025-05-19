@@ -107,8 +107,22 @@ export default async function VideoCustom({
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        const resolutionWithoutP = resolution.replace("p", "");
-        const vdata = engineData.ManifestHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolutionWithoutP));
+        const resolutionRegex = /(\d+)p(\d+)?/;
+        const resolutionMatch = resolution.match(resolutionRegex);
+        const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
+        const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
+
+        const vdata = engineData.allFormats?.find((i: any) => {
+            const height = i.height;
+            const fps = i.fps;
+            const vcodec = i.vcodec;
+
+            let heightMatches = height === targetHeight;
+            let fpsMatches = targetFps === null || fps === targetFps;
+
+            return heightMatches && fpsMatches && vcodec !== 'none';
+        });
+
         if (!vdata) {
             throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
         }
