@@ -6,24 +6,6 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
-import TubeResponse from "../../interfaces/TubeResponse";
-import AudioFormat from "../../interfaces/AudioFormat";
-import VideoInfo from "../../interfaces/VideoInfo";
-interface AudioTubeResponseData {
-    metaData: VideoInfo;
-    BestAudioLow: AudioFormat;
-    BestAudioHigh: AudioFormat;
-    AudioLowDRC: AudioFormat;
-    AudioHighDRC: AudioFormat;
-}
-interface AudioCustomMetadata {
-    metaData: VideoInfo;
-    BestAudioLow: AudioFormat;
-    BestAudioHigh: AudioFormat;
-    AudioLowDRC: AudioFormat;
-    AudioHighDRC: AudioFormat;
-    filename: string;
-}
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -80,30 +62,30 @@ export default async function AudioCustom({
         if (metadata && (stream || output || filter || showProgress)) {
             throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
         }
-    if (stream && output) {
-        throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
-    }
-    const engineData: TubeResponse<AudioTubeResponseData> = await Tuber({ query, verbose, useTor });
-    if (!engineData || engineData.status === "error" || !engineData.data) {
-        throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-    }
-    if (!engineData.data.metaData) {
-        throw new Error(`${colors.red("@error:")} Metadata was not found in the engine's response.`);
-    }
-    if (metadata) {
-        return {
-            metadata: {
-                metaData: engineData.data.metaData,
-                BestAudioLow: engineData.data.BestAudioLow,
-                BestAudioHigh: engineData.data.BestAudioHigh,
-                AudioLowDRC: engineData.data.AudioLowDRC,
-                AudioHighDRC: engineData.data.AudioHighDRC,
-                filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.data.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-            },
-        };
-    }
-    const title = engineData.data.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
-    const folder = output ? output : process.cwd();
+        if (stream && output) {
+            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        }
+        const engineData = await Tuber({ query, verbose, useTor });
+        if (!engineData) {
+            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        }
+        if (!engineData.metaData) {
+            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine's response.`);
+        }
+        if (metadata) {
+            return {
+                metadata: {
+                    metaData: engineData.metaData,
+                    BestAudioLow: engineData.BestAudioLow,
+                    BestAudioHigh: engineData.BestAudioHigh,
+                    AudioLowDRC: engineData.AudioLowDRC,
+                    AudioHighDRC: engineData.AudioHighDRC,
+                    filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                },
+            };
+        }
+        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
