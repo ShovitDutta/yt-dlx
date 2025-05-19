@@ -77,7 +77,7 @@ export default async function AudioVideoHighest({
                     VideoHighF: engineData.VideoHighF,
                     VideoHighHDR: engineData.VideoHighHDR,
                     ManifestHigh: engineData.ManifestHigh,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_AudioVideoHighest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 },
             };
         }
