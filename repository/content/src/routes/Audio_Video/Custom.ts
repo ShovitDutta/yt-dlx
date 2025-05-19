@@ -106,7 +106,8 @@ export default async function AudioVideoCustom({
         instance.addInput(engineData.BestAudioHigh.url);
         instance.withOutputFormat("matroska");
         const targetHeight = parseInt(resolution.replace("p", ""), 10);
-        const vdata = engineData.ManifestHigh?.find((i: { height: number }) => i.height === targetHeight);
+        // Search for the video format in all formats instead of just ManifestHigh
+        const vdata = engineData.allFormats?.find((i: any) => i.height === targetHeight && i.vcodec !== 'none');
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
