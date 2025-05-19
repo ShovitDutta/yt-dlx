@@ -19,9 +19,7 @@ interface VideoType {
 }
 const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
     const [searchQuery, setSearchQuery] = useState("");
-    const handleSearch = () => {
-        onSearch(searchQuery);
-    };
+    const handleSearch = () => onSearch(searchQuery);
     return (
         <motion.div className="mb-8" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="flex items-center">
