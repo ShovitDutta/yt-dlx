@@ -6,6 +6,16 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
+import { TubeResponse } from "../../interfaces/TubeResponse";
+import { AudioFormat } from "../../interfaces/AudioFormat";
+interface AudioCustomMetadata {
+    metaData: TubeResponse["metaData"];
+    BestAudioLow: TubeResponse["BestAudioLow"];
+    BestAudioHigh: TubeResponse["BestAudioHigh"];
+    AudioLowDRC: TubeResponse["AudioLowDRC"];
+    AudioHighDRC: TubeResponse["AudioHighDRC"];
+    filename: string;
+}
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
