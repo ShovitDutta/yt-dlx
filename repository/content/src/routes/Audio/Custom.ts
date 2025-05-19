@@ -6,6 +6,7 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
+import type { VideoMetaData } from "../../interfaces/VideoMetaData";
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
