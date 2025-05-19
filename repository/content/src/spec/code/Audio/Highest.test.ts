@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioHighest", () => {
-    const query = "https://youtu.be/dQw4w9WgXcQ";
+    const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     vitest.it("should handle basic download", async () => {
         const result = await AudioHighest({ query });
         vitest.expect(result).toHaveProperty("outputPath");
