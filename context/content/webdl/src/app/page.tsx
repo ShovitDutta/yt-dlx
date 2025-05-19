@@ -278,8 +278,6 @@ export default function Home() {
     const [region, setRegion] = useState("India");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-    const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [searchResults, setSearchResults] = useState<VideoType[]>([]);
     const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
     const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const [page, setPage] = useState(1);
