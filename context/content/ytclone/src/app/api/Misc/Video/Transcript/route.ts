@@ -10,8 +10,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Video link is required' }, { status: 400 });
     }
 
+    const decodedVideoLink = decodeURIComponent(videoLink);
+
     // Call the YouTubeDLX.Misc.Video.Transcript function to get video transcript
-    const result = await YouTubeDLX.Misc.Video.Transcript({ videoLink: videoLink });
+    const result = await YouTubeDLX.Misc.Video.Transcript({ videoLink: decodedVideoLink });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
