@@ -6,7 +6,6 @@ import ffmpeg from "fluent-ffmpeg";
 import ytdlx from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
-
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -14,7 +13,6 @@ function formatTime(seconds: number): string {
     const secs = Math.floor(seconds % 60);
     return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
 }
-
 function calculateETA(startTime: Date, percent: number): number {
     const currentTime = new Date();
     const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
@@ -23,7 +21,6 @@ function calculateETA(startTime: Date, percent: number): number {
     const remainingTime = totalTimeEstimate - elapsedTime;
     return remainingTime;
 }
-
 function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
     let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
     displayPercent = Math.min(Math.max(displayPercent, 0), 100);
@@ -35,7 +32,6 @@ function progbar({ percent, timemark, startTime }: { percent: number | undefined
     const etaFormatted = formatTime(etaSeconds);
     process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
 }
-
 var ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -47,27 +43,7 @@ var ZodSchema = z.object({
     resolution: z.enum(["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "3072p", "4320p", "6480p", "8640p", "12000p"]),
     showProgress: z.boolean().optional(),
 });
-
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
-
-interface MetadataResult {
-    metaData: any;
-    BestAudioLow: any;
-    BestAudioHigh: any;
-    AudioLowDRC: any;
-    AudioHighDRC: any;
-    BestVideoLow: any;
-    BestVideoHigh: any;
-    VideoLowHDR: any;
-    VideoHighHDR: any;
-    ManifestLow: any;
-    ManifestHigh: any;
-    filename: string;
-}
-
-type OutputPathResult = { outputPath: string };
-type StreamResult = { stream: Readable; filename: string };
-
 export default async function AudioVideoCustom({
     query,
     stream,
@@ -78,42 +54,36 @@ export default async function AudioVideoCustom({
     verbose,
     resolution,
     showProgress,
-}: AudioVideoCustomOptions): Promise<MetadataResult | OutputPathResult | StreamResult> {
+}: AudioVideoCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
     try {
         ZodSchema.parse({ query, stream, output, useTor, filter, metadata, verbose, resolution, showProgress });
-
         if (metadata && (stream || output || filter || showProgress)) {
             throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
         }
         if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         if (metadata && showProgress) throw new Error(`${colors.red("@error:")} The 'showProgress' parameter cannot be used when 'metadata' is true.`);
-
         const engineData = await ytdlx({ query, verbose, useTor });
         if (!engineData) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!engineData.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-
-        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
-        const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-        let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
-
         if (metadata) {
-            const metadataResult: MetadataResult = {
-                metaData: engineData.metaData,
-                BestAudioLow: engineData.BestAudioLow,
-                BestAudioHigh: engineData.BestAudioHigh,
-                AudioLowDRC: engineData.AudioLowDRC,
-                AudioHighDRC: engineData.AudioHighDRC,
-                BestVideoLow: engineData.BestVideoLow,
-                BestVideoHigh: engineData.BestVideoHigh,
-                VideoLowHDR: engineData.VideoLowHDR,
-                VideoHighHDR: engineData.VideoHighHDR,
-                ManifestLow: engineData.ManifestLow,
-                ManifestHigh: engineData.ManifestHigh,
-                filename: filename,
+            return {
+                metadata: {
+                    metaData: engineData.metaData,
+                    BestAudioLow: engineData.BestAudioLow,
+                    BestAudioHigh: engineData.BestAudioHigh,
+                    AudioLowDRC: engineData.AudioLowDRC,
+                    AudioHighDRC: engineData.AudioHighDRC,
+                    BestVideoLow: engineData.BestVideoLow,
+                    BestVideoHigh: engineData.BestVideoHigh,
+                    VideoLowHDR: engineData.VideoLowHDR,
+                    VideoHighHDR: engineData.VideoHighHDR,
+                    ManifestLow: engineData.ManifestLow,
+                    ManifestHigh: engineData.ManifestHigh,
+                    filename: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                },
             };
-            return metadataResult;
         }
-
+        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -122,7 +92,6 @@ export default async function AudioVideoCustom({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError?.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         try {
             const paths = await locator();
@@ -133,21 +102,16 @@ export default async function AudioVideoCustom({
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
         }
-
         if (!engineData.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
         instance.addInput(engineData.BestAudioHigh.url);
         instance.withOutputFormat("matroska");
         const targetHeight = parseInt(resolution.replace("p", ""), 10);
         // Search for the video format in all formats instead of just ManifestHigh
-        const vdata = engineData.allFormats?.find((i: any) => i.height === targetHeight && i.vcodec !== "none");
+        const vdata = engineData.allFormats?.find((i: any) => i.height === targetHeight && i.vcodec !== 'none');
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
-        } else {
-            console.log(colors.red("@error:"), "engineData", engineData);
-            throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
-        }
-
+        } else throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
         const filterMap: Record<string, string[]> = {
             invert: ["negate"],
             flipVertical: ["vflip"],
@@ -159,7 +123,6 @@ export default async function AudioVideoCustom({
         };
         if (filter && filterMap[filter]) instance.withVideoFilter(filterMap[filter]);
         else instance.outputOptions("-c copy");
-
         let processStartTime: Date;
         if (showProgress) {
             instance.on("start", () => {
@@ -169,9 +132,10 @@ export default async function AudioVideoCustom({
                 if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
-
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
@@ -190,9 +154,10 @@ export default async function AudioVideoCustom({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            const streamResult: StreamResult = { stream: passthroughStream, filename: filename };
-            return streamResult;
+            return { stream: passthroughStream, filename: filename };
         } else {
+            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
             const outputPath = path.join(folder, filename);
             instance.output(outputPath);
             await new Promise<void>((resolve, reject) => {
@@ -217,8 +182,7 @@ export default async function AudioVideoCustom({
                 instance.run();
             });
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            const outputPathResult: OutputPathResult = { outputPath: outputPath };
-            return outputPathResult;
+            return { outputPath: outputPath };
         }
     } catch (error: any) {
         if (error instanceof ZodError) {
