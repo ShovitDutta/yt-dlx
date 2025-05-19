@@ -10,8 +10,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Video ID is required' }, { status: 400 });
     }
 
+    const decodedVideoId = decodeURIComponent(videoId);
+
     // Call the YouTubeDLX.Misc.Video.Comments function to get video comments
-    const result = await YouTubeDLX.Misc.Video.Comments({ query: videoId });
+    const result = await YouTubeDLX.Misc.Video.Comments({ query: decodedVideoId });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
