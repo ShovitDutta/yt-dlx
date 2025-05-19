@@ -49,7 +49,9 @@ vitest.describe("AudioVideoCustom", () => {
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
+        if ("filename" in result) {
+            vitest.expect(result.filename).toBeTypeOf("string");
+        }
         const outputStream = createWriteStream("basic_stream_avcustom.mkv");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
