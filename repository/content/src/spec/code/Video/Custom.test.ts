@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("VideoCustom", () => {
-    const query = "test query";
+    const query = "Weeknd, Drive";
     vitest.it("should handle basic download", async () => {
         const result = await VideoCustom({ query, resolution: "720p" });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -14,7 +14,7 @@ vitest.describe("VideoCustom", () => {
     });
     vitest.it("should handle download with all options", async () => {
         const result = await VideoCustom({
-            query: "your search query or url",
+            query,
             resolution: "720p",
             output: "output",
             useTor: false,
@@ -25,15 +25,15 @@ vitest.describe("VideoCustom", () => {
         vitest.expect(result).toHaveProperty("outputPath");
     });
     vitest.it("should fetch metadata only", async () => {
-        const result = await VideoCustom({ query: "your search query or url", resolution: "720p", metadata: true });
+        const result = await VideoCustom({ query, resolution: "720p", metadata: true });
         vitest.expect(result).toHaveProperty("metadata");
     });
     vitest.it("should fetch metadata with Tor and verbose", async () => {
-        const result = await VideoCustom({ query: "your search query or url", resolution: "720p", metadata: true, useTor: false, verbose: true });
+        const result = await VideoCustom({ query, resolution: "720p", metadata: true, useTor: false, verbose: true });
         vitest.expect(result).toHaveProperty("metadata");
     });
     vitest.it("should handle basic stream", async () => {
-        const result = await VideoCustom({ query: "your search query or url", resolution: "480p", stream: true });
+        const result = await VideoCustom({ query, resolution: "480p", stream: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("basic_stream.mp4");
@@ -43,7 +43,7 @@ vitest.describe("VideoCustom", () => {
         });
     });
     vitest.it("should handle stream with filter", async () => {
-        const result = await VideoCustom({ query: "your search query or url", resolution: "480p", stream: true, filter: "invert" });
+        const result = await VideoCustom({ query, resolution: "480p", stream: true, filter: "invert" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("filtered_stream.mp4");
@@ -53,7 +53,7 @@ vitest.describe("VideoCustom", () => {
         });
     });
     vitest.it("should handle stream with all options", async () => {
-        const result = await VideoCustom({ query: "your search query or url", resolution: "720p", stream: true, useTor: false, verbose: true, filter: "rotate180", showProgress: true });
+        const result = await VideoCustom({ query, resolution: "720p", stream: true, useTor: false, verbose: true, filter: "rotate180", showProgress: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("full_stream.mp4");

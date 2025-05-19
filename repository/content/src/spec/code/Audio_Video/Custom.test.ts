@@ -3,8 +3,8 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioVideoCustom", () => {
-    const query = "test query";
     const resolution = "720p";
+    const query = "Weeknd, Drive";
     vitest.it("should handle basic download", async () => {
         const result = await AudioVideoCustom({ query, resolution });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -22,12 +22,12 @@ vitest.describe("AudioVideoCustom", () => {
     vitest.it("should handle download with all options", async () => {
         const result = await AudioVideoCustom({
             query,
-            resolution: "1440p",
-            output: "output",
             useTor: false,
             verbose: true,
             filter: "invert",
+            output: "output",
             showProgress: true,
+            resolution: "1440p",
         });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
@@ -65,13 +65,13 @@ vitest.describe("AudioVideoCustom", () => {
     });
     vitest.it("should handle stream with all options", async () => {
         const result = await AudioVideoCustom({
-            query: "your search query or url",
-            resolution: "1080p",
+            query,
             stream: true,
             useTor: false,
             verbose: true,
-            filter: "rotate270",
             showProgress: true,
+            resolution: "1080p",
+            filter: "rotate270",
         });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);

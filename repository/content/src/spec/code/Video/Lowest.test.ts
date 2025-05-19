@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("VideoLowest", () => {
-    const query = "test query";
+    const query = "Weeknd, Drive";
     vitest.it("should handle basic download", async () => {
         const result = await VideoLowest({ query });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -45,7 +45,7 @@ vitest.describe("VideoLowest", () => {
         });
     });
     vitest.it("should handle stream with all options", async () => {
-        const result = await VideoLowest({ query: "your search query or url", stream: true, useTor: false, verbose: true, filter: "rotate90", showProgress: true });
+        const result = await VideoLowest({ query, stream: true, useTor: false, verbose: true, filter: "rotate90", showProgress: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("full_stream.mp4");

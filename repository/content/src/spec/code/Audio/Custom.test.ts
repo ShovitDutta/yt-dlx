@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioCustom", () => {
-    const query = "test query";
+    const query = "Weeknd, Drive";
     vitest.it("should handle basic download", async () => {
         const result = await AudioCustom({ query, resolution: "high" });
         vitest.expect(result).toHaveProperty("outputPath");

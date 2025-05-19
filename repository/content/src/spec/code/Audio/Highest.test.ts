@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioHighest", () => {
-    const query = "test query";
+    const query = "Weeknd, Drive";
     vitest.it("should handle basic download", async () => {
         const result = await AudioHighest({ query });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -55,7 +55,7 @@ vitest.describe("AudioHighest", () => {
         });
     });
     vitest.it("should handle stream with all options", async () => {
-        const result = await AudioHighest({ query: "your search query or url", stream: true, useTor: false, verbose: true, filter: "superspeed", showProgress: true });
+        const result = await AudioHighest({ query, stream: true, useTor: false, verbose: true, filter: "superspeed", showProgress: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
         const outputStream = createWriteStream("full_stream_audiohigh.avi");
