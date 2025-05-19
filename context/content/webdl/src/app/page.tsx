@@ -278,10 +278,10 @@ export default function Home() {
     const [region, setRegion] = useState("India");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-    const [sectionPages, setSectionPages] = useState<{ [key: string]: number }>({});
-    const [sectionHasMore, setSectionHasMore] = useState<{ [key: string]: boolean }>({});
-    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
+    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const contentSections: ContentSection[] = [
         { id: "trending", title: "Trending", message: `Today's Trending in ${region}`, endpoint: `/api/Trending?region=${encodeURIComponent(region)}`, icon: <FaFire className="mr-2 text-red-500" /> },
         {
@@ -307,36 +307,31 @@ export default function Home() {
         },
     ];
     const observer = useRef<IntersectionObserver | null>(null);
-    const videoElementRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
-    const [searchQuery, setSearchQuery] = useState("");
-    const observeLastVideoElement = useCallback(
-        (sectionId: string) => (node: HTMLDivElement | null) => {
-            if (observer.current) {
-                if (videoElementRefs.current.has(sectionId) && videoElementRefs.current.get(sectionId)) {
-                    observer.current.unobserve(videoElementRefs.current.get(sectionId)!);
+    const lastVideoElementRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            if (isSearchLoading) return;
+            if (observer.current) observer.current.disconnect();
+            observer.current = new IntersectionObserver(entries => {
+                if (entries[0].isIntersecting && hasMore) {
+                    loadMoreVideos();
                 }
-                if (node) {
-                    observer.current.observe(node);
-                    videoElementRefs.current.set(sectionId, node);
-                } else {
-                    videoElementRefs.current.delete(sectionId);
-                }
-            }
+            });
+            if (node) observer.current.observe(node);
         },
-        [],
+        [isSearchLoading, hasMore],
     );
-    const loadMoreVideos = useCallback((sectionId: string) => {
-        setSectionPages(prev => ({ ...prev, [sectionId]: (prev[sectionId] || 1) + 1 }));
+    const loadMoreVideos = useCallback(() => {
+        setPage(prevPage => prevPage + 1);
     }, []);
     const handleSearch = useCallback(async (query: string) => {
         setIsSearchLoading(true);
-        setSectionPages(prev => ({ ...prev, search: 1 }));
+        setPage(1);
         setSearchQuery(query);
         try {
             const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}&page=1`);
             const data = await response.json();
             setSearchResults(data.result);
-            setSectionHasMore(prev => ({ ...prev, search: data.result.length > 0 }));
+            setHasMore(data.result.length > 0);
         } catch (error) {
             console.error("Error searching videos:", error);
         } finally {
@@ -344,14 +339,14 @@ export default function Home() {
         }
     }, []);
     useEffect(() => {
-        if (sectionPages.search > 1) {
+        if (page > 1) {
             const fetchMoreSearchResults = async () => {
                 setIsSearchLoading(true);
                 try {
-                    const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(searchQuery)}&page=${sectionPages.search}`);
+                    const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(searchQuery)}&page=${page}`);
                     const data = await response.json();
                     setSearchResults(prev => [...prev, ...data.result]);
-                    setSectionHasMore(prev => ({ ...prev, search: data.result.length > 0 }));
+                    setHasMore(data.result.length > 0);
                 } catch (error) {
                     console.error("Error loading more videos:", error);
                 } finally {
@@ -360,15 +355,14 @@ export default function Home() {
             };
             fetchMoreSearchResults();
         }
-    }, [sectionPages.search, searchQuery]);
+    }, [page, searchQuery]);
     const fetchSectionVideos = useCallback(
-        async (section: ContentSection, page: number) => {
+        async (section: ContentSection) => {
             setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
             try {
-                const response = await fetch(`${section.endpoint}&page=${page}`);
+                const response = await fetch(section.endpoint);
                 const data = await response.json();
-                setSectionVideos(prev => ({ ...prev, [section.id]: [...(prev[section.id] || []), ...data.result] }));
-                setSectionHasMore(prev => ({ ...prev, [section.id]: data.result.length > 0 }));
+                setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
             } catch (error) {
                 console.error(`Error fetching videos for ${section.title}:`, error);
             } finally {
@@ -378,34 +372,17 @@ export default function Home() {
         [region],
     );
     useEffect(() => {
-        observer.current = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const sectionId = (entry.target as HTMLElement).dataset.sectionId;
-                    if (sectionId && sectionHasMore[sectionId] && !sectionsLoading[sectionId]) {
-                        loadMoreVideos(sectionId);
-                    }
-                }
-            });
-        });
         contentSections.forEach(section => {
-            setSectionPages(prev => ({ ...prev, [section.id]: 1 }));
-            setSectionHasMore(prev => ({ ...prev, [section.id]: true }));
-            fetchSectionVideos(section, 1);
+            fetchSectionVideos(section);
         });
-        return () => {
-            if (observer.current) {
-                observer.current.disconnect();
-            }
-        };
-    }, [fetchSectionVideos, contentSections, sectionHasMore, sectionsLoading, loadMoreVideos]);
+    }, [fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
             <div className="fixed inset-0 bg-red-900/10 pointer-events-none" /> <div className="fixed inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none" /> <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />
-                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={observeLastVideoElement("search")} />
+                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={lastVideoElementRef} />
                     {contentSections.map(section => (
                         <VideoSection
                             key={section.id}
@@ -414,10 +391,9 @@ export default function Home() {
                             icon={section.icon}
                             videos={sectionVideos[section.id] || []}
                             isLoading={sectionsLoading[section.id]}
-                            lastVideoElementRef={observeLastVideoElement(section.id)}
                         />
                     ))}
-                    {isSearchLoading && (
+                    {isSearchLoading && page > 1 && (
                         <div className="flex justify-center my-6">
                             <LoadingSpinner />
                         </div>
