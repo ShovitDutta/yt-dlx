@@ -144,13 +144,7 @@ export default function Home() {
             <div className="container mx-auto px-4">
                 <SearchBar onSearch={handleSearch} />
                 <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
-                {cookies ? (
-                    <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} onGetHomeFeed={handleGetHomeFeed} />
-                ) : (
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline mb-4" onClick={() => setIsCookieModalOpen(true)}>
-                        Enter YouTube Cookies
-                    </button>
-                )}
+                <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} onGetHomeFeed={handleGetHomeFeed} />
             </div>
         </div>
     );
