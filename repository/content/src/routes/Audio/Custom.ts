@@ -7,7 +7,7 @@ import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
 import TubeResponse from "../../interfaces/TubeResponse";
-import { AudioFormat } from "../../interfaces/AudioFormat";
+import AudioFormat from "../../interfaces/AudioFormat";
 interface AudioCustomMetadata {
     metaData: TubeResponse["metaData"];
     BestAudioLow: TubeResponse["BestAudioLow"];
