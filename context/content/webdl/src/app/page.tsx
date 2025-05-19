@@ -465,7 +465,7 @@ export default function Home() {
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />
 
                     {/* Search Results Section */}
-                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={lastVideoElementRef} />
+                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={observeLastVideoElement("search")} />
 
                     {/* Content Sections */}
                     {contentSections.map(section => (
@@ -476,11 +476,12 @@ export default function Home() {
                             icon={section.icon}
                             videos={sectionVideos[section.id] || []}
                             isLoading={sectionsLoading[section.id]}
+                            lastVideoElementRef={observeLastVideoElement(section.id)}
                         />
                     ))}
 
                     {/* Loading indicator for infinite scroll */}
-                    {isSearchLoading && page > 1 && (
+                    {isSearchLoading && (
                         <div className="flex justify-center my-6">
                             <LoadingSpinner />
                         </div>
