@@ -463,11 +463,7 @@ export default function Home() {
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />
-
-                    {/* Search Results Section */}
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} lastVideoElementRef={observeLastVideoElement("search")} />
-
-                    {/* Content Sections */}
                     {contentSections.map(section => (
                         <VideoSection
                             key={section.id}
@@ -480,7 +476,6 @@ export default function Home() {
                         />
                     ))}
 
-                    {/* Loading indicator for infinite scroll */}
                     {isSearchLoading && (
                         <div className="flex justify-center my-6">
                             <LoadingSpinner />
