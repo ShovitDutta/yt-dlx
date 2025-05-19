@@ -1,6 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useState, useCallback, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FaSearch } from "react-icons/fa";
 
 interface VideoType {
   type: string;
@@ -23,10 +25,14 @@ const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
   const handleSearch = () => {
     onSearch(searchQuery);
   };
-    
 
   return (
-    <div className="mb-8">
+    <motion.div
+      className="mb-8"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex items-center">
         <input
           type="text"
@@ -39,17 +45,22 @@ const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-md focus:outline-none focus:shadow-outline"
           onClick={handleSearch}
         >
-          Search
+          <FaSearch />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 const SearchResults = ({ searchResults }: { searchResults: VideoType[] }) => {
   return (
     searchResults.length > 0 && (
-      <div className="mb-8">
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+      >
         <h2 className="text-2xl font-bold mb-4 text-white">Search Results</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {searchResults.map((video) => (
@@ -65,14 +76,18 @@ const SearchResults = ({ searchResults }: { searchResults: VideoType[] }) => {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     )
   );
 };
 
 const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1, duration: 0.5 }}
+    >
       <h2 className="text-2xl font-bold mb-4 text-white">Home Feed</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {homeFeed.map((video) => (
@@ -88,7 +103,7 @@ const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -98,7 +113,7 @@ export default function Home() {
 
   const handleSearch = useCallback(async (query: string) => {
     try {
-      const response = await fetch(`/api/searchVideos?query=${query}`);
+      const response = await fetch(`/api/Search/Video/Multiple?query=${query}`);
       const data = await response.json();
       setSearchResults(data.result);
     } catch (error) {
