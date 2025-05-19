@@ -313,11 +313,11 @@ interface ContentSection {
 export default function Home() {
     const [region, setRegion] = useState("India");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
     const [sectionPages, setSectionPages] = useState<{ [key: string]: number }>({});
     const [sectionHasMore, setSectionHasMore] = useState<{ [key: string]: boolean }>({});
+    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
+    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
 
     const contentSections: ContentSection[] = [
         {
