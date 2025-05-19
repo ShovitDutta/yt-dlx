@@ -85,10 +85,8 @@ const Sidebar = () => {
             <GlassCard className="h-full py-8 px-2 lg:px-4">
                 <div className="flex flex-col items-center lg:items-start gap-8">
                     <div className="flex items-center justify-center lg:justify-start w-full mb-6">
-                        <motion.div className="w-10 h-10 bg-red-600 rounded-md flex items-center justify-center" whileHover={{ scale: 1.1 }}>
-                            <span className="text-white text-xl font-bold">YT</span>
-                        </motion.div>
-                        <span className="hidden lg:block ml-2 text-xl font-bold text-white">VidStream</span>
+                        <motion.div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center animate-pulse" whileHover={{ scale: 1.1 }} />
+                        <span className="hidden lg:block ml-2 text-xl font-bold text-white">YouTubeDLX</span>
                     </div>
                     <SidebarItem icon={<FaFire />} text="Trending" active /> <SidebarItem icon={<FaHistory />} text="History" /> <SidebarItem icon={<FaThumbsUp />} text="Liked" />
                     <SidebarItem icon={<FaRegBookmark />} text="Saved" />
