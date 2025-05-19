@@ -52,8 +52,11 @@ const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
   );
 };
 
-const SearchResults = ({ searchResults }: { searchResults: VideoType[] }) => {
+const SearchResults = ({ searchResults, isLoading }: { searchResults: VideoType[]; isLoading: boolean }) => {
   return (
+    isLoading ? (
+      <p className="text-white">Loading search results...</p>
+    ) : (
     searchResults.length > 0 && (
       <motion.div
         className="mb-8"
@@ -78,11 +81,15 @@ const SearchResults = ({ searchResults }: { searchResults: VideoType[] }) => {
         </div>
       </motion.div>
     )
+    )
   );
 };
 
-const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
+const HomeFeed = ({ homeFeed, isLoading }: { homeFeed: VideoType[]; isLoading: boolean }) => {
   return (
+    isLoading ? (
+      <p className="text-white">Loading home feed...</p>
+    ) : (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -91,7 +98,7 @@ const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
       <h2 className="text-2xl font-bold mb-4 text-white">Home Feed</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {homeFeed.map((video) => (
-          <motion.div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
+          <div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
             {video.thumbnails && video.thumbnails.length > 0 ? (
               <Image src={video.thumbnails[0].url} alt={video.title} width={320} height={180} className="rounded-md mb-2" />
             ) : (
@@ -100,34 +107,43 @@ const HomeFeed = ({ homeFeed }: { homeFeed: VideoType[] }) => {
             <h3 className="text-lg font-semibold text-white">{video.title}</h3>
             <p className="text-gray-400">{video.authorName}</p>
             <p className="text-gray-400">{video.viewCount} views</p>
-          </motion.div>
+          </div>
         ))}
       </div>
     </motion.div>
+    )
   );
 };
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<VideoType[]>([]);
   const [homeFeed, setHomeFeed] = useState<VideoType[]>([]);
+  const [isHomeFeedLoading, setIsHomeFeedLoading] = useState(true);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   const handleSearch = useCallback(async (query: string) => {
+    setIsSearchLoading(true);
     try {
       const response = await fetch(`/api/Search/Video/Multiple?query=${query}`);
       const data = await response.json();
       setSearchResults(data.result);
     } catch (error) {
       console.error("Error searching videos:", error);
+    } finally {
+      setIsSearchLoading(false);
     }
   }, []);
 
   const handleGetHomeFeed = useCallback(async () => {
+    setIsHomeFeedLoading(true);
     try {
       const response = await fetch(`/api/Account/HomeFeed`);
       const data = await response.json();
       setHomeFeed(data.result?.data?.Videos || []);
     } catch (error) {
       console.error("Error fetching home feed:", error);
+    } finally {
+      setIsHomeFeedLoading(false);
     }
   }, []);
 
@@ -139,8 +155,8 @@ export default function Home() {
     <div className="min-h-screen bg-gray-900 py-6 text-white">
       <div className="container mx-auto px-4">
         <SearchBar onSearch={handleSearch} />
-        <SearchResults searchResults={searchResults} />
-        <HomeFeed homeFeed={homeFeed} />
+        <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
+        <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} />
       </div>
     </div>
   );
