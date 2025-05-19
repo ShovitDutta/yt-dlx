@@ -31,7 +31,7 @@ function progbar({ percent, timemark, startTime }: { percent: number | undefined
     const width = Math.floor((process.stdout.columns || 80) / 4);
     const scomp = Math.round((width * displayPercent) / 100);
     const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
-    const etaSeconds = calculateETA(startTime, percent);
+    const etaSeconds = calculateETA(startTime, displayPercent);
     const etaFormatted = formatTime(etaSeconds);
     process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
 }
