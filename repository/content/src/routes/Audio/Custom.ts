@@ -80,7 +80,7 @@ export default async function AudioCustom({
                     BestAudioHigh: engineData.BestAudioHigh,
                     AudioLowDRC: engineData.AudioLowDRC,
                     AudioHighDRC: engineData.AudioHighDRC,
-                    filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
                 },
             };
         }
@@ -155,9 +155,6 @@ export default async function AudioCustom({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
-            const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
-            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
@@ -174,6 +171,9 @@ export default async function AudioCustom({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
+            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+            return { stream: passthroughStream };
+        } else {
             const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, filename);
