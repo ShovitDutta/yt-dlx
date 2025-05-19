@@ -134,6 +134,9 @@ export default async function VideoHighest({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_VideoHighest_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mp4`;
+            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
