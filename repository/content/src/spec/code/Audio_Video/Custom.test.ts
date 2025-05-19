@@ -4,7 +4,7 @@ import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("AudioVideoCustom", () => {
     const resolution = "720p";
-    const query = "Weeknd, Drive";
+    const query = "https://youtu.be/Fv2Y1odMjvE?si=L5bMK8Ny5fSlwseA";
     vitest.it("should handle basic download", async () => {
         const result = await AudioVideoCustom({ query, resolution });
         vitest.expect(result).toHaveProperty("outputPath");
