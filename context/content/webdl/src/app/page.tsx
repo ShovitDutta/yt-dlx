@@ -399,6 +399,7 @@ export default function Home() {
                     {contentSections.map(section => (
                         <VideoSection
                             key={section.id}
+                            key={section.id}
                             title={section.title}
                             message={section.message}
                             icon={section.icon}
