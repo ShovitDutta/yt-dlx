@@ -301,6 +301,7 @@ export default async function Engine({ query, useTor = false, verbose = false })
         VideoHigh: FilterFormats(Object.values(VideoHigh)).map(i => MapVideoFormat(i)),
         ManifestLow: Object.values(ManifestLow).map(i => MapManifest(i)),
         ManifestHigh: Object.values(ManifestHigh).map(i => MapManifest(i)),
+        allFormats: i.formats, // Add the full formats array
         metaData: {
             id: i.id as string,
             title: i.title as string,
