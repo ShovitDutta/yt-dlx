@@ -1,99 +1,76 @@
 "use client";
-import { useState } from "react";
+import { useState } from 'react';
 
 interface CookieModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onCookiesSubmit: (cookies: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onCookiesSubmit: (cookies: string) => void;
 }
 
 const CookieModal: React.FC<CookieModalProps> = ({ isOpen, onClose, onCookiesSubmit }) => {
-    const [cookies, setCookies] = useState("");
-    const [error, setError] = useState("");
+  const [cookies, setCookies] = useState('');
+  const [error, setError] = useState('');
 
-    const requiredCookies = [
-        "__Secure-1PSIDCC",
-        "ST-3opvp5",
-        "SID",
-        "__Secure-1PAPISID",
-        "SAPISID",
-        "SIDCC",
-        "__Secure-3PSID",
-        "__Secure-1PSIDTS",
-        "HSID",
-        "__Secure-1PSID",
-        "__Secure-3PAPISID",
-        "__Secure-ROLLOUT_TOKEN",
-        "PREF",
-        "SSID",
-        "VISITOR_PRIVACY_METADATA",
-        "APISID",
-        "__Secure-3PSIDTS",
-        "VISITOR_INFO1_LIVE",
-        "__Secure-3PSIDCC",
-        "LOGIN_INFO",
-        "YSC",
-        "GPS",
-    ];
+  const requiredCookies = ["__Secure-1PSIDCC", "ST-3opvp5", "SID", "__Secure-1PAPISID", "SAPISID", "SIDCC", "__Secure-3PSID", "__Secure-1PSIDTS", "HSID", "__Secure-1PSID", "__Secure-3PAPISID", "__Secure-ROLLOUT_TOKEN", "PREF", "SSID", "VISITOR_PRIVACY_METADATA", "APISID", "__Secure-3PSIDTS", "VISITOR_INFO1_LIVE", "__Secure-3PSIDCC", "LOGIN_INFO", "YSC", "GPS"];
 
-    const handleSubmit = () => {
-        const cookieArray = cookies.split(";").map(cookie => cookie.trim());
-        const hasAllRequiredCookies = requiredCookies.every(requiredCookie => cookieArray.some(cookie => cookie.startsWith(requiredCookie + "=")));
-
-        if (!hasAllRequiredCookies) {
-            setError("Please make sure you have included all the required cookies.");
-            return;
-        }
-
-        onCookiesSubmit(cookies);
-        onClose();
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-gray-800 p-8 rounded-md shadow-md w-96">
-                <h2 className="text-2xl font-bold mb-4 text-white">Enter YouTube Cookies</h2>
-                <p className="text-gray-400 mb-4">To access your Home Feed, you need to provide your YouTube cookies. Please follow these steps:</p>
-                <ol className="text-gray-400 list-decimal pl-5 mb-4">
-                    <li>Log in to YouTube in your browser (Chrome, Firefox, etc.).</li>
-                    <li>Open your browser's developer tools (usually by pressing F12 or right-clicking and selecting "Inspect").</li>
-                    <li>Go to the "Application" or "Storage" tab (the name may vary depending on your browser).</li>
-                    <li>In the "Storage" section, find the "Cookies" section and select "youtube.com".</li>
-                    <li>
-                        You will see a list of cookies. Find the cookies with the following names: <code>__Secure-1PSIDCC</code>, <code>ST-3opvp5</code>, <code>SID</code>,{" "}
-                        <code>__Secure-1PAPISID</code>, <code>SAPISID</code>, <code>SIDCC</code>, <code>__Secure-3PSID</code>, <code>__Secure-1PSIDTS</code>, <code>HSID</code>,{" "}
-                        <code>__Secure-1PSID</code>, <code>__Secure-3PAPISID</code>, <code>__Secure-ROLLOUT_TOKEN</code>, <code>PREF</code>, <code>SSID</code>, <code>VISITOR_PRIVACY_METADATA</code>,{" "}
-                        <code>APISID</code>, <code>__Secure-3PSIDTS</code>, <code>VISITOR_INFO1_LIVE</code>, <code>__Secure-3PSIDCC</code>, <code>LOGIN_INFO</code>, <code>YSC</code>, <code>GPS</code>.
-                    </li>
-                    <li>
-                        Copy the <span className="font-bold">entire cookie string</span> from the "Value" column for each of these cookies.
-                    </li>
-                    <li>
-                        Paste all the copied cookie values into the text area below, separated by semicolons (<code>;</code>) and spaces. For example:{" "}
-                        <code>__Secure-1PSIDCC=value1; ST-3opvp5=value2; SID=value3</code>. <span className="font-bold">Make sure to include the cookie names and the equals signs.</span>
-                    </li>
-                </ol>
-                {error && <p className="text-red-500 mb-4">{error}</p>}
-                <textarea
-                    className="w-full px-4 py-2 rounded-md border border-gray-700 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-                    rows={4}
-                    placeholder="Paste your cookies here"
-                    value={cookies}
-                    onChange={e => setCookies(e.target.value)}
-                />
-                <div className="flex justify-end">
-                    <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md mr-2 focus:outline-none focus:shadow-outline" onClick={onClose}>
-                        Cancel
-                    </button>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline" onClick={handleSubmit}>
-                        Submit
-                    </button>
-                </div>
-            </div>
-        </div>
+  const handleSubmit = () => {
+    const cookieArray = cookies.split(';').map(cookie => cookie.trim());
+    const hasAllRequiredCookies = requiredCookies.every(requiredCookie =>
+      cookieArray.some(cookie => cookie.startsWith(requiredCookie + '='))
     );
+
+    if (!hasAllRequiredCookies) {
+      setError("Please make sure you have included all the required cookies.");
+      return;
+    }
+
+    onCookiesSubmit(cookies);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex items-center justify-center">
+      <div className="bg-gray-800 p-8 rounded-md shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-4 text-white">Enter YouTube Cookies</h2>
+        <p className="text-gray-400 mb-4">
+          To access your Home Feed, you need to provide your YouTube cookies. Please follow these steps:
+        </p>
+        <ol className="text-gray-400 list-decimal pl-5 mb-4">
+          <li>Log in to YouTube in your browser (Chrome, Firefox, etc.).</li>
+          <li>Open your browser's developer tools (usually by pressing F12 or right-clicking and selecting "Inspect").</li>
+          <li>Go to the "Application" or "Storage" tab (the name may vary depending on your browser).</li>
+          <li>In the "Storage" section, find the "Cookies" section and select "youtube.com".</li>
+          <li>You will see a list of cookies. Find the cookies with the following names: <code>__Secure-1PSIDCC</code>, <code>ST-3opvp5</code>, <code>SID</code>, <code>__Secure-1PAPISID</code>, <code>SAPISID</code>, <code>SIDCC</code>, <code>__Secure-3PSID</code>, <code>__Secure-1PSIDTS</code>, <code>HSID</code>, <code>__Secure-1PSID</code>, <code>__Secure-3PAPISID</code>, <code>__Secure-ROLLOUT_TOKEN</code>, <code>PREF</code>, <code>SSID</code>, <code>VISITOR_PRIVACY_METADATA</code>, <code>APISID</code>, <code>__Secure-3PSIDTS</code>, <code>VISITOR_INFO1_LIVE</code>, <code>__Secure-3PSIDCC</code>, <code>LOGIN_INFO</code>, <code>YSC</code>, <code>GPS</code>.</li>
+          <li>Copy the <span className="font-bold">entire cookie string</span> from the "Value" column for each of these cookies.</li>
+          <li>Paste all the copied cookie values into the text area below, separated by semicolons (<code>;</code>) and spaces. For example: <code>__Secure-1PSIDCC=value1; ST-3opvp5=value2; SID=value3</code>. <span className="font-bold">Make sure to include the cookie names and the equals signs.</span></li>
+        </ol>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <textarea
+          className="w-full px-4 py-2 rounded-md border border-gray-700 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+          rows={4}
+          placeholder="Paste your cookies here"
+          value={cookies}
+          onChange={(e) => setCookies(e.target.value)}
+        />
+        <div className="flex justify-end">
+          <button
+            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md mr-2 focus:outline-none focus:shadow-outline"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CookieModal;
