@@ -1,4 +1,0 @@
-content: (yt-dlx) package core codebase for npm using nodejs
-desktop: (yt-dlx) windows,linux,mac codebase using nextron
-mobile: (yt-dlx) android,ios,browser codebase using expo
-website: (yt-dlx) browser codebase using next.js
