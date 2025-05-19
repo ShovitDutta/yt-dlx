@@ -54,7 +54,7 @@ export default async function AudioVideoCustom({
     verbose,
     resolution,
     showProgress,
-}: AudioVideoCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
+}: AudioVideoCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
     try {
         ZodSchema.parse({ query, stream, output, useTor, filter, metadata, verbose, resolution, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
@@ -105,8 +105,8 @@ export default async function AudioVideoCustom({
         if (!engineData.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
         instance.addInput(engineData.BestAudioHigh.url);
         instance.withOutputFormat("matroska");
-        const targetHeight = parseInt(resolution.replace("p", ""), 10);
-        const vdata = engineData.ManifestHigh?.find((i: { height: number }) => i.height === targetHeight);
+        const resolutionWithoutP = resolution.replace("p", "");
+        const vdata = engineData.ManifestHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolutionWithoutP));
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
@@ -133,9 +133,6 @@ export default async function AudioVideoCustom({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
-            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
-            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
@@ -153,7 +150,7 @@ export default async function AudioVideoCustom({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            return { stream: passthroughStream, filename: filename };
+            return { stream: passthroughStream };
         } else {
             const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
