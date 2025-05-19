@@ -76,7 +76,7 @@ export default async function AudioLowest({
                     metaData: engineData.metaData,
                     BestAudioLow: engineData.BestAudioLow,
                     AudioLowDRC: engineData.AudioLowDRC,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_AudioLowest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 },
             };
         }
