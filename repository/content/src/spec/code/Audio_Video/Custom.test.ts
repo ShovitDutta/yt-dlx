@@ -57,7 +57,7 @@ vitest.describe("AudioVideoCustom", () => {
         });
     });
     vitest.it("should handle stream with filter", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "720p30", stream: true, filter: "flipVertical" });
+        const result = await AudioVideoCustom({ query, resolution: "720p60", stream: true, filter: "flipVertical" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
