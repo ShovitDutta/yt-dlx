@@ -79,7 +79,7 @@ export default async function AudioVideoCustom({
                     VideoHighHDR: engineData.VideoHighHDR,
                     ManifestLow: engineData.ManifestLow,
                     ManifestHigh: engineData.ManifestHigh,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                 },
             };
         }
