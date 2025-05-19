@@ -147,6 +147,9 @@ export default async function AudioHighest({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_AudioHighest_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
