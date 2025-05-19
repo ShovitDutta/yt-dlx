@@ -6,6 +6,7 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
+
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -13,6 +14,7 @@ function formatTime(seconds: number): string {
     const secs = Math.floor(seconds % 60);
     return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
 }
+
 function calculateETA(startTime: Date, percent: number): number {
     const currentTime = new Date();
     const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
@@ -21,6 +23,7 @@ function calculateETA(startTime: Date, percent: number): number {
     const remainingTime = totalTimeEstimate - elapsedTime;
     return remainingTime;
 }
+
 function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
     let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
     displayPercent = Math.min(Math.max(displayPercent, 0), 100);
@@ -32,6 +35,7 @@ function progbar({ percent, timemark, startTime }: { percent: number | undefined
     const etaFormatted = formatTime(etaSeconds);
     process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
 }
+
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -42,7 +46,22 @@ const ZodSchema = z.object({
     showProgress: z.boolean().optional(),
     filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
+
 type AudioVideoHighestOptions = z.infer<typeof ZodSchema>;
+
+interface MetadataResult {
+    metaData: any;
+    AudioHighF: any;
+    AudioHighDRC: any;
+    VideoHighF: any;
+    VideoHighHDR: any;
+    ManifestHigh: any;
+    filename: string;
+}
+
+type OutputPathResult = { outputPath: string };
+type StreamResult = { stream: Readable; filename: string };
+
 export default async function AudioVideoHighest({
     query,
     output,
@@ -52,7 +71,7 @@ export default async function AudioVideoHighest({
     metadata,
     verbose,
     showProgress,
-}: AudioVideoHighestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
+}: AudioVideoHighestOptions): Promise<MetadataResult | OutputPathResult | StreamResult> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, metadata, verbose, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
