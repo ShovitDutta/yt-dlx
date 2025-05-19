@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaSearch } from "react-icons/fa";
+import CookieModal from "./components/CookieModal";
 
 interface VideoType {
   type: string;
@@ -67,7 +68,7 @@ const SearchResults = ({ searchResults, isLoading }: { searchResults: VideoType[
         <h2 className="text-2xl font-bold mb-4 text-white">Search Results</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {searchResults.map((video) => (
-            <motion.div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
+            <div key={video.videoId} className="bg-gray-800 rounded-md shadow-md p-4">
               {video.thumbnails && video.thumbnails.length > 0 ? (
                 <Image src={video.thumbnails[0].url} alt={video.title} width={320} height={180} className="rounded-md mb-2" />
               ) : (
@@ -120,6 +121,15 @@ export default function Home() {
   const [homeFeed, setHomeFeed] = useState<VideoType[]>([]);
   const [isHomeFeedLoading, setIsHomeFeedLoading] = useState(true);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
+  const [cookies, setCookies] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedCookies = localStorage.getItem('youtubeCookies');
+    if (storedCookies) {
+      setCookies(storedCookies);
+    }
+  }, []);
 
   const handleSearch = useCallback(async (query: string) => {
     setIsSearchLoading(true);
@@ -137,7 +147,11 @@ export default function Home() {
   const handleGetHomeFeed = useCallback(async () => {
     setIsHomeFeedLoading(true);
     try {
-      const response = await fetch(`/api/Account/HomeFeed`);
+      const response = await fetch(`/api/Account/HomeFeed`, {
+        headers: {
+          'Cookie': cookies || ''
+        }
+      });
       const data = await response.json();
       setHomeFeed(data.result?.data?.Videos || []);
     } catch (error) {
@@ -145,18 +159,39 @@ export default function Home() {
     } finally {
       setIsHomeFeedLoading(false);
     }
-  }, []);
+  }, [cookies]);
+
+  const handleCookieSubmit = (newCookies: string) => {
+    setCookies(newCookies);
+    localStorage.setItem('youtubeCookies', newCookies);
+  };
 
   useEffect(() => {
-    handleGetHomeFeed();
-  }, [handleGetHomeFeed]);
+    if (cookies) {
+      handleGetHomeFeed();
+    }
+  }, [cookies, handleGetHomeFeed]);
 
   return (
     <div className="min-h-screen bg-gray-900 py-6 text-white">
       <div className="container mx-auto px-4">
         <SearchBar onSearch={handleSearch} />
         <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
-        <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} />
+        {cookies ? (
+          <HomeFeed homeFeed={homeFeed} isLoading={isHomeFeedLoading} />
+        ) : (
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline mb-4"
+            onClick={() => setIsCookieModalOpen(true)}
+          >
+            Enter YouTube Cookies
+          </button>
+        )}
+        <CookieModal
+          isOpen={isCookieModalOpen}
+          onClose={() => setIsCookieModalOpen(false)}
+          onCookiesSubmit={handleCookieSubmit}
+        />
       </div>
     </div>
   );
