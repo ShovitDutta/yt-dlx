@@ -28,27 +28,40 @@ const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const SearchBar = ({ onSearch, region, setRegion }: { region: string; onSearch: (query: string) => void; setRegion: (region: string) => void }) => {
-    const [searchQuery, setSearchQuery] = useState("");
+const SearchBar = ({
+    onSearch,
+    region,
+    setRegion,
+    query,
+    setQuery,
+}: {
+    region: string;
+    onSearch: (query: string) => void;
+    setRegion: (region: string) => void;
+    query: string;
+    setQuery: (query: string) => void;
+}) => {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
+
     const handleSearch = () => {
-        if (searchQuery.trim()) onSearch(searchQuery);
+        if (query.trim()) onSearch(query);
     };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") handleSearch();
     };
+
     return (
-        <motion.div className="mb-8 sticky top-0 z-10 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div className="mb-8 sticky top-0 z-50 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <GlassCard className="p-2 rounded-3xl border-2 border-red-800">
                 <div className="flex items-center">
                     <div className="relative flex-grow">
-                        <motion.div className="absolute inset-0 rounded-l-md" animate={{ boxShadow: isSearchFocused ? "0 0 0 2px rgba(255, 0, 0, 0.5)" : "none" }} />
                         <input
                             type="text"
-                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none"
+                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none focus:ring-2 focus:ring-red-500" // Added focus ring
                             placeholder="Search videos..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
                             onFocus={() => setIsSearchFocused(true)}
                             onBlur={() => setIsSearchFocused(false)}
                             onKeyDown={handleKeyDown}
@@ -181,14 +194,19 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
                 </motion.div>
             ) : (
                 searchResults.length > 0 && (
-                    <motion.div className="mb-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                    <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
                         <GlassCard className="p-6">
                             <motion.h2 className="text-2xl font-bold mb-6 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
                                 <FaSearch className="mr-2" /> Search Results
                             </motion.h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Adjusted grid to span across two rows with a fixed height and overflow-x-auto */}
+                            <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
                                 {searchResults.map(video => {
-                                    return <VideoCard key={video.videoId} video={video} />;
+                                    return (
+                                        <div key={video.videoId} className="flex-shrink-0 w-64">
+                                            <VideoCard video={video} />
+                                        </div>
+                                    );
                                 })}
                             </div>
                         </GlassCard>
@@ -308,48 +326,45 @@ export default function Home() {
         ],
         [region],
     );
-    const handleSearch = useCallback(
-        async (query: string) => {
-            setIsSearchLoading(true);
-            setSearchQuery(query);
-            try {
-                const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                setSearchResults(data.result);
-            } catch (error) {
-                console.error("Error searching videos:", error);
-            } finally {
-                setIsSearchLoading(false);
-            }
-        },
-        [setIsSearchLoading, setSearchQuery, setSearchResults, searchQuery],
-    );
-    const fetchSectionVideos = useCallback(
-        async (section: ContentSection) => {
-            setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
-            try {
-                const response = await fetch(section.endpoint);
-                const data = await response.json();
-                setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
-            } catch (error) {
-                console.error(`Error fetching videos for ${section.title}:`, error);
-            } finally {
-                setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
-            }
-        },
-        [region, setSectionsLoading, setSectionVideos],
-    );
+    const handleSearch = useCallback(async (query: string) => {
+        setIsSearchLoading(true);
+        setSearchQuery(query);
+        try {
+            const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            setSearchResults(data.result);
+        } catch (error) {
+            console.error("Error searching videos:", error);
+        } finally {
+            setIsSearchLoading(false);
+        }
+    }, []);
+    const fetchSectionVideos = useCallback(async (section: ContentSection) => {
+        setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
+        try {
+            const response = await fetch(section.endpoint);
+            const data = await response.json();
+            setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
+        } catch (error) {
+            console.error(`Error fetching videos for ${section.title}:`, error);
+        } finally {
+            setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
+        }
+    }, []);
     useEffect(() => {
-        contentSections.forEach(section => fetchSectionVideos(section));
+        contentSections.forEach((section, index) => {
+            setTimeout(() => {
+                fetchSectionVideos(section);
+            }, index * 100);
+        });
     }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
             <div className="fixed inset-0 bg-red-900/10 pointer-events-none" />
-            <div className="fixed inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none" />
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
-                    <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} />
+                    <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
                         <VideoSection
@@ -366,4 +381,3 @@ export default function Home() {
         </div>
     );
 }
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
