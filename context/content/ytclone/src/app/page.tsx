@@ -91,7 +91,7 @@ export default function Home() {
     const handleSearch = useCallback(async (query: string) => {
         setIsSearchLoading(true);
         try {
-            const response = await fetch(`/api/Search/Video/Multiple?query=${query}`);
+            const response = await fetch("/api/Search/Video/Multiple?query=" + query);
             const data = await response.json();
             setSearchResults(data.result);
         } catch (error) {
