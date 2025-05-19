@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 
 export default function Home() {
