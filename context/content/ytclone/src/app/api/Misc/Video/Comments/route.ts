@@ -1,0 +1,21 @@
+import YouTubeDLX from 'yt-dlx';
+import { NextResponse, NextRequest } from 'next/server';
+
+export async function GET(req: NextRequest) {
+  try {
+    const videoId = req.nextUrl.searchParams.get('videoId');
+
+    // Ensure videoId is provided
+    if (!videoId) {
+      return NextResponse.json({ error: 'Video ID is required' }, { status: 400 });
+    }
+
+    // Call the YouTubeDLX.Misc.Video.Comments function to get video comments
+    const result = await YouTubeDLX.Misc.Video.Comments({ query: videoId });
+    return NextResponse.json({ result: result }, { status: 200 });
+
+  } catch (error: any) {
+    console.error(error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
