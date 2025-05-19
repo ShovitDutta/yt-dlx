@@ -140,6 +140,9 @@ export default async function AudioVideoLowest({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_AudioVideoLowest_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
