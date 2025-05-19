@@ -28,11 +28,13 @@ vitest.describe("AudioVideoLowest", () => {
     vitest.it("should fetch metadata only", async () => {
         const result = await AudioVideoLowest({ query, metadata: true });
         vitest.expect(result).toHaveProperty("metadata");
-        vitest.expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
+        vitest.expect((result as { metadata: any }).metadata).toBeInstanceOf(Object);
+        vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should fetch metadata with Tor and verbose", async () => {
         const result = await AudioVideoLowest({ query, metadata: true, useTor: false, verbose: true });
         vitest.expect(result).toHaveProperty("metadata");
+        vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should handle basic stream", async () => {
         const result = await AudioVideoLowest({ query, stream: true });
