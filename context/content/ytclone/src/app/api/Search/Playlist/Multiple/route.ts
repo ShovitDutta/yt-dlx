@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Playlist link is required' }, { status: 400 });
     }
 
+    const decodedPlaylistLink = decodeURIComponent(playlistLink);
+
     let options = {};
     if (optionsString) {
       try {
@@ -21,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Call the YouTubeDLX.Search.Playlist.Multiple function to search for playlists
-    const result = await YouTubeDLX.Search.Playlist.Multiple({ playlistLink: playlistLink, ...options });
+    const result = await YouTubeDLX.Search.Playlist.Multiple({ playlistLink: decodedPlaylistLink, ...options });
     return NextResponse.json({ result: result }, { status: 200 });
 
   } catch (error: any) {
