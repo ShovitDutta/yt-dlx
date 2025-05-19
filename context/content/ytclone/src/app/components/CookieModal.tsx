@@ -9,21 +9,8 @@ interface CookieModalProps {
 
 const CookieModal: React.FC<CookieModalProps> = ({ isOpen, onClose, onCookiesSubmit }) => {
   const [cookies, setCookies] = useState('');
-  const [error, setError] = useState('');
-
-  const requiredCookies = ["__Secure-1PSIDCC", "ST-3opvp5", "SID", "__Secure-1PAPISID", "SAPISID", "SIDCC", "__Secure-3PSID", "__Secure-1PSIDTS", "HSID", "__Secure-1PSID", "__Secure-3PAPISID", "__Secure-ROLLOUT_TOKEN", "PREF", "SSID", "VISITOR_PRIVACY_METADATA", "APISID", "__Secure-3PSIDTS", "VISITOR_INFO1_LIVE", "__Secure-3PSIDCC", "LOGIN_INFO", "YSC", "GPS"];
 
   const handleSubmit = () => {
-    const cookieArray = cookies.split(';').map(cookie => cookie.trim());
-    const hasAllRequiredCookies = requiredCookies.every(requiredCookie =>
-      cookieArray.some(cookie => cookie.startsWith(requiredCookie + '='))
-    );
-
-    if (!hasAllRequiredCookies) {
-      setError("Please make sure you have included all the required cookies.");
-      return;
-    }
-
     onCookiesSubmit(cookies);
     onClose();
   };
@@ -38,15 +25,13 @@ const CookieModal: React.FC<CookieModalProps> = ({ isOpen, onClose, onCookiesSub
           To access your Home Feed, you need to provide your YouTube cookies. Please follow these steps:
         </p>
         <ol className="text-gray-400 list-decimal pl-5 mb-4">
-          <li>Log in to YouTube in your browser (Chrome, Firefox, etc.).</li>
-          <li>Open your browser's developer tools (usually by pressing F12 or right-clicking and selecting "Inspect").</li>
-          <li>Go to the "Application" or "Storage" tab (the name may vary depending on your browser).</li>
-          <li>In the "Storage" section, find the "Cookies" section and select "youtube.com".</li>
-          <li>You will see a list of cookies. Find the cookies with the following names: <code>__Secure-1PSIDCC</code>, <code>ST-3opvp5</code>, <code>SID</code>, <code>__Secure-1PAPISID</code>, <code>SAPISID</code>, <code>SIDCC</code>, <code>__Secure-3PSID</code>, <code>__Secure-1PSIDTS</code>, <code>HSID</code>, <code>__Secure-1PSID</code>, <code>__Secure-3PAPISID</code>, <code>__Secure-ROLLOUT_TOKEN</code>, <code>PREF</code>, <code>SSID</code>, <code>VISITOR_PRIVACY_METADATA</code>, <code>APISID</code>, <code>__Secure-3PSIDTS</code>, <code>VISITOR_INFO1_LIVE</code>, <code>__Secure-3PSIDCC</code>, <code>LOGIN_INFO</code>, <code>YSC</code>, <code>GPS</code>.</li>
-          <li>Copy the <span className="font-bold">entire cookie string</span> from the "Value" column for each of these cookies.</li>
-          <li>Paste all the copied cookie values into the text area below, separated by semicolons (<code>;</code>) and spaces. For example: <code>__Secure-1PSIDCC=value1; ST-3opvp5=value2; SID=value3</code>. <span className="font-bold">Make sure to include the cookie names and the equals signs.</span></li>
+          <li>Log in to YouTube in your browser.</li>
+          <li>Open your browser's developer tools (usually by pressing F12).</li>
+          <li>Go to the "Application" or "Storage" tab.</li>
+          <li>Find the "Cookies" section for YouTube.</li>
+          <li>Copy the values of the following cookies: <code>__Secure-1PSIDCC</code>, <code>ST-3opvp5</code>, <code>SID</code>, <code>__Secure-1PAPISID</code>, <code>SAPISID</code>, <code>SIDCC</code>, <code>__Secure-3PSID</code>, <code>__Secure-1PSIDTS</code>, <code>HSID</code>, <code>__Secure-1PSID</code>, <code>__Secure-3PAPISID</code>, <code>__Secure-ROLLOUT_TOKEN</code>, <code>PREF</code>, <code>SSID</code>, <code>VISITOR_PRIVACY_METADATA</code>, <code>APISID</code>, <code>__Secure-3PSIDTS</code>, <code>VISITOR_INFO1_LIVE</code>, <code>__Secure-3PSIDCC</code>, <code>LOGIN_INFO</code>, <code>YSC</code>, <code>GPS</code>.</li>
+          <li>Paste the cookies string below.</li>
         </ol>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
         <textarea
           className="w-full px-4 py-2 rounded-md border border-gray-700 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
           rows={4}
