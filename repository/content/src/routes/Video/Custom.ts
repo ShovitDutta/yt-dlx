@@ -124,10 +124,9 @@ export default async function VideoCustom({
         });
 
         if (!vdata) {
-            throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
         }
         if (!vdata.url) {
-            throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
+            throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}`);
         }
         instance.addInput(vdata.url.toString());
         instance.withOutputFormat("mp4");
