@@ -77,7 +77,7 @@ export default async function AudioVideoLowest({
                     BestVideoLow: engineData.BestVideoLow,
                     VideoLowHDR: engineData.VideoLowHDR,
                     ManifestLow: engineData.ManifestLow,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_AudioVideoLowest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                 },
             };
         }
