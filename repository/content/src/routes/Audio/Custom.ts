@@ -6,6 +6,7 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
+import type { VideoMetaData } from "../../interfaces/VideoMetaData";
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -56,7 +57,7 @@ export default async function AudioCustom({
     metadata,
     resolution,
     showProgress,
-}: AudioCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
+}: AudioCustomOptions): Promise<{ metadata: VideoMetaData } | { outputPath: string } | { stream: Readable; filename: string }> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, verbose, metadata, resolution, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
@@ -74,14 +75,12 @@ export default async function AudioCustom({
         }
         if (metadata) {
             return {
-                metadata: {
-                    metaData: engineData.metaData,
-                    BestAudioLow: engineData.BestAudioLow,
-                    BestAudioHigh: engineData.BestAudioHigh,
-                    AudioLowDRC: engineData.AudioLowDRC,
-                    AudioHighDRC: engineData.AudioHighDRC,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
-                },
+                ...engineData.metaData,
+                BestAudioLow: engineData.BestAudioLow,
+                BestAudioHigh: engineData.BestAudioHigh,
+                AudioLowDRC: engineData.AudioLowDRC,
+                AudioHighDRC: engineData.AudioHighDRC,
+                filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
             };
         }
         const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
@@ -155,6 +154,9 @@ export default async function AudioCustom({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
+            const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
@@ -172,7 +174,7 @@ export default async function AudioCustom({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            return { stream: passthroughStream };
+            return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;

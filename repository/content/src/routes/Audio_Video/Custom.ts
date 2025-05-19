@@ -5,6 +5,7 @@ import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import ytdlx from "../../utils/Agent";
 import { locator } from "../../utils/locator";
+y;
 import { Readable, PassThrough } from "stream";
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
@@ -107,7 +108,7 @@ export default async function AudioVideoCustom({
         instance.withOutputFormat("matroska");
         const targetHeight = parseInt(resolution.replace("p", ""), 10);
         // Search for the video format in all formats instead of just ManifestHigh
-        const vdata = engineData.allFormats?.find((i: any) => i.height === targetHeight && i.vcodec !== 'none');
+        const vdata = engineData.allFormats?.find((i: any) => i.height === targetHeight && i.vcodec !== "none");
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
