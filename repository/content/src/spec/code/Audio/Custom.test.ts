@@ -5,7 +5,7 @@ import * as vitest from "vitest";
 vitest.describe("AudioCustom", () => {
     const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     vitest.it("should handle basic download", async () => {
-        const result = await AudioCustom({ query, resolution: "720p60" });
+        const result = await AudioCustom({ query, resolution: "high" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
