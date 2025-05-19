@@ -31,7 +31,7 @@ function progbar({ percent, timemark, startTime }: { percent: number | undefined
     const width = Math.floor((process.stdout.columns || 80) / 4);
     const scomp = Math.round((width * displayPercent) / 100);
     const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
-    const etaSeconds = calculateETA(startTime, displayPercent);
+    const etaSeconds = calculateETA(startTime, percent);
     const etaFormatted = formatTime(etaSeconds);
     process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
 }
@@ -87,20 +87,24 @@ export default async function AudioVideoHighest({
         if (!engineData.metaData) {
             throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
         }
-        if (metadata) {
-            return {
-                metadata: {
-                    metaData: engineData.metaData,
-                    AudioHighF: engineData.AudioHighF,
-                    AudioHighDRC: engineData.AudioHighDRC,
-                    VideoHighF: engineData.VideoHighF,
-                    VideoHighHDR: engineData.VideoHighHDR,
-                    ManifestHigh: engineData.ManifestHigh,
-                    filename: `yt-dlx_AudioVideoHighest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                },
-            };
-        }
+
         const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const filenameBase = `yt-dlx_AudioVideoHighest_`;
+        let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
+
+        if (metadata) {
+            const metadataResult: MetadataResult = {
+                metaData: engineData.metaData,
+                AudioHighF: engineData.AudioHighF,
+                AudioHighDRC: engineData.AudioHighDRC,
+                VideoHighF: engineData.VideoHighF,
+                VideoHighHDR: engineData.VideoHighHDR,
+                ManifestHigh: engineData.ManifestHigh,
+                filename: filename,
+            };
+            return metadataResult;
+        }
+
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -159,8 +163,6 @@ export default async function AudioVideoHighest({
         }
         if (stream) {
             const passthroughStream = new PassThrough();
-            const filenameBase = `yt-dlx_AudioVideoHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
@@ -179,10 +181,9 @@ export default async function AudioVideoHighest({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            return { stream: passthroughStream, filename: filename };
+            const streamResult: StreamResult = { stream: passthroughStream, filename: filename };
+            return streamResult;
         } else {
-            const filenameBase = `yt-dlx_AudioVideoHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, filename);
             instance.output(outputPath);
             await new Promise<void>((resolve, reject) => {
