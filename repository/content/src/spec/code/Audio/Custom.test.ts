@@ -34,7 +34,9 @@ vitest.describe("AudioCustom", () => {
     vitest.it("should handle basic stream", async () => {
         const result = await AudioCustom({ query, resolution: "low", stream: true });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("basic_stream_audiocustom.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -44,7 +46,9 @@ vitest.describe("AudioCustom", () => {
     vitest.it("should handle stream with filter", async () => {
         const result = await AudioCustom({ query, resolution: "medium", stream: true, filter: "vaporwave" });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("filtered_stream_audiocustom.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
