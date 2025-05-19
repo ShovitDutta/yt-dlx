@@ -75,12 +75,12 @@
     },
     "scripts": {
         "test": "vitest",
-        "make": "yarn install --frozen-lockfile",
-        "package": "pkg . --output yt-dlx-standalone",
-        "prepublishOnly": "rimraf package && yarn build",
-        "postinstall": "node postdeps.mjs && shx chmod -R +x .",
-        "test:quick": "yarn build && node package/cjs/src/spec/quick.spec.js",
-        "test:express": "yarn build && node package/cjs/src/spec/express.spec.js",
-        "build": "rimraf package/cjs package/esm package/types && tsc -p ./src/config/cjs.json && tsc -p ./src/config/esm.json && tsc -p ./src/config/types.json"
+        "make": "bun install --frozen-lockfile",
+        "package": "bun run pkg . --output yt-dlx-standalone",
+        "prepublishOnly": "bun run rimraf package && bun run build",
+        "postinstall": "bun postdeps.mjs && bun run shx chmod -R +x .",
+        "test:quick": "bun run build && bun package/cjs/src/spec/quick.spec.js",
+        "test:express": "bun run build && bun package/cjs/src/spec/express.spec.js",
+        "build": "bun run rimraf package/cjs package/esm package/types && bun run tsc -p ./src/config/cjs.json && bun run tsc -p ./src/config/esm.json && bun run tsc -p ./src/config/types.json"
     }
 }
