@@ -29,7 +29,7 @@
         "socket.io": "^4.8.1",
         "socket.io-client": "^4.8.1",
         "tsup": "^8.5.0",
-        "yt-dlx": "^18.0.0"
+        "yt-dlx": "^19.0.1"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4",
