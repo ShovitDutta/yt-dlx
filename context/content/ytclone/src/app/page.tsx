@@ -10,12 +10,12 @@ interface VideoType {
     description: string;
     thumbnails: any[];
     authorId: string;
-    authorName: string;
-    authorThumbnails: any[];
-    authorBadges: any[];
     authorUrl: string;
     viewCount: string;
+    authorName: string;
+    authorBadges: any[];
     shortViewCount: string;
+    authorThumbnails: any[];
 }
 const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
     const [searchQuery, setSearchQuery] = useState("");
