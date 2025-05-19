@@ -52,7 +52,7 @@ export default async function AudioVideoLowest({
     metadata,
     verbose,
     showProgress,
-}: AudioVideoLowestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
+}: AudioVideoLowestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, metadata, verbose, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
