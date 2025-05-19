@@ -49,7 +49,7 @@ vitest.describe("VideoCustom", () => {
         });
     });
     vitest.it("should handle stream with filter", async () => {
-        const result = await VideoCustom({ query, resolution: "480p", stream: true, filter: "invert" });
+        const result = await VideoCustom({ query, resolution: "720p", stream: true, filter: "invert" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
