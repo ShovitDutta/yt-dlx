@@ -3,9 +3,9 @@ import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
 vitest.describe("VideoHighest", () => {
-    const query = "https://youtu.be/dQw4w9WgXcQ";
+    const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     vitest.it("should handle basic download", async () => {
-        const result = await VideoHighest({ query });
+        const result = await VideoHighest({ query, resolution: "720p60" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mp4$/);
