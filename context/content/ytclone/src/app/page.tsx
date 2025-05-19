@@ -103,7 +103,7 @@ export default function Home() {
     const handleGetHomeFeed = useCallback(async () => {
         setIsHomeFeedLoading(true);
         try {
-            const response = await fetch(`/api/Account/HomeFeed`);
+            const response = await fetch("/api/Account/HomeFeed");
             const data = await response.json();
             setHomeFeed(data.result?.data?.Videos || []);
         } catch (error) {
