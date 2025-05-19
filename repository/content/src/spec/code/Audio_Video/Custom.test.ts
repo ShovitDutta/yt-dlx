@@ -37,11 +37,13 @@ vitest.describe("AudioVideoCustom", () => {
     vitest.it("should fetch metadata only", async () => {
         const result = await AudioVideoCustom({ query, resolution, metadata: true });
         vitest.expect(result).toHaveProperty("metadata");
-        vitest.expect((result as { metadata: object }).metadata).toBeInstanceOf(Object);
+        vitest.expect((result as { metadata: any }).metadata).toBeInstanceOf(Object);
+        vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should fetch metadata with Tor and verbose", async () => {
         const result = await AudioVideoCustom({ query, resolution, metadata: true, useTor: false, verbose: true });
         vitest.expect(result).toHaveProperty("metadata");
+        vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
     });
     vitest.it("should handle basic stream", async () => {
         const result = await AudioVideoCustom({ query, resolution: "480p", stream: true });
