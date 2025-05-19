@@ -167,7 +167,7 @@ export default async function AudioLowest({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            return { stream: passthroughStream };
+            return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioLowest_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
