@@ -1,3 +1,5 @@
+// Suggestion: Add integrity checks (e.g., SHA256 hashes) to verify the downloaded binaries to prevent potential security issues.
+// Consider using a more robust error handling mechanism, such as logging errors to a file or using a dedicated error tracking service.
 import axios from "axios";
 import colors from "colors";
 import { join } from "path";

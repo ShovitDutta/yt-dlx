@@ -1,3 +1,4 @@
+// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return value. Also, consider making the progress bar more configurable, allowing users to customize the colors, width, and symbols used. The `baseTime` parameter is not used, so it should be removed.
 import colors from "colors";
 import formatTime from "./formatTime";
 import calculateETA from "./calculateETA";

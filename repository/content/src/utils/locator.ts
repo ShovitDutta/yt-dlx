@@ -1,3 +1,4 @@
+// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, consider adding more robust error handling and logging to help diagnose issues with locating the executables. The `getBinaryPath` function could also benefit from JSDoc comments.
 import colors from "colors";
 import * as path from "path";
 import * as fsx from "fs-extra";

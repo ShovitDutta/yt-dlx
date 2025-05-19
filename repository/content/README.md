@@ -1,3 +1,4 @@
+<!-- Suggestion: Add a section on contributing guidelines, detailing how developers can contribute to the project, including coding standards, pull request process, and issue reporting. Consider adding a table of contents for easier navigation. -->
 <div style="text-align: center;">
     <video src="/showcase.mp4" autoplay loop muted style="max-width: 100%; height: auto;"></video>
 </div>

@@ -1,3 +1,4 @@
+// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return value.
 export default function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     var hours = Math.floor(seconds / 3600);

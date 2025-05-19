@@ -1,3 +1,4 @@
+// Suggestion: Add JSDoc comments to each property of the interface to provide more context and explain the meaning of each field.
 export interface CommentType {
     comment_id: string;
     is_pinned: boolean;

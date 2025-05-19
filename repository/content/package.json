@@ -1,3 +1,4 @@
+# Suggestion: Add a `lint` script and configure a linter like ESLint to enforce code style and catch potential errors. Consider using environment variables for sensitive information instead of hardcoding them in the application.
 {
     "name": "yt-dlx",
     "version": "19.0.1",
