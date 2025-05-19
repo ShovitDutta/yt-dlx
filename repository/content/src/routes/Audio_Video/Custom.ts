@@ -54,7 +54,7 @@ export default async function AudioVideoCustom({
     verbose,
     resolution,
     showProgress,
-}: AudioVideoCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
+}: AudioVideoCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
     try {
         ZodSchema.parse({ query, stream, output, useTor, filter, metadata, verbose, resolution, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
