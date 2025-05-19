@@ -75,7 +75,7 @@ export default async function VideoLowest({
                     BestVideoLow: engineData.BestVideoLow,
                     VideoLowHDR: engineData.VideoLowHDR,
                     ManifestLow: engineData.ManifestLow,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_VideoLowest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mp4`,
                 },
             };
         }
