@@ -151,7 +151,6 @@ export default function Home() {
                         Enter YouTube Cookies
                     </button>
                 )}
-                <CookieModal isOpen={isCookieModalOpen} onClose={() => setIsCookieModalOpen(false)} onCookiesSubmit={handleCookieSubmit} />
             </div>
         </div>
     );
