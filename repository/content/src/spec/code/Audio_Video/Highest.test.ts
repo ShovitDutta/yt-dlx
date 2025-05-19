@@ -39,7 +39,9 @@ vitest.describe("AudioVideoHighest", () => {
     vitest.it("should handle basic stream", async () => {
         const result = await AudioVideoHighest({ query, stream: true });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("basic_stream_avhigh.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -49,7 +51,9 @@ vitest.describe("AudioVideoHighest", () => {
     vitest.it("should handle stream with filter", async () => {
         const result = await AudioVideoHighest({ query, stream: true, filter: "rotate90" });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("filtered_stream_avhigh.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
@@ -59,7 +63,9 @@ vitest.describe("AudioVideoHighest", () => {
     vitest.it("should handle stream with all options", async () => {
         const result = await AudioVideoHighest({ query, stream: true, useTor: false, verbose: true, filter: "rotate270", showProgress: true });
         vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("filename");
         vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        vitest.expect((result as { filename: string }).filename).toBeTypeOf("string");
         const outputStream = createWriteStream("full_stream_avhigh.avi");
         (result as { stream: Readable }).stream?.pipe(outputStream);
         await new Promise(resolve => {
