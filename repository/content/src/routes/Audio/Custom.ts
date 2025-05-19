@@ -80,7 +80,7 @@ export default async function AudioCustom({
                     BestAudioHigh: engineData.BestAudioHigh,
                     AudioLowDRC: engineData.AudioLowDRC,
                     AudioHighDRC: engineData.AudioHighDRC,
-                    filename: engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_"),
+                    filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 },
             };
         }
