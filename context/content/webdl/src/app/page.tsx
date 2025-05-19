@@ -240,7 +240,7 @@ const VideoSection = ({ title, message, icon, videos, isLoading, lastVideoElemen
                             <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
                                 {message}
                             </motion.p>
-                            <div className="flex flex-wrap h-80 overflow-x-auto gap-6">
+                            <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
                                 {videos.map((video, index) => {
                                     if (videos.length === index + 1 && lastVideoElementRef) {
                                         return (
