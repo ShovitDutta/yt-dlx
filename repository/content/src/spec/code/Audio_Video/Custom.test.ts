@@ -75,7 +75,7 @@ vitest.describe("AudioVideoCustom", () => {
             useTor: false,
             verbose: true,
             showProgress: true,
-            resolution: "1080p30",
+            resolution: "720p60",
             filter: "rotate270",
         });
         vitest.expect(result).toHaveProperty("stream");
