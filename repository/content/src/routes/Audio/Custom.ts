@@ -6,7 +6,6 @@ import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
-import type { VideoMetaData } from "../../interfaces/VideoMetaData";
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
     const hours = Math.floor(seconds / 3600);
@@ -57,7 +56,7 @@ export default async function AudioCustom({
     metadata,
     resolution,
     showProgress,
-}: AudioCustomOptions): Promise<{ metadata: VideoMetaData } | { outputPath: string } | { stream: Readable; filename: string }> {
+}: AudioCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, verbose, metadata, resolution, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
@@ -75,12 +74,14 @@ export default async function AudioCustom({
         }
         if (metadata) {
             return {
-                ...engineData.metaData,
-                BestAudioLow: engineData.BestAudioLow,
-                BestAudioHigh: engineData.BestAudioHigh,
-                AudioLowDRC: engineData.AudioLowDRC,
-                AudioHighDRC: engineData.AudioHighDRC,
-                filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                metadata: {
+                    metaData: engineData.metaData,
+                    BestAudioLow: engineData.BestAudioLow,
+                    BestAudioHigh: engineData.BestAudioHigh,
+                    AudioLowDRC: engineData.AudioLowDRC,
+                    AudioHighDRC: engineData.AudioHighDRC,
+                    filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                },
             };
         }
         const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";

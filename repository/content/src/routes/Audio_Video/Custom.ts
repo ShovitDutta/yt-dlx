@@ -5,7 +5,6 @@ import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import ytdlx from "../../utils/Agent";
 import { locator } from "../../utils/locator";
-y;
 import { Readable, PassThrough } from "stream";
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
