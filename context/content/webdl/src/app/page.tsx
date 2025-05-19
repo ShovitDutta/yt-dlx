@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, memo } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper } from "react-icons/fa";
 interface VideoType {
     type: string;
@@ -22,9 +22,9 @@ interface GlassCardProps {
     children: React.ReactNode;
     className?: string;
 }
-const GlassCard = ({ children, className = "" }: GlassCardProps) => (
+const GlassCard = memo(({ children, className = "" }: GlassCardProps) => (
     <div className={`bg-neutral-900/60 backdrop-blur-lg rounded-xl shadow-lg border border-neutral-900/50 ${className}`}>{children}</div>
-);
+));
 interface SearchBarProps {
     onSearch: (query: string) => void;
     region: string;
@@ -99,17 +99,17 @@ interface SidebarItemProps {
     text: string;
     active?: boolean;
 }
-const SidebarItem = ({ icon, text, active = false }: SidebarItemProps) => {
+const SidebarItem = memo(({ icon, text, active = false }: SidebarItemProps) => {
     return (
         <motion.div className={`flex items-center w-full p-2 rounded-lg cursor-pointer ${active ? "bg-red-600/40" : "hover:bg-neutral-900/50"}`} whileHover={{ scale: 1.05 }}>
             <div className="text-xl text-orange-300 flex justify-center lg:justify-start w-full lg:w-auto">{icon}</div> <span className="hidden lg:block ml-3 text-orange-300">{text}</span>
         </motion.div>
     );
-};
+});
 interface VideoCardProps {
     video: VideoType;
 }
-const VideoCard = ({ video }: VideoCardProps) => {
+const VideoCard = memo(({ video }: VideoCardProps) => {
     const [isHovered, setIsHovered] = useState(false);
     return (
         <motion.div
@@ -175,13 +175,13 @@ const VideoCard = ({ video }: VideoCardProps) => {
             )}
         </motion.div>
     );
-};
+});
 interface SearchResultsProps {
     searchResults: VideoType[];
     isLoading: boolean;
     lastVideoElementRef: React.Ref<HTMLDivElement>;
 }
-const SearchResults = ({ searchResults, isLoading, lastVideoElementRef }: SearchResultsProps) => {
+const SearchResults = memo(({ searchResults, isLoading, lastVideoElementRef }: SearchResultsProps) => {
     return (
         <AnimatePresence>
             {isLoading && searchResults.length === 0 ? (
@@ -214,7 +214,7 @@ const SearchResults = ({ searchResults, isLoading, lastVideoElementRef }: Search
             )}
         </AnimatePresence>
     );
-};
+});
 interface VideoSectionProps {
     title: string;
     message: string;
@@ -223,7 +223,7 @@ interface VideoSectionProps {
     isLoading: boolean;
     lastVideoElementRef?: React.Ref<HTMLDivElement>;
 }
-const VideoSection = ({ title, message, icon, videos, isLoading, lastVideoElementRef }: VideoSectionProps) => {
+const VideoSection = memo(({ title, message, icon, videos, isLoading, lastVideoElementRef }: VideoSectionProps) => {
     return (
         <AnimatePresence>
             {isLoading ? (
@@ -263,10 +263,10 @@ const VideoSection = ({ title, message, icon, videos, isLoading, lastVideoElemen
             )}
         </AnimatePresence>
     );
-};
-const LoadingSpinner = () => (
+});
+const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
-);
+));
 interface ContentSection {
     id: string;
     title: string;
@@ -283,30 +283,39 @@ export default function Home() {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const contentSections: ContentSection[] = [
-        { id: "trending", title: "Trending", message: `Today's Trending in ${region}`, endpoint: `/api/Trending?region=${encodeURIComponent(region)}`, icon: <FaFire className="mr-2 text-red-500" /> },
-        {
-            id: "music",
-            title: "Music Hits",
-            message: `Most popular music videos in ${region}`,
-            endpoint: `/api/Search/Video/Multiple?query=music&region=${encodeURIComponent(region)}`,
-            icon: <FaMusic className="mr-2 text-red-500" />,
-        },
-        {
-            id: "gaming",
-            title: "Gaming",
-            message: `Top gaming content in ${region}`,
-            endpoint: `/api/Search/Video/Multiple?query=gaming&region=${encodeURIComponent(region)}`,
-            icon: <FaGamepad className="mr-2 text-yellow-500" />,
-        },
-        {
-            id: "news",
-            title: "Latest News",
-            message: `Breaking news in ${region}`,
-            endpoint: `/api/Search/Video/Multiple?query=news&region=${encodeURIComponent(region)}`,
-            icon: <FaNewspaper className="mr-2 text-orange-500" />,
-        },
-    ];
+    const contentSections: ContentSection[] = useMemo(
+        () => [
+            {
+                id: "trending",
+                title: "Trending",
+                message: `Today's Trending in ${region}`,
+                endpoint: `/api/Trending?region=${encodeURIComponent(region)}`,
+                icon: <FaFire className="mr-2 text-red-500" />,
+            },
+            {
+                id: "music",
+                title: "Music Hits",
+                message: `Most popular music videos in ${region}`,
+                endpoint: `/api/Search/Video/Multiple?query=music&region=${encodeURIComponent(region)}`,
+                icon: <FaMusic className="mr-2 text-red-500" />,
+            },
+            {
+                id: "gaming",
+                title: "Gaming",
+                message: `Top gaming content in ${region}`,
+                endpoint: `/api/Search/Video/Multiple?query=gaming&region=${encodeURIComponent(region)}`,
+                icon: <FaGamepad className="mr-2 text-yellow-500" />,
+            },
+            {
+                id: "news",
+                title: "Latest News",
+                message: `Breaking news in ${region}`,
+                endpoint: `/api/Search/Video/Multiple?query=news&region=${encodeURIComponent(region)}`,
+                icon: <FaNewspaper className="mr-2 text-orange-500" />,
+            },
+        ],
+        [region],
+    );
     const observer = useRef<IntersectionObserver | null>(null);
     const lastVideoElementRef = useCallback(
         (node: HTMLDivElement | null) => {
@@ -323,22 +332,25 @@ export default function Home() {
     );
     const loadMoreVideos = useCallback(() => {
         setPage(prevPage => prevPage + 1);
-    }, []);
-    const handleSearch = useCallback(async (query: string) => {
-        setIsSearchLoading(true);
-        setPage(1);
-        setSearchQuery(query);
-        try {
-            const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}&page=1`);
-            const data = await response.json();
-            setSearchResults(data.result);
-            setHasMore(data.result.length > 0);
-        } catch (error) {
-            console.error("Error searching videos:", error);
-        } finally {
-            setIsSearchLoading(false);
-        }
-    }, []);
+    }, [setPage]);
+    const handleSearch = useCallback(
+        async (query: string) => {
+            setIsSearchLoading(true);
+            setPage(1);
+            setSearchQuery(query);
+            try {
+                const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}&page=1`);
+                const data = await response.json();
+                setSearchResults(data.result);
+                setHasMore(data.result.length > 0);
+            } catch (error) {
+                console.error("Error searching videos:", error);
+            } finally {
+                setIsSearchLoading(false);
+            }
+        },
+        [setIsSearchLoading, setPage, setSearchQuery, setSearchResults, setHasMore],
+    );
     useEffect(() => {
         if (page > 1) {
             const fetchMoreSearchResults = async () => {
@@ -356,7 +368,7 @@ export default function Home() {
             };
             fetchMoreSearchResults();
         }
-    }, [page, searchQuery]);
+    }, [page, searchQuery, setIsSearchLoading, setSearchResults, setHasMore]);
     const fetchSectionVideos = useCallback(
         async (section: ContentSection) => {
             setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
@@ -370,13 +382,13 @@ export default function Home() {
                 setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
             }
         },
-        [region],
+        [region, setSectionsLoading, setSectionVideos],
     );
     useEffect(() => {
         contentSections.forEach(section => {
             fetchSectionVideos(section);
         });
-    }, [fetchSectionVideos]);
+    }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
             <div className="fixed inset-0 bg-red-900/10 pointer-events-none" /> <div className="fixed inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none" /> <Sidebar />
