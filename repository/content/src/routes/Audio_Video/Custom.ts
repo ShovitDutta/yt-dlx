@@ -153,7 +153,7 @@ export default async function AudioVideoCustom({
             });
             instance.run();
             console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            return { stream: passthroughStream };
+            return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
             let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
