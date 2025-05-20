@@ -362,6 +362,8 @@ export default function Home() {
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
+                    <div>Zustand Data: {zustandData}</div>
+                    <div>Valtio Data: {valtioData}</div>
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
