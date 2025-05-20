@@ -80,17 +80,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     );
 
     const fetchSectionVideos = async (section: ContentSection) => {
-        setZustandSectionsLoading((state: { [key: string]: boolean }) => ({ ...state, [section.id]: true }));
+        const currentLoading = useZustandStore.getState().sectionsLoading;
+        setZustandSectionsLoading({ ...currentLoading, [section.id]: true });
         valtioStore.sectionsLoading[section.id] = true;
         try {
             const response = await fetch(section.endpoint);
             const data = await response.json();
-            setZustandSectionVideos((state: { [key: string]: VideoType[] }) => ({ ...state, [section.id]: data.result }));
+            const currentVideos = useZustandStore.getState().sectionVideos;
+            setZustandSectionVideos({ ...currentVideos, [section.id]: data.result });
             valtioStore.sectionVideos[section.id] = data.result;
         } catch (error) {
             console.error(`Error fetching videos for ${section.title}:`, error);
         } finally {
-            setZustandSectionsLoading((state: { [key: string]: boolean }) => ({ ...state, [section.id]: false }));
+            const currentLoading = useZustandStore.getState().sectionsLoading;
+            setZustandSectionsLoading({ ...currentLoading, [section.id]: false });
             valtioStore.sectionsLoading[section.id] = false;
         }
     };
