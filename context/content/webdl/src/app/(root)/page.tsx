@@ -4,7 +4,7 @@ import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
     type: string;
     title: string;
@@ -19,15 +19,15 @@ interface VideoType {
     shortViewCount: string;
     authorThumbnails: any[];
 }
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const GlassCard = memo(({ children, className = "" }: { className?: string; children: React.ReactNode }) => (
     <div className={`bg-neutral-900/60 backdrop-blur-lg rounded-xl shadow-lg border border-neutral-900/50 ${className}`}>{children}</div>
 ));
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const SearchBar = ({
     onSearch,
     region,
@@ -58,7 +58,7 @@ const SearchBar = ({
                     <div className="relative flex-grow">
                         <input
                             type="text"
-                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none focus:ring-2 focus:ring-red-500" // Added focus ring
                             placeholder="Search videos..."
                             value={query}
                             onChange={e => setQuery(e.target.value)}
@@ -87,7 +87,7 @@ const SearchBar = ({
         </motion.div>
     );
 };
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const Sidebar = () => {
     return (
         <motion.div
@@ -108,7 +108,7 @@ const Sidebar = () => {
         </motion.div>
     );
 };
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const SidebarItem = memo(({ icon, text, active = false }: { text: string; active?: boolean; icon: React.ReactNode }) => {
     return (
         <motion.div className={`flex items-center w-full p-2 rounded-lg cursor-pointer ${active ? "bg-red-600/40" : "hover:bg-neutral-900/50"}`} whileHover={{ scale: 1.05 }}>
@@ -116,7 +116,7 @@ const SidebarItem = memo(({ icon, text, active = false }: { text: string; active
         </motion.div>
     );
 });
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const VideoCard = memo(({ video }: { video: VideoType }) => {
     const [isHovered, setIsHovered] = useState(false);
     return (
@@ -184,17 +184,200 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
         </motion.div>
     );
 });
-
-export default function Home() {
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; searchResults: VideoType[] }) => {
     return (
-        <main className="relative min-h-screen bg-black text-white">
-            <div className="absolute right-[-200px] top-[-200px] w-[500px] h-[500px] bg-red-600 opacity-20 rounded-full blur-3xl pointer-events-none z-0" />
-            <div className="relative z-10">
-                <Sidebar />
-                <div className="ml-0 md:ml-20 lg:ml-56 p-4">
-                    <SearchBar onSearch={() => {}} region="India" setRegion={() => {}} query="" setQuery={() => {}} />
+        <AnimatePresence>
+            {isLoading && searchResults.length === 0 ? (
+                <motion.div className="flex justify-center items-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <LoadingSpinner />
+                </motion.div>
+            ) : (
+                searchResults.length > 0 && (
+                    <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                        <GlassCard className="p-6">
+                            <motion.h2 className="text-2xl font-bold mb-6 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
+                                <FaSearch className="mr-2" /> Search Results
+                            </motion.h2>
+                            {/* Adjusted grid to span across two rows with a fixed height and overflow-x-auto */}
+                            <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
+                                {searchResults.map(video => {
+                                    return (
+                                        <div key={video.videoId} className="flex-shrink-0 w-64">
+                                            <VideoCard video={video} />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </GlassCard>
+                    </motion.div>
+                )
+            )}
+        </AnimatePresence>
+    );
+});
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title: string; message: string; isLoading: boolean; videos: VideoType[]; icon: React.ReactNode }) => {
+    return (
+        <AnimatePresence>
+            {isLoading ? (
+                <motion.div className="flex justify-center items-center py-8 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <LoadingSpinner />
+                </motion.div>
+            ) : (
+                videos.length > 0 && (
+                    <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                        <GlassCard className="p-6">
+                            <motion.h2 className="text-2xl font-bold mb-2 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
+                                {icon} {title}
+                            </motion.h2>
+                            <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
+                                {message}
+                            </motion.p>
+                            <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
+                                {videos.map(video => {
+                                    return (
+                                        <div key={video.videoId} className="flex-shrink-0 w-64">
+                                            <VideoCard video={video} />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </GlassCard>
+                    </motion.div>
+                )
+            )}
+        </AnimatePresence>
+    );
+});
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+interface ContentSection {
+    id: string;
+    title: string;
+    message: string;
+    endpoint: string;
+    icon: React.ReactNode;
+}
+export default function Home() {
+    const [region, setRegion] = useState("India");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [searchResults, setSearchResults] = useState<VideoType[]>([]);
+    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
+    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
+    const contentSections: ContentSection[] = useMemo(
+        () => [
+            {
+                id: "trending",
+                title: "Trending",
+                message: `Today's Trending In ${region}`,
+                icon: <FaFire className="mr-2 text-red-500" />,
+                endpoint: `/api/Trending?query=${encodeURIComponent(`Today's Trending In ${region}`)}`,
+            },
+            {
+                id: "music",
+                title: "Music Hits",
+                message: `Latest Most Popular Music Videos In ${region}`,
+                icon: <FaMusic className="mr-2 text-red-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Most Popular Music Videos In ${region}`)}`,
+            },
+            {
+                id: "gaming",
+                title: "Gaming",
+                message: `Latest Top Gaming Content In ${region}`,
+                icon: <FaGamepad className="mr-2 text-yellow-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Top Gaming Content In ${region}`)}`,
+            },
+            {
+                id: "news",
+                title: "Latest News",
+                message: `Latest Breaking News In ${region}`,
+                icon: <FaNewspaper className="mr-2 text-orange-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Breaking News In ${region}`)}`,
+            },
+            {
+                id: "movies",
+                title: "Movies",
+                message: `Latest Top Movie Trailers And Clips In ${region}`,
+                icon: <FaFilm className="mr-2 text-purple-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Top Movie Trailers And Clips In ${region}`)}`,
+            },
+            {
+                id: "sports",
+                title: "Sports",
+                message: `Latest Sports Highlights In ${region}`,
+                icon: <FaFutbol className="mr-2 text-green-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Sports Highlights In ${region}`)}`,
+            },
+            {
+                id: "education",
+                title: "Education",
+                message: `Latest Educational Content In ${region}`,
+                icon: <FaGraduationCap className="mr-2 text-blue-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Educational Content In ${region}`)}`,
+            },
+            {
+                id: "technology",
+                title: "Technology",
+                message: `Latest Tech Videos In ${region}`,
+                icon: <FaMicrochip className="mr-2 text-indigo-500" />,
+                endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Tech Videos In ${region}`)}`,
+            },
+        ],
+        [region],
+    );
+    const handleSearch = useCallback(async (query: string) => {
+        setIsSearchLoading(true);
+        setSearchQuery(query);
+        try {
+            const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            setSearchResults(data.result);
+        } catch (error) {
+            console.error("Error searching videos:", error);
+        } finally {
+            setIsSearchLoading(false);
+        }
+    }, []);
+    const fetchSectionVideos = useCallback(async (section: ContentSection) => {
+        setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
+        try {
+            const response = await fetch(section.endpoint);
+            const data = await response.json();
+            setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
+        } catch (error) {
+            console.error(`Error fetching videos for ${section.title}:`, error);
+        } finally {
+            setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
+        }
+    }, []);
+    useEffect(() => {
+        contentSections.forEach((section, index) => {
+            setTimeout(() => {
+                fetchSectionVideos(section);
+            }, index * 100);
+        });
+    }, [contentSections, fetchSectionVideos]);
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
+            <div className="fixed inset-0 bg-red-900/10 pointer-events-none" />
+            <Sidebar />
+            <div className="md:ml-20 lg:ml-56">
+                <div className="container mx-auto px-4 py-6">
+                    <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
+                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
+                    {contentSections.map(section => (
+                        <VideoSection
+                            key={section.id}
+                            icon={section.icon}
+                            title={section.title}
+                            message={section.message}
+                            isLoading={sectionsLoading[section.id]}
+                            videos={sectionVideos[section.id] || []}
+                        />
+                    ))}
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
