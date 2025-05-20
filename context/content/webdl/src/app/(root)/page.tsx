@@ -382,6 +382,16 @@ export default function Home() {
     const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
     }, []);
+    const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const openModal = useCallback((video: VideoType) => {
+        setSelectedVideo(video);
+        setIsModalOpen(true);
+    }, []);
+    const closeModal = useCallback(() => {
+        setSelectedVideo(null);
+        setIsModalOpen(false);
+    }, []);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
@@ -401,6 +411,7 @@ export default function Home() {
                     ))}
                 </div>
             </div>
+            <VideoModal video={selectedVideo} onClose={closeModal} />
         </div>
     );
 }
