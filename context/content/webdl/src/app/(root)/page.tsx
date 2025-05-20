@@ -54,11 +54,11 @@ const SearchBar = ({
                     <div className="relative flex-grow">
                         <input
                             type="text"
-                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none focus:ring-2 focus:ring-red-500" // Added focus ring
-                            placeholder="Search videos..."
                             value={query}
-                            onChange={e => setQuery(e.target.value)}
                             onKeyDown={handleKeyDown}
+                            placeholder="Search videos..."
+                            onChange={e => setQuery(e.target.value)}
+                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/70 text-white border-0 focus:outline-none focus:ring-2 focus:ring-red-500"
                         />
                     </div>
                     <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
