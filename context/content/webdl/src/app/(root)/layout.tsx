@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { useZustandStore, valtioStore, VideoType } from "@/store/root";
-import { useSnapshot } from "valtio";
+import { useZustandStore, VideoType } from "@/store/root";
 import { FaFire, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 
 interface ContentSection {
