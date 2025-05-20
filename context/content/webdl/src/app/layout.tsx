@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "YouTube Clone", description: "A YouT
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <html lang="en" className="dark">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+            <body className={`${geistSans.variable} ${geistMono.variable} font-mono antialiased`}>{children}</body>
         </html>
     );
 }
