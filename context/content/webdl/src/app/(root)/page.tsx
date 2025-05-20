@@ -252,8 +252,8 @@ interface ContentSection {
     endpoint: string;
     icon: React.ReactNode;
 }
-import { mainStore, MainStore } from "@/store";
 import { useSnapshot } from "valtio";
+import { mainStore, MainStore } from "@/store";
 
 export default function Home() {
     const { data } = useSnapshot(mainStore);
