@@ -122,7 +122,7 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
             className="relative overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            <GlassCard className="overflow-hidden relative h-full bg-red-950 border-2 border-red-950">
+            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950">
                 <div className="relative">
                     {video.thumbnails && video.thumbnails.length > 0 ? (
                         <Fragment>
@@ -252,10 +252,7 @@ interface ContentSection {
     endpoint: string;
     icon: React.ReactNode;
 }
-import { mainStore } from "@/store";
-import { useSnapshot } from "valtio";
 export default function Home() {
-    const { data } = useSnapshot(mainStore);
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -357,7 +354,6 @@ export default function Home() {
     }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-stone-900">
-            {data ? <div className="text-white">Data from store: {JSON.stringify(data)}</div> : <div className="text-white">Loading data...</div>}
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
