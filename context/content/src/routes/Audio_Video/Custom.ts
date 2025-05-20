@@ -3,35 +3,10 @@ import colors from "colors";
 import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
-import ytdlx from "../../utils/Agent";
+import Tuber from "../../utils/Agent";
+import progbar from "../../utils/progbar";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
-function formatTime(seconds: number): string {
-    if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
-}
-function calculateETA(startTime: Date, percent: number): number {
-    const currentTime = new Date();
-    const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
-    if (percent <= 0) return NaN;
-    const totalTimeEstimate = (elapsedTime / percent) * 100;
-    const remainingTime = totalTimeEstimate - elapsedTime;
-    return remainingTime;
-}
-function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
-    let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
-    displayPercent = Math.min(Math.max(displayPercent, 0), 100);
-    const colorFn = displayPercent < 25 ? colors.red : displayPercent < 50 ? colors.yellow : colors.green;
-    const width = Math.floor((process.stdout.columns || 80) / 4);
-    const scomp = Math.round((width * displayPercent) / 100);
-    const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
-    const etaSeconds = calculateETA(startTime, displayPercent);
-    const etaFormatted = formatTime(etaSeconds);
-    process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
-}
 var ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -62,7 +37,7 @@ export default async function AudioVideoCustom({
         }
         if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         if (metadata && showProgress) throw new Error(`${colors.red("@error:")} The 'showProgress' parameter cannot be used when 'metadata' is true.`);
-        const EngineMeta = await ytdlx({ query, verbose, useTor });
+        const EngineMeta = await Tuber({ query, verbose, useTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (metadata) {
@@ -105,22 +80,22 @@ export default async function AudioVideoCustom({
         }
         if (!EngineMeta.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
         instance.addInput(EngineMeta.BestAudioHigh.url);
-        instance.withOutputFormat("matroska");
         const resolutionRegex = /(\d+)p(\d+)?/;
         const resolutionMatch = resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
-        const vdata = EngineMeta.allFormats?.find((i: any) => {
-            const height = i.height;
+        const manifest = EngineMeta.ManifestHigh?.find((i: any) => {
             const fps = i.fps;
+            const height = i.height;
             const vcodec = i.vcodec;
             let heightMatches = height === targetHeight;
             let fpsMatches = targetFps === null || fps === targetFps;
             return heightMatches && fpsMatches && vcodec !== "none";
         });
-        if (vdata) {
-            if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
-            instance.addInput(vdata.url.toString());
+        if (manifest) {
+            if (!manifest.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
+            instance.addInput(manifest.url.toString());
+            instance.withOutputFormat("matroska");
         } else throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
         const filterMap: Record<string, string[]> = {
             invert: ["negate"],

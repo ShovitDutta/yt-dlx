@@ -4,34 +4,9 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Tuber from "../../utils/Agent";
+import progbar from "../../utils/progbar";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
-function formatTime(seconds: number): string {
-    if (!isFinite(seconds) || isNaN(seconds)) return "00h 00m 00s";
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`;
-}
-function calculateETA(startTime: Date, percent: number): number {
-    const currentTime = new Date();
-    const elapsedTime = (currentTime.getTime() - startTime.getTime()) / 1000;
-    if (percent <= 0) return NaN;
-    const totalTimeEstimate = (elapsedTime / percent) * 100;
-    const remainingTime = totalTimeEstimate - elapsedTime;
-    return remainingTime;
-}
-function progbar({ percent, timemark, startTime }: { percent: number | undefined; timemark: string; startTime: Date }) {
-    let displayPercent = isNaN(percent || 0) ? 0 : percent || 0;
-    displayPercent = Math.min(Math.max(displayPercent, 0), 100);
-    const colorFn = displayPercent < 25 ? colors.red : displayPercent < 50 ? colors.yellow : colors.green;
-    const width = Math.floor((process.stdout.columns || 80) / 4);
-    const scomp = Math.round((width * displayPercent) / 100);
-    const progb = colorFn("━").repeat(scomp) + colorFn(" ").repeat(width - scomp);
-    const etaSeconds = calculateETA(startTime, displayPercent);
-    const etaFormatted = formatTime(etaSeconds);
-    process.stdout.write(`\r${colorFn("@prog:")} ${progb} ${colorFn("| @percent:")} ${displayPercent.toFixed(2)}% ${colorFn("| @timemark:")} ${timemark} ${colorFn("| @eta:")} ${etaFormatted}`);
-}
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -102,7 +77,7 @@ export default async function VideoCustom({
         const resolutionMatch = resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
-        const VideoMeta = EngineMeta.allFormats?.find((i: any) => {
+        const manifest = EngineMeta.ManifestHigh?.find((i: any) => {
             const height = i.height;
             const fps = i.fps;
             const vcodec = i.vcodec;
@@ -110,11 +85,11 @@ export default async function VideoCustom({
             let fpsMatches = targetFps === null || fps === targetFps;
             return heightMatches && fpsMatches && vcodec !== "none";
         });
-        if (!VideoMeta) {
+        if (!manifest) {
             throw new Error(`${colors.red("@error:")} No Video data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Formats()' command to see available formats.`);
         }
-        if (!VideoMeta.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}`);
-        instance.addInput(VideoMeta.url.toString());
+        if (!manifest.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}`);
+        instance.addInput(manifest.url.toString());
         instance.withOutputFormat("mp4");
         const filterMap: Record<string, string[]> = {
             grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
