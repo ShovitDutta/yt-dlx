@@ -173,16 +173,18 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
             </GlassCard>
             {isHovered && (
                 <motion.div
-                    className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-3 bg-gradient-to-t from-neutral-900/90 to-transparent"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}>
-                    <motion.button className="bg-neutral-900/80 hover:bg-neutral-900/80 p-2 rounded-full" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <FaThumbsUp className="text-white" />
-                    </motion.button>
-                    <motion.button className="bg-neutral-900/80 hover:bg-neutral-900/80 p-2 rounded-full" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <FaRegBookmark className="text-white" />
-                    </motion.button>
+                    className="absolute inset-0 bg-neutral-900/90 backdrop-blur-lg rounded-xl p-4 text-white overflow-y-auto"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}>
+                    <h3 className="text-xl font-semibold mb-2">{video.title}</h3>
+                    <p className="text-orange-400 text-sm mb-2">{video.authorName}</p>
+                    <p className="text-sm mb-4">{video.description}</p>
+                    <div className="flex items-center text-orange-500 text-sm">
+                        <span>{video.viewCount} views</span>
+                        {/* Add more details here as needed */}
+                    </div>
                 </motion.div>
             )}
         </motion.div>
