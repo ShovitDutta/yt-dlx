@@ -1,6 +1,6 @@
 "use client";
+import { useZustandStore } from "@/store/root";
 import React, { useEffect, useMemo } from "react";
-import { useZustandStore, VideoType } from "@/store/root";
 import { FaFire, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 interface ContentSection {
     id: string;
@@ -12,7 +12,6 @@ interface ContentSection {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const setZustandSectionVideos = useZustandStore(state => state.setSectionVideos);
     const setZustandSectionsLoading = useZustandStore(state => state.setSectionsLoading);
-
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -74,7 +73,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ],
         [],
     );
-
     const fetchSectionVideos = async (section: ContentSection) => {
         const currentLoading = useZustandStore.getState().sectionsLoading;
         setZustandSectionsLoading({ ...currentLoading, [section.id]: true });
