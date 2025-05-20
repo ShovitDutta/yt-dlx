@@ -139,7 +139,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
         contentSections.forEach((section, index) => {
             setTimeout(() => {
                 fetchSectionVideos(section);
-            }, index * 100); // Small delay to avoid hammering the API
+            }, index * 100);
         });
     },
 }));
