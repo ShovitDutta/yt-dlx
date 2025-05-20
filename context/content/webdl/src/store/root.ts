@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import { proxy } from "valtio";
+import { create } from "zustand";
 
 interface VideoType {
     type: string;
@@ -16,7 +16,6 @@ interface VideoType {
     authorThumbnails: any[];
 }
 
-// Zustand Store
 interface ZustandStore {
     zustandData: string;
     setZustandData: (data: string) => void;
@@ -36,7 +35,6 @@ export const useZustandStore = create<ZustandStore>(set => ({
     setSectionsLoading: loading => set({ sectionsLoading: loading }),
 }));
 
-// Valtio Store
 interface ValtioStore {
     valtioData: string;
     sectionVideos: { [key: string]: any[] };

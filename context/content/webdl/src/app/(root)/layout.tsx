@@ -5,7 +5,7 @@ import { useZustandStore, valtioStore } from "@/store/root";
 import { useSnapshot } from "valtio";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-    const setZustandData = useZustandStore((state) => state.setZustandData);
+    const setZustandData = useZustandStore(state => state.setZustandData);
     const snapshot = useSnapshot(valtioStore);
 
     useEffect(() => {
