@@ -2,7 +2,8 @@
 {
     "compilerOptions": {
         "strict": true,
-        "target": "esnext"
+        "target": "esnext",
+        "esModuleInterop": true
     },
     "include": ["src/**/*.ts"],
     "extends": "./src/config/root.json",
