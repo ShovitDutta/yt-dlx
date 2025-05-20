@@ -136,7 +136,7 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ duration: 0.3 }}
-                                    className="font-bold space-x-2 absolute inset-0 flex items-center justify-center">
+                                    className="font-bold absolute inset-0 flex items-center justify-center">
                                     <FaPlayCircle className="text-red-800 text-6xl" />
                                     Watch It Now!
                                 </motion.div>
