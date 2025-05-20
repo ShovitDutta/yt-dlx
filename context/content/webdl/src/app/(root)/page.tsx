@@ -1,11 +1,11 @@
 "use client";
 import Image from "next/image";
+import { useSnapshot } from "valtio";
 import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
-import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 import { useZustandStore, valtioStore } from "@/store/root";
-import { useSnapshot } from "valtio";
+import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
+import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
     type: string;
