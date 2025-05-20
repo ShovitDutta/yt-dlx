@@ -253,9 +253,7 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
     );
 });
 // ====================================================================================================
-// Main Home Component
 // ====================================================================================================
-
 export default function Home() {
     const { region, setRegion, searchQuery, setSearchQuery, isSearchLoading, searchResults, sectionVideos, sectionsLoading, contentSections, fetchSearchResults } = useVideoStore();
     const handleSearch = useCallback(
