@@ -4,7 +4,7 @@ import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 interface VideoType {
     type: string;
     title: string;
@@ -19,15 +19,15 @@ interface VideoType {
     shortViewCount: string;
     authorThumbnails: any[];
 }
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const GlassCard = memo(({ children, className = "" }: { className?: string; children: React.ReactNode }) => (
     <div className={`bg-neutral-900/60 backdrop-blur-lg rounded-xl shadow-lg border border-neutral-900/50 ${className}`}>{children}</div>
 ));
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const SearchBar = ({
     onSearch,
     region,
@@ -42,12 +42,15 @@ const SearchBar = ({
     setQuery: (query: string) => void;
 }) => {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
+
     const handleSearch = () => {
         if (query.trim()) onSearch(query);
     };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") handleSearch();
     };
+
     return (
         <motion.div className="mb-8 sticky top-0 z-50 py-4 bg-black" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <GlassCard className="p-2 rounded-3xl border-2 border-red-800">
@@ -84,7 +87,7 @@ const SearchBar = ({
         </motion.div>
     );
 };
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const Sidebar = () => {
     return (
         <motion.div
@@ -105,7 +108,7 @@ const Sidebar = () => {
         </motion.div>
     );
 };
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const SidebarItem = memo(({ icon, text, active = false }: { text: string; active?: boolean; icon: React.ReactNode }) => {
     return (
         <motion.div className={`flex items-center w-full p-2 rounded-lg cursor-pointer ${active ? "bg-red-600/40" : "hover:bg-neutral-900/50"}`} whileHover={{ scale: 1.05 }}>
@@ -113,7 +116,7 @@ const SidebarItem = memo(({ icon, text, active = false }: { text: string; active
         </motion.div>
     );
 });
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const VideoCard = memo(({ video }: { video: VideoType }) => {
     const [isHovered, setIsHovered] = useState(false);
     return (
@@ -181,7 +184,7 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
         </motion.div>
     );
 });
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; searchResults: VideoType[] }) => {
     return (
         <AnimatePresence>
@@ -196,7 +199,6 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
                             <motion.h2 className="text-2xl font-bold mb-6 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
                                 <FaSearch className="mr-2" /> Search Results
                             </motion.h2>
-                            {/* Adjusted grid to span across two rows with a fixed height and overflow-x-auto */}
                             <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
                                 {searchResults.map(video => {
                                     return (
@@ -213,7 +215,7 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
         </AnimatePresence>
     );
 });
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title: string; message: string; isLoading: boolean; videos: VideoType[]; icon: React.ReactNode }) => {
     return (
         <AnimatePresence>
@@ -247,7 +249,7 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
         </AnimatePresence>
     );
 });
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 interface ContentSection {
     id: string;
     title: string;
@@ -255,6 +257,7 @@ interface ContentSection {
     endpoint: string;
     icon: React.ReactNode;
 }
+
 export default function Home() {
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
@@ -357,9 +360,7 @@ export default function Home() {
     }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-black relative overflow-hidden">
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full filter blur-3xl opacity-10" />
-            </div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full filter blur-3xl opacity-10 pointer-events-none" />
             <Sidebar />
             <div className="md:ml-20 lg:ml-56 relative z-10">
                 <div className="container mx-auto px-4 py-6">
