@@ -97,7 +97,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             valtioStore.sectionsLoading[section.id] = false;
         }
     };
-
     useEffect(() => {
         contentSections.forEach((section, index) => {
             setTimeout(() => {
@@ -105,6 +104,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }, index * 100);
         });
     }, [contentSections]);
-
     return <>{children}</>;
 }
