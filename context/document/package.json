@@ -27,7 +27,7 @@
         "react-icons": "^5.5.0",
         "react-player": "^2.16.0",
         "react-tooltip": "^5.28.1",
-        "yt-dlx": "^19.2.1",
+        "yt-dlx": "^19.4.2",
         "zod": "^3.25.7"
     },
     "devDependencies": {
