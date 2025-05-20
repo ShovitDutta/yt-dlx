@@ -252,16 +252,12 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
 
 export default function Home() {
     const { region, setRegion, searchQuery, setSearchQuery, isSearchLoading, searchResults, sectionVideos, sectionsLoading, contentSections, fetchSearchResults } = useVideoStore();
-
-    // Memoize the handleSearch function using useCallback
     const handleSearch = useCallback(
         (query: string) => {
             fetchSearchResults(query);
         },
         [fetchSearchResults],
     );
-
-    // Define icons for content sections. This is UI-specific and good to keep in the component.
     const sectionsWithIcons = useMemo(
         () => [
             { id: "trending", icon: <FaFire className="mr-2 text-red-500" /> },
