@@ -350,8 +350,8 @@ export default function Home() {
                             icon={section.icon}
                             title={section.title}
                             message={section.message}
-                            isLoading={zustandSectionsLoading[section.id] || valtioSectionsLoading[section.id]}
                             videos={zustandSectionVideos[section.id] || valtioSectionVideos[section.id] || []}
+                            isLoading={zustandSectionsLoading[section.id] || valtioSectionsLoading[section.id]}
                         />
                     ))}
                 </div>
