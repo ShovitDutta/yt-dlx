@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip, FaPlayCircle } from "react-icons/fa";
-import VideoDetailsModal from "@/components/VideoDetailsModal";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
     type: string;
@@ -114,20 +113,8 @@ const SidebarItem = memo(({ icon, text, active = false }: { text: string; active
     );
 });
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const VideoCard = memo(({ video, onVideoHover }: { video: VideoType; onVideoHover: (video: VideoType) => void }) => {
+const VideoCard = memo(({ video }: { video: VideoType }) => {
     const [isHovered, setIsHovered] = useState(false);
-
-    const handleMouseEnter = () => {
-        setIsHovered(true);
-        onVideoHover(video);
-    };
-
-    const handleMouseLeave = () => {
-        setIsHovered(false);
-        // Optionally close modal on mouse leave, or keep it open until close button is clicked
-        // onClose();
-    };
-
     return (
         <motion.div
             layout
@@ -135,14 +122,14 @@ const VideoCard = memo(({ video, onVideoHover }: { video: VideoType; onVideoHove
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
             className="relative overflow-hidden"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}>
-            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950 hover:border-red-900">
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}>
+            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950">
                 <div className="relative">
                     {video.thumbnails && video.thumbnails.length > 0 ? (
                         <Fragment>
                             <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />
-                            <motion.div className="absolute inset-0 bg-red-600/20 backdrop-blur-xl" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
+                            <motion.div className="absolute inset-0 bg-red-600/20 bac" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
                             {isHovered && (
                                 <motion.div
                                     exit={{ opacity: 0 }}
@@ -184,11 +171,25 @@ const VideoCard = memo(({ video, onVideoHover }: { video: VideoType; onVideoHove
                     </motion.div>
                 </div>
             </GlassCard>
+            {isHovered && (
+                <motion.div
+                    className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-3 bg-gradient-to-t from-neutral-900/90 to-transparent"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}>
+                    <motion.button className="bg-neutral-900/80 hover:bg-neutral-900/80 p-2 rounded-full" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <FaThumbsUp className="text-white" />
+                    </motion.button>
+                    <motion.button className="bg-neutral-900/80 hover:bg-neutral-900/80 p-2 rounded-full" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <FaRegBookmark className="text-white" />
+                    </motion.button>
+                </motion.div>
+            )}
         </motion.div>
     );
 });
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const SearchResults = memo(({ searchResults, isLoading, onVideoHover }: { isLoading: boolean; searchResults: VideoType[]; onVideoHover: (video: VideoType) => void }) => {
+const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; searchResults: VideoType[] }) => {
     return (
         <AnimatePresence>
             {isLoading && searchResults.length === 0 ? (
@@ -206,7 +207,7 @@ const SearchResults = memo(({ searchResults, isLoading, onVideoHover }: { isLoad
                                 {searchResults.map(video => {
                                     return (
                                         <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
-                                            <VideoCard video={video} onVideoHover={onVideoHover} />
+                                            <VideoCard video={video} />
                                         </div>
                                     );
                                 })}
@@ -219,55 +220,39 @@ const SearchResults = memo(({ searchResults, isLoading, onVideoHover }: { isLoad
     );
 });
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const VideoSection = memo(
-    ({
-        title,
-        message,
-        icon,
-        videos,
-        isLoading,
-        onVideoHover,
-    }: {
-        title: string;
-        message: string;
-        isLoading: boolean;
-        videos: VideoType[];
-        icon: React.ReactNode;
-        onVideoHover: (video: VideoType) => void;
-    }) => {
-        return (
-            <AnimatePresence>
-                {isLoading ? (
-                    <motion.div className="flex justify-center items-center py-8 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <LoadingSpinner />
+const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title: string; message: string; isLoading: boolean; videos: VideoType[]; icon: React.ReactNode }) => {
+    return (
+        <AnimatePresence>
+            {isLoading ? (
+                <motion.div className="flex justify-center items-center py-8 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <LoadingSpinner />
+                </motion.div>
+            ) : (
+                videos.length > 0 && (
+                    <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                        <GlassCard className="p-6">
+                            <motion.h2 className="text-2xl font-bold mb-2 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
+                                {icon} {title}
+                            </motion.h2>
+                            <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
+                                {message}
+                            </motion.p>
+                            <div className="flex flex-nowrap overflow-x-auto gap-6 pr-4">
+                                {videos.map(video => {
+                                    return (
+                                        <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
+                                            <VideoCard video={video} />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </GlassCard>
                     </motion.div>
-                ) : (
-                    videos.length > 0 && (
-                        <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                            <GlassCard className="p-6">
-                                <motion.h2 className="text-2xl font-bold mb-2 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
-                                    {icon} {title}
-                                </motion.h2>
-                                <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-                                    {message}
-                                </motion.p>
-                                <div className="flex flex-nowrap overflow-x-auto gap-6 pr-4">
-                                    {videos.map(video => {
-                                        return (
-                                            <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
-                                                <VideoCard video={video} onVideoHover={onVideoHover} />
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </GlassCard>
-                        </motion.div>
-                    )
-                )}
-            </AnimatePresence>
-        );
-    },
-);
+                )
+            )}
+        </AnimatePresence>
+    );
+});
 interface ContentSection {
     id: string;
     title: string;
@@ -278,7 +263,6 @@ interface ContentSection {
 export default function Home() {
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -396,19 +380,13 @@ export default function Home() {
     const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
     }, []);
-    const handleVideoHover = useCallback((video: VideoType) => {
-        setSelectedVideo(video);
-    }, []);
-    const handleCloseModal = useCallback(() => {
-        setSelectedVideo(null);
-    }, []);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
-                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} onVideoHover={handleVideoHover} />
+                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
                         <VideoSection
                             key={section.id}
@@ -417,34 +395,10 @@ export default function Home() {
                             message={section.message}
                             videos={getSectionVideos(section.id)}
                             isLoading={getSectionLoading(section.id)}
-                            onVideoHover={handleVideoHover}
                         />
                     ))}
                 </div>
             </div>
-            <VideoDetailsModal video={selectedVideo} onClose={handleCloseModal} />
         </div>
     );
 }
-
-</file_content>
-
-Now that you have the latest state of the file, try the operation again with fewer, more precise SEARCH blocks. For large files especially, it may be prudent to try to limit yourself to <5 SEARCH/REPLACE blocks at a time, then wait for the user to respond with the result of the operation before following up with another replace_in_file call to make additional edits.
-(If you run into this error 3 times in a row, you may use the write_to_file tool as a fallback.)
-</error><environment_details>
-# VSCode Visible Files
-src/app/(root)/page.tsx
-
-# VSCode Open Tabs
-src/components/VideoDetailsModal.tsx
-src/app/(root)/page.tsx
-
-# Current Time
-5/20/2025, 9:25:32 AM (Asia/Calcutta, UTC+5.5:00)
-
-# Context Window Usage
-77,580 / 1,048.576K tokens used (7%)
-
-# Current Mode
-ACT MODE
-</environment_details>
