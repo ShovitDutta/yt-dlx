@@ -255,14 +255,10 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
-    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
-    const { valtioData, sectionVideos: valtioSectionVideos, sectionsLoading: valtioSectionsLoading } = useSnapshot(valtioStore);
-
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -337,9 +333,6 @@ export default function Home() {
             setIsSearchLoading(false);
         }
     }, []);
-
-    // Removed fetchSectionVideos and useEffect for fetching content sections
-
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
