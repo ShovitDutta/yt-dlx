@@ -254,7 +254,6 @@ interface ContentSection {
 }
 import { useSnapshot } from "valtio";
 import { mainStore, MainStore } from "@/store";
-
 export default function Home() {
     const { data } = useSnapshot(mainStore);
     const [region, setRegion] = useState("India");
