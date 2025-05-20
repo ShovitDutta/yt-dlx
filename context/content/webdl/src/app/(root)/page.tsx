@@ -252,7 +252,7 @@ interface ContentSection {
     endpoint: string;
     icon: React.ReactNode;
 }
-import { mainStore, MainStore } from "src/store";
+import { mainStore, MainStore } from "@/src/store";
 import { useSnapshot } from "valtio";
 
 export default function Home() {
