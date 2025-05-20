@@ -1,7 +1,7 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
-const ZodSchema = z.object({ videoId: z.string().min(2) });
+const ZodSchema = z.object({ videoId: z.string().min(2), verbose: z.boolean().optional() });
 export interface RelatedVideosType {
     id: string;
     title: string;
@@ -23,14 +23,14 @@ async function relatedVideos({ videoId }: { videoId: string }): Promise<RelatedV
     }
 }
 type RelatedVideosOptions = z.infer<typeof ZodSchema>;
-export default async function relatedVideosFn({ videoId }: RelatedVideosOptions): Promise<RelatedVideosType[]> {
+export default async function relatedVideosFn({ videoId, verbose }: RelatedVideosOptions): Promise<RelatedVideosType[]> {
     try {
-        ZodSchema.parse({ videoId });
+        ZodSchema.parse({ videoId, verbose });
         const videos = await relatedVideos({ videoId });
         if (!videos || videos.length === 0) {
             throw new Error(`${colors.red("@error:")} No related videos found for the provided video ID.`);
         }
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return videos;
     } catch (error: any) {
         if (error instanceof ZodError) {

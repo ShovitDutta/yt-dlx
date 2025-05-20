@@ -174,7 +174,7 @@ export default async function AudioCustom({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
@@ -204,7 +204,7 @@ export default async function AudioCustom({
                 });
                 instance.run();
             });
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {

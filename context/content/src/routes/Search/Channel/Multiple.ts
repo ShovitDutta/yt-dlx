@@ -1,7 +1,7 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
-const ZodSchema = z.object({ query: z.string().min(2) });
+const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
 export interface channelSearchType {
     id: string;
     name: string;
@@ -25,14 +25,14 @@ async function searchChannels({ query }: { query: string }): Promise<channelSear
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
     }
 }
-export default async function search_channels({ query }: z.infer<typeof ZodSchema>): Promise<{ data: channelSearchType[] }> {
+export default async function search_channels({ query, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: channelSearchType[] }> {
     try {
-        ZodSchema.parse({ query });
+        ZodSchema.parse({ query, verbose });
         const channels = await searchChannels({ query });
         if (!channels || channels.length === 0) {
             throw new Error(`${colors.red("@error: ")} No channels found for the provided query.`);
         }
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: channels };
     } catch (error: any) {
         if (error instanceof ZodError) {

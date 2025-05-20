@@ -201,6 +201,10 @@ export default async function Engine({ query, useTor = false, verbose = false, r
     } else {
         console.warn(colors.yellow("@warn:"), "ffmpeg executable path not found. yt-dlx may use its built-in downloader or fail for some formats.");
     }
+    if (verbose) {
+        argsToInsert.push("--verbose");
+        if (verbose) console.log(colors.green("@info:"), "Adding verbose argument for yt-dlx.");
+    }
     if (argsToInsert.length > 0) {
         ytprobeArgs.splice(insertIndex, 0, ...argsToInsert);
     }

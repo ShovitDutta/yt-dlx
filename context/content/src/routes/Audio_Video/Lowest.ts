@@ -159,7 +159,7 @@ export default async function AudioVideoLowest({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioVideoLowest_`;
@@ -189,7 +189,7 @@ export default async function AudioVideoLowest({
                 });
                 instance.run();
             });
-            console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {

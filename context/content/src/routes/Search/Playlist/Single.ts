@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import YouTubeID from "../../../utils/YouTubeId";
-const ZodSchema = z.object({ playlistLink: z.string().min(2) });
+const ZodSchema = z.object({ playlistLink: z.string().min(2), verbose: z.boolean().optional() });
 export interface playlistVideosType {
     id: string;
     title: string;
@@ -22,9 +22,9 @@ async function playlistVideos({ playlistId }: { playlistId: string }): Promise<p
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
     }
 }
-export default async function playlist_data({ playlistLink }: z.infer<typeof ZodSchema>): Promise<{ data: playlistVideosType }> {
+export default async function playlist_data({ playlistLink, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: playlistVideosType }> {
     try {
-        ZodSchema.parse({ playlistLink });
+        ZodSchema.parse({ playlistLink, verbose });
         const playlistId = await YouTubeID(playlistLink);
         if (!playlistId) {
             throw new Error(`${colors.red("@error: ")} Incorrect playlist link provided.`);
@@ -33,7 +33,7 @@ export default async function playlist_data({ playlistLink }: z.infer<typeof Zod
         if (!metaData) {
             throw new Error(`${colors.red("@error: ")} Unable to retrieve playlist information.`);
         }
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: metaData };
     } catch (error: any) {
         if (error instanceof ZodError) {

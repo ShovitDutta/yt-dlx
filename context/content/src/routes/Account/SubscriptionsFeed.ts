@@ -19,7 +19,7 @@ interface Content {
     viewCount: string;
     shortViewCount: string;
 }
-export default async function subscriptions_feed({ cookies, verbose }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
+export default async function subscriptions_feed({ cookies, verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
         ZodSchema.parse({ cookies, verbose });
         if (verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
@@ -53,8 +53,7 @@ export default async function subscriptions_feed({ cookies, verbose }: subscript
                 };
             }) || [];
         const result: TubeResponse<{ contents: Content[] }> = { status: "success", data: { contents } };
-        if (verbose) console.log(colors.green("@info:"), "Subscriptions feed fetched!");
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
     } catch (error: any) {
         if (error instanceof ZodError) {

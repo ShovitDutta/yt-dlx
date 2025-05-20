@@ -9,13 +9,3 @@ export default async function help(): Promise<string> {
         throw new Error(errorMessage);
     }
 }
-(async () => {
-    try {
-        console.log("--- Running Help Example ---");
-        const result = await help();
-        console.log("Help URL:", result);
-    } catch (error) {
-        console.error("Help Error:", error instanceof Error ? error.message : error);
-    }
-    console.log("\n");
-})();

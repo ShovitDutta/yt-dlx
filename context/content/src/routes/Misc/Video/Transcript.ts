@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import YouTubeID from "../../../utils/YouTubeId";
-const ZodSchema = z.object({ videoLink: z.string().min(2) });
+const ZodSchema = z.object({ videoLink: z.string().min(2), verbose: z.boolean().optional() });
 export interface CaptionSegment {
     utf8: string;
     tOffsetMs?: number;
@@ -30,9 +30,9 @@ async function getVideoTranscript({ videoId }: { videoId: string }): Promise<Vid
     }
 }
 type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
-export default async function videoTranscript({ videoLink }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
+export default async function videoTranscript({ videoLink, verbose }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
     try {
-        ZodSchema.parse({ videoLink });
+        ZodSchema.parse({ videoLink, verbose });
         const vId = await YouTubeID(videoLink);
         if (!vId) {
             throw new Error(`${colors.red("@error:")} Incorrect video link`);
@@ -41,7 +41,7 @@ export default async function videoTranscript({ videoLink }: VideoTranscriptOpti
         if (!transcriptData || transcriptData.length === 0) {
             throw new Error(`${colors.red("@error:")} Unable to get transcript for this video!`);
         }
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return transcriptData;
     } catch (error: any) {
         if (error instanceof ZodError) {

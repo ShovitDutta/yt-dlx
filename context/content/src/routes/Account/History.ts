@@ -16,10 +16,10 @@ interface Video {
     thumbnails: any;
     description: string;
 }
-export default async function watch_history(options: WatchHistoryOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
+export default async function watch_history(options: WatchHistoryOptions & { verbose?: boolean }): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
     try {
         ZodSchema.parse(options);
-        const { verbose, cookies, sort } = options;
+        const { verbose = false, cookies, sort } = options;
         if (verbose) console.log(colors.green("@info:"), "Starting watch history fetch...");
         if (!cookies) {
             throw new Error(`${colors.red("@error:")} Cookies not provided!`);
@@ -79,8 +79,7 @@ export default async function watch_history(options: WatchHistoryOptions): Promi
                     });
                 break;
         }
-        if (verbose) console.log(colors.green("@info:"), "Watch history fetched successfully!");
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
     } catch (error: any) {
         if (error instanceof ZodError) {

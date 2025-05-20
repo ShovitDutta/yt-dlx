@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import YouTubeID from "../../../utils/YouTubeId";
-const ZodSchema = z.object({ videoLink: z.string().min(2) });
+const ZodSchema = z.object({ videoLink: z.string().min(2), verbose: z.boolean().optional() });
 export interface SingleVideoType {
     id: string;
     title: string;
@@ -43,15 +43,15 @@ async function singleVideo({ videoId }: { videoId: string }): Promise<SingleVide
     }
 }
 type VideoDataOptions = z.infer<typeof ZodSchema>;
-export default async function videoData({ videoLink }: VideoDataOptions): Promise<SingleVideoType> {
+export default async function videoData({ videoLink, verbose }: VideoDataOptions): Promise<SingleVideoType> {
     try {
-        ZodSchema.parse({ videoLink });
+        ZodSchema.parse({ videoLink, verbose });
         const vId = await YouTubeID(videoLink);
         if (!vId) {
             throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
         }
         const metaData = await singleVideo({ videoId: vId });
-        console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return metaData;
     } catch (error: any) {
         if (error instanceof ZodError) {
