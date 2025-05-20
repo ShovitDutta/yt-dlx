@@ -251,7 +251,6 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
 // ====================================================================================================
 
 export default function Home() {
-    // Destructure state and actions from the Zustand store
     const {
         region,
         setRegion,
