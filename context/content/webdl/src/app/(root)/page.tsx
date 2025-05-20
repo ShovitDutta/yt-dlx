@@ -85,7 +85,8 @@ const SearchBar = ({
         </motion.div>
     );
 };
-
+// ====================================================================================================
+// ====================================================================================================
 const Sidebar = memo(() => {
     return (
         <motion.div
@@ -108,7 +109,8 @@ const Sidebar = memo(() => {
         </motion.div>
     );
 });
-
+// ====================================================================================================
+// ====================================================================================================
 const SidebarItem = memo(({ icon, text, active = false }: { text: string; active?: boolean; icon: React.ReactNode }) => {
     return (
         <motion.div className={`flex items-center w-full p-2 rounded-lg cursor-pointer ${active ? "bg-red-600/40" : "hover:bg-neutral-900/50"}`} whileHover={{ scale: 1.05 }}>
@@ -117,7 +119,8 @@ const SidebarItem = memo(({ icon, text, active = false }: { text: string; active
         </motion.div>
     );
 });
-
+// ====================================================================================================
+// ====================================================================================================
 const VideoCard = memo(({ video }: { video: VideoType }) => {
     const [isHovered, setIsHovered] = useState(false);
     return (
