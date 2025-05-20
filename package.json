@@ -14,8 +14,8 @@
     "scripts": {
         "========================================================================== binders": "==========================================================================",
         "make": "yarn run renew && yarn run build",
-        "preinstall": "yarn global add rimraf expo-cli",
         "format": "prettier --write . && prettier --check .",
+        "preinstall": "yarn global add prettier rimraf expo-cli",
         "push": "yarn run format && cd context/content && yarn publish",
         "build": "yarn run document:build && yarn run content:build && yarn run desktop:build",
         "update": "yarn run content:update && yarn run document:update && yarn run website:update && yarn run mobile:update && yarn run desktop:update",
@@ -71,8 +71,5 @@
         "mobile:build:development": "cd context/mobile && npx expo prebuild --platform android && export NODE_ENV='development' && export ANDROID_HOME='/opt/android-sdk' && export ANDROID_SDK_ROOT='/opt/android-sdk' && export JAVA_HOME='/usr/lib/jvm/jdk-23.0.2-oracle-x64' && export ANDROID_NDK_HOME='/opt/android-sdk/ndk/28.0.13004108' && export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.1:$ANDROID_NDK_HOME:$PATH && cd context/android && ./gradlew :app:assembleDebug --build-cache --configure-on-demand --no-daemon --max-workers=6 && mkdir -p ../builds && find ./app -name 'app-debug.apk' -exec mv {} ../builds/yt-dlx-1.0.0-development.apk \\;",
         "mobile:build:production": "cd context/mobile && npx expo prebuild --platform android && export NODE_ENV='production' && export ANDROID_HOME='/opt/android-sdk' && export ANDROID_SDK_ROOT='/opt/android-sdk' && export JAVA_HOME='/usr/lib/jvm/jdk-23.0.2-oracle-x64' && export ANDROID_NDK_HOME='/opt/android-sdk/ndk/28.0.13004108' && export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.1:$ANDROID_NDK_HOME:$PATH && cd context/android && ./gradlew :app:bundleRelease --build-cache --configure-on-demand --no-daemon --max-workers=6 && mkdir -p ../builds && find ./app -name 'app-release.aab' -exec mv {} ../builds/yt-dlx-1.0.0-production.aab \\;",
         "mobile:build:distribution": "cd context/mobile && npx expo prebuild --platform android && export NODE_ENV='production' && export ANDROID_HOME='/opt/android-sdk' && export ANDROID_SDK_ROOT='/opt/android-sdk' && export JAVA_HOME='/usr/lib/jvm/jdk-23.0.2-oracle-x64' && export ANDROID_NDK_HOME='/opt/android-sdk/ndk/28.0.13004108' && export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.1:$ANDROID_NDK_HOME:$PATH && cd context/android && ./gradlew :app:assembleRelease --build-cache --configure-on-demand --no-daemon --max-workers=6 && mkdir -p ../builds && find ./app -name 'app-release.apk' -exec mv {} ../builds/yt-dlx-1.0.0-distribution.apk \\;"
-    },
-    "dependencies": {
-        "prettier": "^3.5.3"
     }
 }
