@@ -255,15 +255,14 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
-    const { zustandData } = useZustandStore();
-    const { valtioData } = useSnapshot(valtioStore);
+    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
+    const { valtioData, sectionVideos: valtioSectionVideos, sectionsLoading: valtioSectionsLoading } = useSnapshot(valtioStore);
 
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
-    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
+
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -338,25 +337,9 @@ export default function Home() {
             setIsSearchLoading(false);
         }
     }, []);
-    const fetchSectionVideos = useCallback(async (section: ContentSection) => {
-        setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
-        try {
-            const response = await fetch(section.endpoint);
-            const data = await response.json();
-            setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
-        } catch (error) {
-            console.error(`Error fetching videos for ${section.title}:`, error);
-        } finally {
-            setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
-        }
-    }, []);
-    useEffect(() => {
-        contentSections.forEach((section, index) => {
-            setTimeout(() => {
-                fetchSectionVideos(section);
-            }, index * 100);
-        });
-    }, [contentSections, fetchSectionVideos]);
+
+    // Removed fetchSectionVideos and useEffect for fetching content sections
+
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
@@ -372,8 +355,8 @@ export default function Home() {
                             icon={section.icon}
                             title={section.title}
                             message={section.message}
-                            isLoading={sectionsLoading[section.id]}
-                            videos={sectionVideos[section.id] || []}
+                            isLoading={zustandSectionsLoading[section.id] || valtioSectionsLoading[section.id]}
+                            videos={zustandSectionVideos[section.id] || valtioSectionVideos[section.id] || []}
                         />
                     ))}
                 </div>
