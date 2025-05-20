@@ -359,8 +359,10 @@ export default function Home() {
         });
     }, [contentSections, fetchSectionVideos]);
     return (
-        <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
-            <div className="fixed inset-0 bg-red-900/10 pointer-events-none" />
+        <div className="min-h-screen bg-black relative overflow-hidden">
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full filter blur-3xl opacity-10" />
+            </div>
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
