@@ -6,7 +6,6 @@ import { useVideoStore } from "../../../store/root-page";
 import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 // ====================================================================================================
-// Interfaces (These should ideally be in a shared types file, but kept here for completeness as per request)
 // ====================================================================================================
 interface VideoType {
     type: string;
