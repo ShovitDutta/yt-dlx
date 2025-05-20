@@ -29,6 +29,8 @@ const GlassCard = memo(({ children, className = "" }: { className?: string; chil
 const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
+// ====================================================================================================
+// ====================================================================================================
 const SearchBar = ({
     onSearch,
     region,
