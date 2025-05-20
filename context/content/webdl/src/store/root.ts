@@ -1,6 +1,6 @@
 import { proxy } from "valtio";
 import { create } from "zustand";
-interface VideoType {
+export interface VideoType {
     type: string;
     title: string;
     videoId: string;
