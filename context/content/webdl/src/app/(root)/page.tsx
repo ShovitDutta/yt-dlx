@@ -277,19 +277,17 @@ export default function Home() {
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
-
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
-
                     {contentSections.map(section => {
                         const iconData = sectionsWithIcons.find(s => s.id === section.id);
                         return (
                             <VideoSection
                                 key={section.id}
-                                icon={iconData?.icon} // Use the icon from the local mapping
+                                icon={iconData?.icon}
                                 title={section.title}
-                                message={`${section.message} In ${region}`} // Dynamically append region for display
                                 isLoading={sectionsLoading[section.id]}
                                 videos={sectionVideos[section.id] || []}
+                                message={`${section.message} In ${region}`}
                             />
                         );
                     })}
