@@ -1,7 +1,3 @@
-"use client";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import YouTube from "react-youtube";
 interface Format {
     asr: number | null;
     filesize: number | null;
@@ -15,35 +11,29 @@ interface Format {
     resolution: string;
     audio_ext: string | null;
     abr: number | null;
-    format?: string;
-    format_id?: string;
-    source_preference?: number;
-    fps?: number;
-    audio_channels?: number | null;
-    height?: number;
-    quality?: number;
-    has_drm?: boolean;
-    filesize_approx?: number;
-    width?: number;
-    language?: string | null;
-    language_preference?: number;
-    preference?: number | null;
-    vcodec?: string;
-    dynamic_range?: string;
-    downloader_options?: { http_chunk_size: number };
-    protocol?: string;
-    video_ext?: string;
-    vbr?: number | null;
-    aspect_ratio?: number;
-    http_headers?: {
-        "User-Agent": string;
-        Accept: string;
-        "Accept-Language": string;
-        "Sec-Fetch-Mode": string;
-    };
-    manifest_url?: string;
+    format: string;
+    format_id: string;
+    source_preference: number | null;
+    fps: number | null;
+    audio_channels: number | null;
+    height: number | null;
+    quality: number | null;
+    has_drm: boolean | null;
+    filesize_approx: number | null;
+    width: number | null;
+    language: string | null;
+    preference: number | null;
+    vbr: number | null;
+    vcodec: string | null;
+    protocol: string | null;
+    video_ext: string | null;
+    aspect_ratio: number | null;
+    manifest_url: string | null;
+    dynamic_range: string | null;
+    language_preference: number | null;
+    downloader_options: { http_chunk_size: number } | null;
+    http_headers: { "User-Agent": string; Accept: string; "Accept-Language": string; "Sec-Fetch-Mode": string } | null;
 }
-
 interface Comment {
     comment_id: string;
     is_pinned: boolean;
@@ -60,7 +50,6 @@ interface Comment {
     reply_count: string;
     hasReplies: boolean;
 }
-
 interface MetaData {
     id: string;
     title: string;
@@ -92,7 +81,6 @@ interface MetaData {
     comment_count_formatted: string;
     channel_follower_count_formatted: string;
 }
-
 interface ExtractedVideoData {
     data: {
         BestAudioLow: Format;
@@ -113,69 +101,4 @@ interface ExtractedVideoData {
         comments: Comment[];
         transcript: any;
     };
-}
-
-export default function VideoPage() {
-    const searchParams = useSearchParams();
-    const videoId = searchParams.get("v");
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [videoData, setVideoData] = useState<ExtractedVideoData | null>(null);
-    useEffect(() => {
-        if (videoId) {
-            const fetchVideoData = async () => {
-                try {
-                    const response = await fetch(`/api/Misc/Video/Extract?query=${encodeURIComponent(videoId)}`);
-                    if (!response.ok) throw new Error(`Error fetching video data: ${response.statusText}`);
-                    const data: ExtractedVideoData = await response.json();
-                    setVideoData(data);
-                } catch (err: any) {
-                    setError(err.message);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-            fetchVideoData();
-        } else {
-            setError("Video ID is missing.");
-            setIsLoading(false);
-        }
-    }, [videoId]);
-    if (isLoading) return <div>Loading video data...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (!videoData || !videoData.data || !videoData.data.meta_data) return <div>No video data found.</div>;
-    const { meta_data, comments } = videoData.data;
-    const opts = { height: "390", width: "640", playerVars: { autoplay: 1 } };
-    return (
-        <div className="container mx-auto px-4 py-6">
-            <h1 className="text-2xl font-bold mb-4">{meta_data.title}</h1>
-            <div className="mb-4">
-                <YouTube videoId={videoId} opts={opts} />
-            </div>
-            <p>
-                <strong>Channel:</strong> {meta_data.channel}
-            </p>
-            <p>
-                <strong>Views:</strong> {meta_data.view_count}
-            </p>
-            <p>
-                <strong>Likes:</strong> {meta_data.like_count}
-            </p>
-            <h2 className="text-xl font-semibold mt-4 mb-2">Description</h2>
-            <p>{meta_data.description}</p>
-            <h2 className="text-xl font-semibold mt-4 mb-2">Comments</h2>
-            <ul>
-                {comments.map((comment, index) => (
-                    <li key={index} className="mb-2 border-b border-gray-700 pb-2">
-                        <p>
-                            <strong>{comment.author}:</strong> {comment.comment}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                            {comment.published_time} - {comment.like_count} likes
-                        </p>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
 }

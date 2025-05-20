@@ -5,12 +5,13 @@ import { regions } from "@/lib/region";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
+import Link from "next/link";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip, FaPlayCircle } from "react-icons/fa";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
+    id: string;
     type: string;
     title: string;
-    videoId: string;
     authorId: string;
     authorUrl: string;
     viewCount: string;
@@ -118,59 +119,66 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
+            animate={{ opacity: 1, scale: 1 }}
             className="relative overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950 hover:border-red-900">
-                <div className="relative">
-                    {video.thumbnails && video.thumbnails.length > 0 ? (
-                        <Fragment>
-                            <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />
-                            <motion.div className="absolute inset-0 bg-red-600/20 backdrop-blur-xl" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
-                            {isHovered && (
+            <Link href={{ pathname: "/video", query: { videoId: video.id } }}>
+                <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950 hover:border-red-900">
+                    <div className="relative">
+                        {video.thumbnails && video.thumbnails.length > 0 ? (
+                            <Fragment>
+                                <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />
                                 <motion.div
-                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-red-600/20 backdrop-blur-xl"
                                     initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
+                                    animate={{ opacity: isHovered ? 1 : 0 }}
                                     transition={{ duration: 0.3 }}
-                                    className="absolute inset-0 flex items-center justify-center">
-                                    <FaPlayCircle className="text-red-800 text-6xl" />
-                                </motion.div>
-                            )}
-                        </Fragment>
-                    ) : (
-                        <div className="w-full h-[220px] bg-neutral-900 rounded-t-xl" />
-                    )}
-                    <div className="absolute top-2 right-2 bg-red-800 animate-pulse p-1 rounded-xl font-bold text-xs text-white">@yt-dlx</div>
-                </div>
-                <div className="p-4">
-                    <div className="flex">
-                        {video.authorThumbnails && video.authorThumbnails.length > 0 ? (
-                            <div className="flex-shrink-0 mr-3">
-                                <motion.div className="w-10 h-10 rounded-full overflow-hidden" whileHover={{ scale: 1.1 }}>
-                                    <Image src={video.authorThumbnails[0].url} alt={video.authorName} width={40} height={40} className="object-cover" />
-                                </motion.div>
-                            </div>
-                        ) : null}
-                        <div>
-                            <h3 className="text-lg font-semibold text-white line-clamp-2">{video.title}</h3> <p className="text-orange-400 mt-1">{video.authorName}</p>
-                            <div className="flex items-center text-orange-500 text-sm mt-1">
-                                <span>{video.viewCount} views</span>
+                                />
+                                {isHovered && (
+                                    <motion.div
+                                        exit={{ opacity: 0 }}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="absolute inset-0 flex items-center justify-center">
+                                        <FaPlayCircle className="text-red-800 text-6xl" />
+                                    </motion.div>
+                                )}
+                            </Fragment>
+                        ) : (
+                            <div className="w-full h-[220px] bg-neutral-900 rounded-t-xl" />
+                        )}
+                        <div className="absolute top-2 right-2 bg-red-800 animate-pulse p-1 rounded-xl font-bold text-xs text-white">@yt-dlx</div>
+                    </div>
+                    <div className="p-4">
+                        <div className="flex">
+                            {video.authorThumbnails && video.authorThumbnails.length > 0 ? (
+                                <div className="flex-shrink-0 mr-3">
+                                    <motion.div className="w-10 h-10 rounded-full overflow-hidden" whileHover={{ scale: 1.1 }}>
+                                        <Image src={video.authorThumbnails[0].url} alt={video.authorName} width={40} height={40} className="object-cover" />
+                                    </motion.div>
+                                </div>
+                            ) : null}
+                            <div>
+                                <h3 className="text-lg font-semibold text-white line-clamp-2">{video.title}</h3> <p className="text-orange-400 mt-1">{video.authorName}</p>
+                                <div className="flex items-center text-orange-500 text-sm mt-1">
+                                    <span>{video.viewCount} views</span>
+                                </div>
                             </div>
                         </div>
+                        <motion.div
+                            className="mt-2 text-sm text-orange-400 line-clamp-2"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: isHovered ? 1 : 0, height: isHovered ? "auto" : 0 }}
+                            transition={{ duration: 0.3 }}>
+                            {video.description}
+                        </motion.div>
                     </div>
-                    <motion.div
-                        className="mt-2 text-sm text-orange-400 line-clamp-2"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: isHovered ? 1 : 0, height: isHovered ? "auto" : 0 }}
-                        transition={{ duration: 0.3 }}>
-                        {video.description}
-                    </motion.div>
-                </div>
-            </GlassCard>
+                </GlassCard>
+            </Link>
             {isHovered && (
                 <motion.div
                     className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-3 bg-gradient-to-t from-neutral-900/90 to-transparent"
@@ -206,7 +214,7 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
                             <div className="flex flex-nowrap overflow-x-auto gap-6">
                                 {searchResults.map(video => {
                                     return (
-                                        <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
+                                        <div key={video.id} className="flex-shrink-0 w-64 pb-4">
                                             <VideoCard video={video} />
                                         </div>
                                     );
@@ -240,7 +248,7 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
                             <div className="flex flex-nowrap overflow-x-auto gap-6 pr-4">
                                 {videos.map(video => {
                                     return (
-                                        <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
+                                        <div key={video.id} className="flex-shrink-0 w-64 pb-4">
                                             <VideoCard video={video} />
                                         </div>
                                     );
