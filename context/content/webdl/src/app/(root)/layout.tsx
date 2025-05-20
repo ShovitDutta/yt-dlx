@@ -1,9 +1,7 @@
 "use client";
-
 import React, { useEffect, useMemo } from "react";
 import { useZustandStore, VideoType } from "@/store/root";
 import { FaFire, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
-
 interface ContentSection {
     id: string;
     title: string;
@@ -11,7 +9,6 @@ interface ContentSection {
     endpoint: string;
     icon: React.ReactNode;
 }
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const setZustandSectionVideos = useZustandStore(state => state.setSectionVideos);
     const setZustandSectionsLoading = useZustandStore(state => state.setSectionsLoading);
