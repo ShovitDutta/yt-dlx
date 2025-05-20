@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip, FaPlayCircle } from "react-icons/fa";
+import VideoDetailsModal from "@/components/VideoDetailsModal";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
     type: string;
@@ -113,8 +114,20 @@ const SidebarItem = memo(({ icon, text, active = false }: { text: string; active
     );
 });
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const VideoCard = memo(({ video }: { video: VideoType }) => {
+const VideoCard = memo(({ video, onVideoHover }: { video: VideoType; onVideoHover: (video: VideoType) => void }) => {
     const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => {
+        setIsHovered(true);
+        onVideoHover(video);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+        // Optionally close modal on mouse leave, or keep it open until close button is clicked
+        // onClose();
+    };
+
     return (
         <motion.div
             layout
@@ -122,8 +135,8 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
             className="relative overflow-hidden"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}>
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}>
             <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950 hover:border-red-900">
                 <div className="relative">
                     {video.thumbnails && video.thumbnails.length > 0 ? (
@@ -171,27 +184,11 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
                     </motion.div>
                 </div>
             </GlassCard>
-            {isHovered && (
-                <motion.div
-                    className="absolute inset-0 bg-neutral-900/90 backdrop-blur-lg rounded-xl p-4 text-white overflow-y-auto"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}>
-                    <h3 className="text-xl font-semibold mb-2">{video.title}</h3>
-                    <p className="text-orange-400 text-sm mb-2">{video.authorName}</p>
-                    <p className="text-sm mb-4">{video.description}</p>
-                    <div className="flex items-center text-orange-500 text-sm">
-                        <span>{video.viewCount} views</span>
-                        {/* Add more details here as needed */}
-                    </div>
-                </motion.div>
-            )}
         </motion.div>
     );
 });
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; searchResults: VideoType[] }) => {
+const SearchResults = memo(({ searchResults, isLoading, onVideoHover }: { isLoading: boolean; searchResults: VideoType[]; onVideoHover: (video: VideoType) => void }) => {
     return (
         <AnimatePresence>
             {isLoading && searchResults.length === 0 ? (
@@ -429,3 +426,25 @@ export default function Home() {
         </div>
     );
 }
+
+</file_content>
+
+Now that you have the latest state of the file, try the operation again with fewer, more precise SEARCH blocks. For large files especially, it may be prudent to try to limit yourself to <5 SEARCH/REPLACE blocks at a time, then wait for the user to respond with the result of the operation before following up with another replace_in_file call to make additional edits.
+(If you run into this error 3 times in a row, you may use the write_to_file tool as a fallback.)
+</error><environment_details>
+# VSCode Visible Files
+src/app/(root)/page.tsx
+
+# VSCode Open Tabs
+src/components/VideoDetailsModal.tsx
+src/app/(root)/page.tsx
+
+# Current Time
+5/20/2025, 9:25:32 AM (Asia/Calcutta, UTC+5.5:00)
+
+# Context Window Usage
+77,580 / 1,048.576K tokens used (7%)
+
+# Current Mode
+ACT MODE
+</environment_details>
