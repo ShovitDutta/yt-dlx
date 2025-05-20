@@ -67,8 +67,8 @@ const SearchBar = ({
                     <div className="ml-4">
                         <select
                             className="px-4 py-3 rounded-md bg-neutral-900/70 text-white border border-neutral-900/50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            onChange={e => setRegion(e.target.value)}>
                             value={region}
+                            onChange={e => setRegion(e.target.value)}>
                             {regions.map(region => (
                                 <option key={region.code} value={region.name}>
                                     {region.name}
