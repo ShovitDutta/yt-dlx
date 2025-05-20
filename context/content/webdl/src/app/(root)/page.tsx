@@ -21,7 +21,7 @@ interface VideoType {
 }
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const GlassCard = memo(({ children, className = "" }: { className?: string; children: React.ReactNode }) => (
-    <div className={`bg-neutral-900 backdrop-blur-lg rounded-xl shadow-red-950 shadow-2xs border border-neutral-900/50 ${className}`}>{children}</div>
+    <div className={`bg-neutral-900 backdrop-blur-lg rounded-xl shadow-red-950 shadow-2xl border border-neutral-900/50 ${className}`}>{children}</div>
 ));
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const LoadingSpinner = memo(() => (
