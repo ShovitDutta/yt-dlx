@@ -24,15 +24,12 @@ interface VideoType {
 // ====================================================================================================
 // Reusable Components
 // ====================================================================================================
-
 const GlassCard = memo(({ children, className = "" }: { className?: string; children: React.ReactNode }) => (
     <div className={`bg-neutral-900 backdrop-blur-lg rounded-xl shadow-red-950 shadow-2xl border border-neutral-900/50 ${className}`}>{children}</div>
 ));
-
 const LoadingSpinner = memo(() => (
     <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
-
 const SearchBar = ({
     onSearch,
     region,
