@@ -357,11 +357,11 @@ export default function Home() {
     }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-black relative overflow-hidden">
-            <div className="fixed inset-0 pointer-events-none">
+            <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full filter blur-3xl opacity-10" />
             </div>
             <Sidebar />
-            <div className="md:ml-20 lg:ml-56">
+            <div className="md:ml-20 lg:ml-56 relative z-10">
                 <div className="container mx-auto px-4 py-6">
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
