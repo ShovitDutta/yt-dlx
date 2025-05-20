@@ -359,7 +359,7 @@ export default function Home() {
         });
     }, [contentSections, fetchSectionVideos]);
     return (
-        <div className="min-h-screen bg-gradient-to-b from-red-950 via-neutral-950 to-black">
+        <div className="min-h-screen bg-gradient-to-b from-stone-950 via-neutral-950 to-black">
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
