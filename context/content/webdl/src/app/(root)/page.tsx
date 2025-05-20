@@ -1,11 +1,10 @@
 "use client";
 import Image from "next/image";
-import { regions } from "@/lib/region"; // Assuming this path is correct for your regions data
+import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
+import { useVideoStore } from "../../../store/root-page";
 import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
-import { useVideoStore } from "@/store/videoStore"; // Import your Zustand store
-
 // ====================================================================================================
 // Interfaces (These should ideally be in a shared types file, but kept here for completeness as per request)
 // ====================================================================================================
@@ -22,7 +21,6 @@ interface VideoType {
     authorBadges: any[];
     shortViewCount: string;
 }
-
 // ====================================================================================================
 // Reusable Components
 // ====================================================================================================
