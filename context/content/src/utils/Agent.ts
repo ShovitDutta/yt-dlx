@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the functions, explaining their purpose, parameters, and return values. Also, the interfaces could benefit from JSDoc comments on their properties. Consider using more descriptive names for the interfaces and functions to improve code readability.
 import colors from "colors";
 import Engine from "./Engine";
 import { Client } from "youtubei";
