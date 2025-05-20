@@ -9,7 +9,7 @@ def monitor_and_commit():
                 add_command = subprocess.run(["git", "add", "."], capture_output=True, text=True, check=True)
                 print(add_command.stdout)
                 print(add_command.stderr)
-                commit_command = subprocess.run(["git", "commit", "-m", "♥ yt-dlx ♥"],capture_output=True,check=True,text=True,)
+                commit_command = subprocess.run(["git", "commit", "-m", "YouTubeDLX"],capture_output=True,check=True,text=True,)
                 print(commit_command.stdout)
                 print(commit_command.stderr)
                 push_command = subprocess.run(["git", "push"], capture_output=True, text=True, check=True)
