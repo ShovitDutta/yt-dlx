@@ -1,3 +1,4 @@
+// src/app/(root)/page.tsx
 "use client";
 import Image from "next/image";
 import { regions } from "@/lib/region";
