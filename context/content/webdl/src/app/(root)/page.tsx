@@ -2,7 +2,8 @@
 import Image from "next/image";
 import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
+import { useZustandStore } from "@/store/root";
+import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
@@ -253,12 +254,12 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
+    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
+
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
-    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -333,30 +334,12 @@ export default function Home() {
             setIsSearchLoading(false);
         }
     }, []);
-    const fetchSectionVideos = useCallback(async (section: ContentSection) => {
-        setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
-        try {
-            const response = await fetch(section.endpoint);
-            const data = await response.json();
-            setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
-        } catch (error) {
-            console.error(`Error fetching videos for ${section.title}:`, error);
-        } finally {
-            setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
-        }
-    }, []);
-    useEffect(() => {
-        contentSections.forEach((section, index) => {
-            setTimeout(() => {
-                fetchSectionVideos(section);
-            }, index * 100);
-        });
-    }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
+                    <div>Zustand Data: {zustandData}</div>
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
@@ -365,8 +348,8 @@ export default function Home() {
                             icon={section.icon}
                             title={section.title}
                             message={section.message}
-                            isLoading={sectionsLoading[section.id]}
-                            videos={sectionVideos[section.id] || []}
+                            videos={zustandSectionVideos[section.id] || []}
+                            isLoading={zustandSectionsLoading[section.id]}
                         />
                     ))}
                 </div>
