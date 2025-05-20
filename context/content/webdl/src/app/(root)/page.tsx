@@ -64,7 +64,7 @@ const SearchBar = ({
                     <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4.5 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <FaSearch />
                     </motion.button>
-                    <motion.div className="ml-4" whileHover={{ scale: 1.05 }}>
+                    <motion.div className="ml-4">
                         <select
                             className="px-4 py-3 rounded-md bg-neutral-900/70 text-white border border-neutral-900/50 focus:outline-none focus:ring-2 focus:ring-red-500"
                             value={region}
