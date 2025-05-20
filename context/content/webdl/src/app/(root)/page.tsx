@@ -124,20 +124,20 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
             className="relative overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950">
+            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950 hover:border-red-900">
                 <div className="relative">
                     {video.thumbnails && video.thumbnails.length > 0 ? (
                         <Fragment>
                             <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />
-                            <motion.div className="absolute inset-0 bg-red-600/20" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
+                            <motion.div className="absolute inset-0 bg-red-600/20 backdrop-blur-xl" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
                             {isHovered && (
                                 <motion.div
-                                    className="absolute inset-0 flex items-center justify-center"
+                                    exit={{ opacity: 0 }}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}>
-                                    <FaPlayCircle className="text-white text-6xl opacity-80" />
+                                    transition={{ duration: 0.3 }}
+                                    className="absolute inset-0 flex items-center justify-center">
+                                    <FaPlayCircle className="text-red-800 text-6xl" />
                                 </motion.div>
                             )}
                         </Fragment>
