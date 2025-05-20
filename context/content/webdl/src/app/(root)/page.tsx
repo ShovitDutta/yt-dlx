@@ -21,7 +21,6 @@ interface VideoType {
     thumbnails: { url: string; width: number; height: number }[];
     authorThumbnails: { url: string; width: number; height: number }[];
 }
-
 // ====================================================================================================
 // Reusable Components
 // ====================================================================================================
