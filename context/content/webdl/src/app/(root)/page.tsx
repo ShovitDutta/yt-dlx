@@ -363,21 +363,23 @@ export default function Home() {
             <div className="absolute right-[-100px] top-[-100px] w-[400px] h-[400px] bg-red-600 rounded-full blur-[150px] opacity-30 pointer-events-none z-0" />
             <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-900">
                 <div className="fixed inset-0 bg-red-900/10 pointer-events-none" />
-                <Sidebar />
-                <div className="md:ml-20 lg:ml-56">
-                    <div className="container mx-auto px-4 py-6">
-                        <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
-                        <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
-                        {contentSections.map(section => (
-                            <VideoSection
-                                key={section.id}
-                                icon={section.icon}
-                                title={section.title}
-                                message={section.message}
-                                isLoading={sectionsLoading[section.id]}
-                                videos={sectionVideos[section.id] || []}
-                            />
-                        ))}
+                <div className="relative z-10">
+                    <Sidebar />
+                    <div className="md:ml-20 lg:ml-56">
+                        <div className="container mx-auto px-4 py-6">
+                            <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
+                            <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
+                            {contentSections.map(section => (
+                                <VideoSection
+                                    key={section.id}
+                                    icon={section.icon}
+                                    title={section.title}
+                                    message={section.message}
+                                    isLoading={sectionsLoading[section.id]}
+                                    videos={sectionVideos[section.id] || []}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
