@@ -251,18 +251,7 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
 // ====================================================================================================
 
 export default function Home() {
-    const {
-        region,
-        setRegion,
-        searchQuery,
-        setSearchQuery,
-        isSearchLoading,
-        searchResults,
-        sectionVideos,
-        sectionsLoading,
-        contentSections, // Get contentSections from the store
-        fetchSearchResults,
-    } = useVideoStore();
+    const { region, setRegion, searchQuery, setSearchQuery, isSearchLoading, searchResults, sectionVideos, sectionsLoading, contentSections, fetchSearchResults } = useVideoStore();
 
     // Memoize the handleSearch function using useCallback
     const handleSearch = useCallback(
