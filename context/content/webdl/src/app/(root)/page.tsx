@@ -41,16 +41,12 @@ const SearchBar = ({
     query: string;
     setQuery: (query: string) => void;
 }) => {
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
-
     const handleSearch = () => {
         if (query.trim()) onSearch(query);
     };
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") handleSearch();
     };
-
     return (
         <motion.div className="mb-8 sticky top-0 z-50 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <GlassCard className="p-2 rounded-3xl border-2 border-red-800">
@@ -62,8 +58,6 @@ const SearchBar = ({
                             placeholder="Search videos..."
                             value={query}
                             onChange={e => setQuery(e.target.value)}
-                            onFocus={() => setIsSearchFocused(true)}
-                            onBlur={() => setIsSearchFocused(false)}
                             onKeyDown={handleKeyDown}
                         />
                     </div>
