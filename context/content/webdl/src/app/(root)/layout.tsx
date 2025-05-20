@@ -80,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     );
 
     const fetchSectionVideos = async (section: ContentSection) => {
-        setZustandSectionsLoading((state: any) => ({ ...state, [section.id]: true }));
+        setZustandSectionsLoading(state:any => ({ ...state, [section.id]: true }));
         valtioStore.sectionsLoading[section.id] = true;
         try {
             const response = await fetch(section.endpoint);
