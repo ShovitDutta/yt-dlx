@@ -122,7 +122,7 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
             className="relative overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950">
+            <GlassCard className="overflow-hidden relative h-full bg-red-950 border-2 border-red-950">
                 <div className="relative">
                     {video.thumbnails && video.thumbnails.length > 0 ? (
                         <Fragment>
