@@ -255,6 +255,9 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
+    const { zustandData } = useZustandStore();
+    const { valtioData } = useSnapshot(valtioStore);
+
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
