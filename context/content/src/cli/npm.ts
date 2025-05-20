@@ -1,6 +1,5 @@
 import { exec } from "child_process";
 import { version } from "../../package.json";
-
 exec("npm show yt-dlx version", (_error, stdout) => {
     var logger = "";
     var latestVersion = stdout.trim();
