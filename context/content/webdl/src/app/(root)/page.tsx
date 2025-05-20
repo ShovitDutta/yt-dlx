@@ -189,7 +189,8 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
         </motion.div>
     );
 });
-
+// ====================================================================================================
+// ====================================================================================================
 const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; searchResults: VideoType[] }) => {
     return (
         <AnimatePresence>
