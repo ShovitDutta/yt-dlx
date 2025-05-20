@@ -209,7 +209,7 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
                                 {searchResults.map(video => {
                                     return (
                                         <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
-                                            <VideoCard video={video} />
+                                            <VideoCard video={video} onVideoHover={onVideoHover} />
                                         </div>
                                     );
                                 })}
@@ -222,39 +222,55 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
     );
 });
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title: string; message: string; isLoading: boolean; videos: VideoType[]; icon: React.ReactNode }) => {
-    return (
-        <AnimatePresence>
-            {isLoading ? (
-                <motion.div className="flex justify-center items-center py-8 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <LoadingSpinner />
-                </motion.div>
-            ) : (
-                videos.length > 0 && (
-                    <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                        <GlassCard className="p-6">
-                            <motion.h2 className="text-2xl font-bold mb-2 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
-                                {icon} {title}
-                            </motion.h2>
-                            <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-                                {message}
-                            </motion.p>
-                            <div className="flex flex-nowrap overflow-x-auto gap-6 pr-4">
-                                {videos.map(video => {
-                                    return (
-                                        <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
-                                            <VideoCard video={video} />
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </GlassCard>
+const VideoSection = memo(
+    ({
+        title,
+        message,
+        icon,
+        videos,
+        isLoading,
+        onVideoHover,
+    }: {
+        title: string;
+        message: string;
+        isLoading: boolean;
+        videos: VideoType[];
+        icon: React.ReactNode;
+        onVideoHover: (video: VideoType) => void;
+    }) => {
+        return (
+            <AnimatePresence>
+                {isLoading ? (
+                    <motion.div className="flex justify-center items-center py-8 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <LoadingSpinner />
                     </motion.div>
-                )
-            )}
-        </AnimatePresence>
-    );
-});
+                ) : (
+                    videos.length > 0 && (
+                        <motion.div className="mb-12 border-2 border-red-950 rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                            <GlassCard className="p-6">
+                                <motion.h2 className="text-2xl font-bold mb-2 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
+                                    {icon} {title}
+                                </motion.h2>
+                                <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
+                                    {message}
+                                </motion.p>
+                                <div className="flex flex-nowrap overflow-x-auto gap-6 pr-4">
+                                    {videos.map(video => {
+                                        return (
+                                            <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
+                                                <VideoCard video={video} onVideoHover={onVideoHover} />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </GlassCard>
+                        </motion.div>
+                    )
+                )}
+            </AnimatePresence>
+        );
+    },
+);
 interface ContentSection {
     id: string;
     title: string;
@@ -265,6 +281,7 @@ interface ContentSection {
 export default function Home() {
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -382,13 +399,19 @@ export default function Home() {
     const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
     }, []);
+    const handleVideoHover = useCallback((video: VideoType) => {
+        setSelectedVideo(video);
+    }, []);
+    const handleCloseModal = useCallback(() => {
+        setSelectedVideo(null);
+    }, []);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
-                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
+                    <SearchResults searchResults={searchResults} isLoading={isSearchLoading} onVideoHover={handleVideoHover} />
                     {contentSections.map(section => (
                         <VideoSection
                             key={section.id}
@@ -397,10 +420,12 @@ export default function Home() {
                             message={section.message}
                             videos={getSectionVideos(section.id)}
                             isLoading={getSectionLoading(section.id)}
+                            onVideoHover={handleVideoHover}
                         />
                     ))}
                 </div>
             </div>
+            <VideoDetailsModal video={selectedVideo} onClose={handleCloseModal} />
         </div>
     );
 }
