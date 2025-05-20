@@ -41,7 +41,6 @@ export default async function videoTranscript({ videoLink, verbose }: VideoTrans
         if (!transcriptData || transcriptData.length === 0) {
             throw new Error(`${colors.red("@error:")} Unable to get transcript for this video!`);
         }
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return transcriptData;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -57,5 +56,6 @@ export default async function videoTranscript({ videoLink, verbose }: VideoTrans
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

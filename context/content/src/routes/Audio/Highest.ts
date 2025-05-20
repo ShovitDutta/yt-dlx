@@ -60,27 +60,22 @@ export default async function AudioHighest({
         if (metadata && (stream || output || filter || showProgress)) {
             throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
         }
-        if (stream && output) {
-            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
-        }
-        const engineData = await Tuber({ query, verbose, useTor });
-        if (!engineData) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
-        if (!engineData.metaData) {
-            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-        }
+        if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        const EngineMeta = await Tuber({ query, verbose, useTor });
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (metadata) {
             return {
                 metadata: {
-                    metaData: engineData.metaData,
-                    AudioHighF: engineData.AudioHighF,
-                    AudioHighDRC: engineData.AudioHighDRC,
-                    filename: `yt-dlx_AudioHighest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    metaData: EngineMeta.metaData,
+                    AudioHigh: EngineMeta.AudioHigh,
+                    AudioHighDRC: EngineMeta.AudioHighDRC,
+                    BestAudioHigh: EngineMeta.BestAudioHigh,
+                    filename: `yt-dlx_AudioHighest_${filter ? filter + "_" : ""}${EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 },
             };
         }
-        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const title = EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -92,57 +87,43 @@ export default async function AudioHighest({
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         try {
             const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
+            if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
+            if (EngineMeta.metaData.thumbnail) instance.addInput(EngineMeta.metaData.thumbnail);
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        if (!engineData.AudioHighF?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
-        }
-        instance.addInput(engineData.AudioHighF.url);
-        if (!engineData.metaData.thumbnail) {
-            throw new Error(`${colors.red("@error:")} Thumbnail URL was not found.`);
-        }
-        instance.addInput(engineData.metaData.thumbnail);
+        if (!EngineMeta.AudioHighF?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
+        instance.addInput(EngineMeta.AudioHighF.url);
         instance.withOutputFormat("avi");
         const filterMap: Record<string, string[]> = {
-            bassboost: ["bass=g=10,dynaudnorm=f=150"],
-            echo: ["aecho=0.8:0.9:1000:0.3"],
+            speed: ["atempo=2"],
             flanger: ["flanger"],
-            nightcore: ["aresample=48000,asetrate=48000*1.25"],
+            slow: ["atempo=0.8"],
+            reverse: ["areverse"],
+            surround: ["surround"],
+            subboost: ["asubboost"],
+            superspeed: ["atempo=3"],
+            superslow: ["atempo=0.5"],
+            vibrato: ["vibrato=f=6.5"],
             panning: ["apulsator=hz=0.08"],
             phaser: ["aphaser=in_gain=0.4"],
-            reverse: ["areverse"],
-            slow: ["atempo=0.8"],
-            speed: ["atempo=2"],
-            subboost: ["asubboost"],
-            superslow: ["atempo=0.5"],
-            superspeed: ["atempo=3"],
-            surround: ["surround"],
+            echo: ["aecho=0.8:0.9:1000:0.3"],
+            bassboost: ["bass=g=10,dynaudnorm=f=150"],
             vaporwave: ["aresample=48000,asetrate=48000*0.8"],
-            vibrato: ["vibrato=f=6.5"],
+            nightcore: ["aresample=48000,asetrate=48000*1.25"],
         };
-        if (filter && filterMap[filter]) {
-            instance.withAudioFilter(filterMap[filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (filter && filterMap[filter]) instance.withAudioFilter(filterMap[filter]);
+        else instance.outputOptions("-c copy");
         let processStartTime: Date;
         if (showProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) {
-                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                }
+                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
         if (stream) {
@@ -166,7 +147,6 @@ export default async function AudioHighest({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioHighest_`;
@@ -196,7 +176,6 @@ export default async function AudioHighest({
                 });
                 instance.run();
             });
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {
@@ -213,5 +192,6 @@ export default async function AudioHighest({
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

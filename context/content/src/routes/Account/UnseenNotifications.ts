@@ -21,7 +21,6 @@ export default async function unseen_notifications(options: UnseenNotificationsO
             throw new Error(`${colors.red("@error:")} Failed to fetch unseen notifications count.`);
         }
         const result: TubeResponse<{ count: number }> = { status: "success", data: { count: Number(count) || 0 } };
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
     } catch (error: any) {
         if (error instanceof ZodError) {

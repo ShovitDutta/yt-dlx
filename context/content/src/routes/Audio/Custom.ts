@@ -62,29 +62,25 @@ export default async function AudioCustom({
         if (metadata && (stream || output || filter || showProgress)) {
             throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
         }
-        if (stream && output) {
-            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
-        }
-        const engineData = await Tuber({ query, verbose, useTor });
-        if (!engineData) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
-        if (!engineData.metaData) {
-            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine's response.`);
-        }
+        if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        const EngineMeta = await Tuber({ query, verbose, useTor });
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine's response.`);
         if (metadata) {
             return {
                 metadata: {
-                    metaData: engineData.metaData,
-                    BestAudioLow: engineData.BestAudioLow,
-                    BestAudioHigh: engineData.BestAudioHigh,
-                    AudioLowDRC: engineData.AudioLowDRC,
-                    AudioHighDRC: engineData.AudioHighDRC,
-                    filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    metaData: EngineMeta.metaData,
+                    AudioLow: EngineMeta.AudioLow,
+                    AudioHigh: EngineMeta.AudioHigh,
+                    AudioLowDRC: EngineMeta.AudioLowDRC,
+                    AudioHighDRC: EngineMeta.AudioHighDRC,
+                    BestAudioLow: EngineMeta.BestAudioLow,
+                    BestAudioHigh: EngineMeta.BestAudioHigh,
+                    filename: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 },
             };
         }
-        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const title = EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -96,29 +92,20 @@ export default async function AudioCustom({
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         try {
             const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
+            if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
+            if (EngineMeta.metaData.thumbnail) instance.addInput(EngineMeta.metaData.thumbnail);
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        const adata = engineData.AudioHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolution));
-        if (!adata) {
-            throw new Error(`${colors.red("@error:")} No audio data found for the specified resolution: ${resolution}. Please use the 'list_formats()' command to see available formats.`);
+        const AudioMeta = EngineMeta.AudioHigh?.find((i: { format: string | string[] }) => i.format?.includes(resolution));
+        if (!AudioMeta) {
+            throw new Error(`${colors.red("@error:")} No Audio data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Formats()' command to see available formats.`);
         }
-        if (!adata.url) {
-            throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
-        }
-        instance.addInput(adata.url);
-        if (!engineData.metaData.thumbnail) {
-            throw new Error(`${colors.red("@error:")} The thumbnail URL was not found.`);
-        }
-        instance.addInput(engineData.metaData.thumbnail);
+        if (!AudioMeta.url) throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
+        instance.addInput(AudioMeta.url);
         instance.withOutputFormat("avi");
         const filterMap: { [key: string]: string[] } = {
             speed: ["atempo=2"],
@@ -137,20 +124,15 @@ export default async function AudioCustom({
             vaporwave: ["aresample=48000,asetrate=48000*0.8"],
             nightcore: ["aresample=48000,asetrate=48000*1.25"],
         };
-        if (filter && filterMap[filter]) {
-            instance.withAudioFilter(filterMap[filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (filter && filterMap[filter]) instance.withAudioFilter(filterMap[filter]);
+        else instance.outputOptions("-c copy");
         let processStartTime: Date;
         if (showProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) {
-                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                }
+                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
         if (stream) {
@@ -174,7 +156,6 @@ export default async function AudioCustom({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioCustom_${resolution}_`;
@@ -204,7 +185,6 @@ export default async function AudioCustom({
                 });
                 instance.run();
             });
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {
@@ -221,5 +201,6 @@ export default async function AudioCustom({
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

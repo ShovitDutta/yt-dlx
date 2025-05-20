@@ -171,8 +171,11 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
     }
 }
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<{ data: PayloadType }> {
+    let verbose = false;
     try {
-        const { query, useTor, verbose } = ZodSchema.parse(options);
+        const parsedOptions = ZodSchema.parse(options);
+        const { query, useTor, verbose: parsedVerbose } = parsedOptions;
+        verbose = parsedVerbose ?? false;
         const metaBody: EngineOutput = await Tuber({ query, verbose, useTor });
         if (!metaBody) {
             throw new Error(`${colors.red("@error:")} Unable to get response!`);
@@ -230,7 +233,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             comments,
             transcript,
         };
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: payload };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -246,5 +248,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

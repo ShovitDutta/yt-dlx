@@ -52,36 +52,30 @@ export default async function AudioVideoHighest({
     metadata,
     verbose,
     showProgress,
-}: AudioVideoHighestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable }> {
+}: AudioVideoHighestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, metadata, verbose, showProgress });
         if (metadata && (stream || output || filter || showProgress)) {
             throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
         }
-        if (stream && output) {
-            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
-        }
-        const engineData = await Tuber({ query, verbose, useTor });
-        if (!engineData) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
-        if (!engineData.metaData) {
-            throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
-        }
+        if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        const EngineMeta = await Tuber({ query, verbose, useTor });
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
         if (metadata) {
             return {
                 metadata: {
-                    metaData: engineData.metaData,
-                    AudioHighF: engineData.AudioHighF,
-                    AudioHighDRC: engineData.AudioHighDRC,
-                    VideoHighF: engineData.VideoHighF,
-                    VideoHighHDR: engineData.VideoHighHDR,
-                    ManifestHigh: engineData.ManifestHigh,
-                    filename: `yt-dlx_AudioVideoHighest_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    metaData: EngineMeta.metaData,
+                    BestAudioHigh: EngineMeta.BestAudioHigh,
+                    AudioHighDRC: EngineMeta.AudioHighDRC,
+                    BestVideoHigh: EngineMeta.BestVideoHigh,
+                    VideoHighHDR: EngineMeta.VideoHighHDR,
+                    ManifestHigh: EngineMeta.ManifestHigh,
+                    filename: `yt-dlx_AudioVideoHighest_${filter ? filter + "_" : ""}${EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                 },
             };
         }
-        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const title = EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -93,55 +87,43 @@ export default async function AudioVideoHighest({
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         try {
             const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
+            if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
+            if (EngineMeta.metaData.thumbnail) instance.addInput(EngineMeta.metaData.thumbnail);
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        if (!engineData.AudioHighF?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL not found.`);
-        }
-        instance.addInput(engineData.AudioHighF.url);
-        if (!engineData.metaData.thumbnail) {
-            throw new Error(`${colors.red("@error:")} Thumbnail URL not found.`);
-        }
-        instance.addInput(engineData.metaData.thumbnail);
-        instance.withOutputFormat("avi");
+        if (!EngineMeta.ManifestHigh || EngineMeta.ManifestHigh.length === 0 || !EngineMeta.ManifestHigh[0]?.url) throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
+        instance.addInput(EngineMeta.ManifestHigh[0].url);
+        if (!EngineMeta.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL not found.`);
+        instance.addInput(EngineMeta.BestAudioHigh.url);
+        instance.withOutputFormat("matroska");
         const filterMap: Record<string, string[]> = {
+            grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
             invert: ["negate"],
-            rotate90: ["transpose=1"],
-            rotate180: ["transpose=2,transpose=2"],
-            rotate270: ["transpose=2"],
-            grayscale: ["hue=s=0"],
-            flipVertical: ["vflip"],
+            rotate90: ["rotate=PI/2"],
+            rotate180: ["rotate=PI"],
+            rotate270: ["rotate=3*PI/2"],
             flipHorizontal: ["hflip"],
+            flipVertical: ["vflip"],
         };
-        if (filter && filterMap[filter]) {
-            instance.withVideoFilter(filterMap[filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (filter && filterMap[filter]) instance.withVideoFilter(filterMap[filter]);
+        else instance.outputOptions("-c copy");
         let processStartTime: Date;
         if (showProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) {
-                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                }
+                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
         if (stream) {
             const passthroughStream = new PassThrough();
             const filenameBase = `yt-dlx_AudioVideoHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).filename = filename;
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
@@ -159,11 +141,10 @@ export default async function AudioVideoHighest({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-            return { stream: passthroughStream };
+            return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioVideoHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
             const outputPath = path.join(folder, filename);
             instance.output(outputPath);
             await new Promise<void>((resolve, reject) => {
@@ -172,9 +153,7 @@ export default async function AudioVideoHighest({
                     if (showProgress) processStartTime = new Date();
                 });
                 instance.on("progress", progress => {
-                    if (showProgress && processStartTime) {
-                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                    }
+                    if (showProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
                 instance.on("end", () => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
@@ -189,7 +168,6 @@ export default async function AudioVideoHighest({
                 });
                 instance.run();
             });
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath };
         }
     } catch (error: any) {
@@ -206,5 +184,6 @@ export default async function AudioVideoHighest({
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

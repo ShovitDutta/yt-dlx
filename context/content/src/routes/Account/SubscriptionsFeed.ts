@@ -53,7 +53,6 @@ export default async function subscriptions_feed({ cookies, verbose = false }: s
                 };
             }) || [];
         const result: TubeResponse<{ contents: Content[] }> = { status: "success", data: { contents } };
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
     } catch (error: any) {
         if (error instanceof ZodError) {

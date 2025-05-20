@@ -8,7 +8,6 @@ export default async function channel_data({ channelLink, verbose }: z.infer<typ
         const youtube = new Client();
         const channelData: Channel | undefined = await youtube.getChannel(channelLink);
         if (!channelData) throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: channelData };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -24,5 +23,6 @@ export default async function channel_data({ channelLink, verbose }: z.infer<typ
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

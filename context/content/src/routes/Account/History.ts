@@ -79,7 +79,6 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
                     });
                 break;
         }
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return result;
     } catch (error: any) {
         if (error instanceof ZodError) {

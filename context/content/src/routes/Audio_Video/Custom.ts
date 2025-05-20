@@ -62,28 +62,28 @@ export default async function AudioVideoCustom({
         }
         if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         if (metadata && showProgress) throw new Error(`${colors.red("@error:")} The 'showProgress' parameter cannot be used when 'metadata' is true.`);
-        const engineData = await ytdlx({ query, verbose, useTor });
-        if (!engineData) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        if (!engineData.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
+        const EngineMeta = await ytdlx({ query, verbose, useTor });
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (metadata) {
             return {
                 metadata: {
-                    metaData: engineData.metaData,
-                    BestAudioLow: engineData.BestAudioLow,
-                    BestAudioHigh: engineData.BestAudioHigh,
-                    AudioLowDRC: engineData.AudioLowDRC,
-                    AudioHighDRC: engineData.AudioHighDRC,
-                    BestVideoLow: engineData.BestVideoLow,
-                    BestVideoHigh: engineData.BestVideoHigh,
-                    VideoLowHDR: engineData.VideoLowHDR,
-                    VideoHighHDR: engineData.VideoHighHDR,
-                    ManifestLow: engineData.ManifestLow,
-                    ManifestHigh: engineData.ManifestHigh,
-                    filename: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                    metaData: EngineMeta.metaData,
+                    BestAudioLow: EngineMeta.BestAudioLow,
+                    BestAudioHigh: EngineMeta.BestAudioHigh,
+                    AudioLowDRC: EngineMeta.AudioLowDRC,
+                    AudioHighDRC: EngineMeta.AudioHighDRC,
+                    BestVideoLow: EngineMeta.BestVideoLow,
+                    BestVideoHigh: EngineMeta.BestVideoHigh,
+                    VideoLowHDR: EngineMeta.VideoLowHDR,
+                    VideoHighHDR: EngineMeta.VideoHighHDR,
+                    ManifestLow: EngineMeta.ManifestLow,
+                    ManifestHigh: EngineMeta.ManifestHigh,
+                    filename: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                 },
             };
         }
-        const title = engineData.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
+        const title = EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = output ? output : process.cwd();
         if (!stream && !fs.existsSync(folder)) {
             try {
@@ -99,34 +99,29 @@ export default async function AudioVideoCustom({
             if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
+            if (EngineMeta.metaData.thumbnail) instance.addInput(EngineMeta.metaData.thumbnail);
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
         }
-        if (!engineData.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
-        instance.addInput(engineData.BestAudioHigh.url);
+        if (!EngineMeta.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
+        instance.addInput(EngineMeta.BestAudioHigh.url);
         instance.withOutputFormat("matroska");
         const resolutionRegex = /(\d+)p(\d+)?/;
         const resolutionMatch = resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
-
-        const vdata = engineData.allFormats?.find((i: any) => {
+        const vdata = EngineMeta.allFormats?.find((i: any) => {
             const height = i.height;
             const fps = i.fps;
             const vcodec = i.vcodec;
-
             let heightMatches = height === targetHeight;
             let fpsMatches = targetFps === null || fps === targetFps;
-
             return heightMatches && fpsMatches && vcodec !== "none";
         });
-
         if (vdata) {
             if (!vdata.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
             instance.addInput(vdata.url.toString());
-        } else {
-            throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
-        }
+        } else throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
         const filterMap: Record<string, string[]> = {
             invert: ["negate"],
             flipVertical: ["vflip"],
@@ -168,7 +163,6 @@ export default async function AudioVideoCustom({
                 if (showProgress) process.stdout.write("\n");
             });
             instance.run();
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { stream: passthroughStream, filename: filename };
         } else {
             const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
@@ -196,7 +190,6 @@ export default async function AudioVideoCustom({
                 });
                 instance.run();
             });
-            if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
             return { outputPath: outputPath };
         }
     } catch (error: any) {
@@ -213,5 +206,6 @@ export default async function AudioVideoCustom({
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

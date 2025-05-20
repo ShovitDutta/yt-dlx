@@ -296,6 +296,7 @@ export default async function Engine({ query, useTor = false, verbose = false, r
             var i = BestVideoHigh || ({} as VideoFormat);
             return CeanVideoFormat(i);
         })(),
+        allFormats: i.formats,
         AudioLowDRC: Object.values(AudioLowDRC).map(i => MapAudioFormat(i)),
         AudioHighDRC: Object.values(AudioHighDRC).map(i => MapAudioFormat(i)),
         AudioLow: FilterFormats(Object.values(AudioLow)).map(i => MapAudioFormat(i)),
@@ -304,7 +305,6 @@ export default async function Engine({ query, useTor = false, verbose = false, r
         VideoHighHDR: Object.values(VideoHighHDR).map(i => MapVideoFormat(i)),
         VideoLow: FilterFormats(Object.values(VideoLow)).map(i => MapVideoFormat(i)),
         VideoHigh: FilterFormats(Object.values(VideoHigh)).map(i => MapVideoFormat(i)),
-        allFormats: i.formats,
         ManifestLow: Object.values(ManifestLow).map(i => MapManifest(i)),
         ManifestHigh: Object.values(ManifestHigh).map(i => MapManifest(i)),
         metaData: {

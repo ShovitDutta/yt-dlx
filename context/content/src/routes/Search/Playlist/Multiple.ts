@@ -34,7 +34,6 @@ export default async function search_playlists({ playlistLink, verbose }: z.infe
         if (!metaData) {
             throw new Error(`${colors.red("@error: ")} Unable to get playlist data.`);
         }
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return { data: metaData };
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -50,5 +49,6 @@ export default async function search_playlists({ playlistLink, verbose }: z.infe
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

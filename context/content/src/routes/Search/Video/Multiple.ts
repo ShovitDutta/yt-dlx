@@ -47,7 +47,6 @@ export default async function searchVideos({ query, minViews, maxViews, orderBy,
         if (videos.length === 0) {
             throw new Error(`${colors.red("@error:")} No videos found with the given criteria.`);
         }
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
         return videos;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -63,5 +62,6 @@ export default async function searchVideos({ query, minViews, maxViews, orderBy,
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
