@@ -13,14 +13,16 @@ interface VideoType {
     title: string;
     videoId: string;
     authorId: string;
-    thumbnails: any[];
     authorUrl: string;
     viewCount: string;
     authorName: string;
     description: string;
     authorBadges: any[];
     shortViewCount: string;
+    thumbnails: { url: string; width: number; height: number }[];
+    authorThumbnails: { url: string; width: number; height: number }[];
 }
+
 // ====================================================================================================
 // Reusable Components
 // ====================================================================================================
