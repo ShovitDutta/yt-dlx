@@ -48,7 +48,7 @@ const SearchBar = ({
         if (e.key === "Enter") handleSearch();
     };
     return (
-        <motion.div className="mb-8 sticky top-0 z-50 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div className="mb-8 sticky top-0 z-50 p-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <GlassCard className="p-2 rounded-full border-2 border-red-800">
                 <div className="flex items-center">
                     <div className="relative flex-grow">
