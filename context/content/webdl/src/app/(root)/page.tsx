@@ -2,23 +2,24 @@
 "use client";
 import Image from "next/image";
 import { regions } from "@/lib/region";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
-import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
+import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
+import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip, FaPlayCircle } from "react-icons/fa";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
     type: string;
     title: string;
     videoId: string;
     authorId: string;
-    thumbnails: any[];
     authorUrl: string;
     viewCount: string;
     authorName: string;
     description: string;
     authorBadges: any[];
     shortViewCount: string;
-    authorThumbnails: any[];
+    thumbnails: { url: string; width: number; height: number }[];
+    authorThumbnails: { url: string; width: number; height: number }[];
 }
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const GlassCard = memo(({ children, className = "" }: { className?: string; children: React.ReactNode }) => (
@@ -26,7 +27,7 @@ const GlassCard = memo(({ children, className = "" }: { className?: string; chil
 ));
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const LoadingSpinner = memo(() => (
-    <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+    <motion.div className="h-16 w-16 rounded-full border-t-4 border-red-500 border-opacity-50" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
 ));
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const SearchBar = ({
@@ -62,7 +63,7 @@ const SearchBar = ({
                             className="w-full px-4 py-3 rounded-l-md bg-neutral-900/50 backdrop-blur-sm text-white border-2 border-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                         />
                     </div>
-                    <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4.5 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <FaSearch />
                     </motion.button>
                     <div className="ml-4">
@@ -129,13 +130,21 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
                         <Fragment>
                             <Image src={video.thumbnails[0].url} alt={video.title} width={380} height={220} className="w-full rounded-t-xl object-cover" />
                             <motion.div className="absolute inset-0 bg-red-600/20" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }} />
+                            {isHovered && (
+                                <motion.div
+                                    className="absolute inset-0 flex items-center justify-center"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}>
+                                    <FaPlayCircle className="text-white text-6xl opacity-80" />
+                                </motion.div>
+                            )}
                         </Fragment>
                     ) : (
                         <div className="w-full h-[220px] bg-neutral-900 rounded-t-xl" />
                     )}
-                    <motion.div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs text-white" initial={{ opacity: 0.6 }} whileHover={{ opacity: 1 }}>
-                        {video.shortViewCount}
-                    </motion.div>
+                    <div className="absolute top-2 right-2 bg-red-800 animate-pulse p-1 rounded-xl font-bold text-xs text-white">@yt-dlx</div>
                 </div>
                 <div className="p-4">
                     <div className="flex">
@@ -194,11 +203,10 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
                             <motion.h2 className="text-2xl font-bold mb-6 text-white flex items-center" initial={{ x: -20 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
                                 <FaSearch className="mr-2" /> Search Results
                             </motion.h2>
-                            {/* Adjusted grid to span across two rows with a fixed height and overflow-x-auto */}
-                            <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
+                            <div className="flex flex-nowrap overflow-x-auto gap-6">
                                 {searchResults.map(video => {
                                     return (
-                                        <div key={video.videoId} className="flex-shrink-0 w-64">
+                                        <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
                                             <VideoCard video={video} />
                                         </div>
                                     );
@@ -229,10 +237,10 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
                             <motion.p className="text-orange-400 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
                                 {message}
                             </motion.p>
-                            <div className="flex flex-wrap h-[600px] overflow-x-auto gap-6">
+                            <div className="flex flex-nowrap overflow-x-auto gap-6 pr-4">
                                 {videos.map(video => {
                                     return (
-                                        <div key={video.videoId} className="flex-shrink-0 w-64">
+                                        <div key={video.videoId} className="flex-shrink-0 w-64 pb-4">
                                             <VideoCard video={video} />
                                         </div>
                                     );
@@ -245,7 +253,6 @@ const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title:
         </AnimatePresence>
     );
 });
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface ContentSection {
     id: string;
     title: string;
@@ -256,10 +263,6 @@ interface ContentSection {
 export default function Home() {
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
-    const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [searchResults, setSearchResults] = useState<VideoType[]>([]);
-    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
-    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -321,38 +324,62 @@ export default function Home() {
         ],
         [region],
     );
-    const handleSearch = useCallback(async (query: string) => {
-        setIsSearchLoading(true);
-        setSearchQuery(query);
-        try {
-            const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}`);
+    const { data: searchResults = [], isLoading: isSearchLoading } = useQuery<VideoType[]>({
+        queryKey: ["searchResults", searchQuery],
+        queryFn: async () => {
+            const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(searchQuery)}`);
+            if (!response.ok) throw new Error(`Failed to fetch videos for query: ${searchQuery}`);
             const data = await response.json();
-            setSearchResults(data.result);
-        } catch (error) {
-            console.error("Error searching videos:", error);
-        } finally {
-            setIsSearchLoading(false);
-        }
-    }, []);
-    const fetchSectionVideos = useCallback(async (section: ContentSection) => {
-        setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
-        try {
-            const response = await fetch(section.endpoint);
+            return data.result || [];
+        },
+        staleTime: 1000 * 60 * 2,
+        enabled: !!searchQuery,
+    });
+    const { data: trendingVideos = [], isLoading: isTrendingLoading } = useQuery<VideoType[]>({
+        queryKey: ["trending", region],
+        queryFn: async () => {
+            const response = await fetch(`/api/Trending?query=${encodeURIComponent(`Today's Trending In ${region}`)}`);
+            if (!response.ok) throw new Error(`Failed to fetch trending videos for region: ${region}`);
             const data = await response.json();
-            setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
-        } catch (error) {
-            console.error(`Error fetching videos for ${section.title}:`, error);
-        } finally {
-            setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
-        }
-    }, []);
-    useEffect(() => {
-        contentSections.forEach((section, index) => {
-            setTimeout(() => {
-                fetchSectionVideos(section);
-            }, index * 100);
+            return data.result || [];
+        },
+        staleTime: 1000 * 60 * 5,
+    });
+    const sectionQueries = contentSections
+        .filter(section => section.id !== "trending")
+        .map(section => {
+            const query = section.id === "trending" ? `Today's Trending In ${region}` : section.message;
+            const queryResult = useQuery<VideoType[]>({
+                queryKey: [section.id, region],
+                queryFn: async () => {
+                    const response = await fetch(`/api/Search/Video/Multiple?query=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error(`Failed to fetch videos for query: ${query}`);
+                    const data = await response.json();
+                    return data.result || [];
+                },
+                staleTime: 1000 * 60 * 5,
+            });
+            return { id: section.id, ...queryResult };
         });
-    }, [contentSections, fetchSectionVideos]);
+    const getSectionVideos = useCallback(
+        (id: string) => {
+            if (id === "trending") return trendingVideos;
+            const sectionQuery = sectionQueries.find(q => q.id === id);
+            return sectionQuery?.data || [];
+        },
+        [trendingVideos, sectionQueries],
+    );
+    const getSectionLoading = useCallback(
+        (id: string) => {
+            if (id === "trending") return isTrendingLoading;
+            const sectionQuery = sectionQueries.find(q => q.id === id);
+            return sectionQuery?.isLoading || false;
+        },
+        [isTrendingLoading, sectionQueries],
+    );
+    const handleSearch = useCallback((query: string) => {
+        setSearchQuery(query);
+    }, []);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
@@ -366,8 +393,8 @@ export default function Home() {
                             icon={section.icon}
                             title={section.title}
                             message={section.message}
-                            isLoading={sectionsLoading[section.id]}
-                            videos={sectionVideos[section.id] || []}
+                            videos={getSectionVideos(section.id)}
+                            isLoading={getSectionLoading(section.id)}
                         />
                     ))}
                 </div>
