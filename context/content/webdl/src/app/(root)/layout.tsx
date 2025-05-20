@@ -1,7 +1,6 @@
-import { mainStore } from "../../store";
 import React from "react";
 import { useEffect } from "react";
-
+import { mainStore } from "../../store";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchData = async () => {
