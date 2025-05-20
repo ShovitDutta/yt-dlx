@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return value. Also, consider defining specific interfaces for the different types of content items to improve type safety and code readability.
 import extractText from "./extractText";
 import sanitizeRenderer from "./sanitizeRenderer";
 export default function sanitizeContentItem(item: any): any {
