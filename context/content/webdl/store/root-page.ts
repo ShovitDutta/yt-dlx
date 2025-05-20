@@ -1,6 +1,4 @@
-// store/videoStore.ts
 import { create } from "zustand";
-
 interface VideoType {
     type: string;
     title: string;
