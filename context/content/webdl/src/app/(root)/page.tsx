@@ -252,10 +252,12 @@ interface ContentSection {
     endpoint: string;
     icon: React.ReactNode;
 }
-import { useMainStore } from "@/src/store";
+import { mainStore } from "@/src/store";
+import { MainStore } from "@/src/store";
+import { useSnapshot } from "valtio";
 
 export default function Home() {
-    const data = useMainStore(state => state.data);
+    const { data } = useSnapshot(mainStore);
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
