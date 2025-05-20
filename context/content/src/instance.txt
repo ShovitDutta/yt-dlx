@@ -1,2 +1,1 @@
-// Suggestion: Avoid hardcoding header names and values directly in the string. Use constants and template literals for better readability and maintainability. Sanitize or validate user-provided data before using it in headers to prevent security vulnerabilities.
 instance.addOption("-headers", `X-Forwarded-For: ${engineData.ipAddress}`);
