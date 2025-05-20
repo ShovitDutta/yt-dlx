@@ -47,9 +47,7 @@ export default async function videoData({ videoLink, verbose }: VideoDataOptions
     try {
         ZodSchema.parse({ videoLink, verbose });
         const vId = await YouTubeID(videoLink);
-        if (!vId) {
-            throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
-        }
+        if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
         const metaData = await singleVideo({ videoId: vId });
         return metaData;
     } catch (error: any) {

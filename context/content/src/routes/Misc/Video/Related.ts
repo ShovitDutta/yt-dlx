@@ -14,9 +14,7 @@ async function relatedVideos({ videoId }: { videoId: string }): Promise<RelatedV
     try {
         const youtube = new Client();
         const videoData: any = await youtube.getVideo(videoId);
-        if (!videoData?.related?.items) {
-            return [];
-        }
+        if (!videoData?.related?.items) return [];
         return videoData.related.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, uploadDate: item.uploadDate, thumbnails: item.thumbnails }));
     } catch (error: any) {
         throw new Error(error.message);
@@ -27,9 +25,7 @@ export default async function relatedVideosFn({ videoId, verbose }: RelatedVideo
     try {
         ZodSchema.parse({ videoId, verbose });
         const videos = await relatedVideos({ videoId });
-        if (!videos || videos.length === 0) {
-            throw new Error(`${colors.red("@error:")} No related videos found for the provided video ID.`);
-        }
+        if (!videos || videos.length === 0) throw new Error(`${colors.red("@error:")} No related videos found for the provided video ID.`);
         return videos;
     } catch (error: any) {
         if (error instanceof ZodError) {

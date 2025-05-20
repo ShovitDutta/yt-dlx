@@ -13,9 +13,7 @@ async function playlistVideos({ playlistId }: { playlistId: string }): Promise<p
     try {
         const youtube = new Client();
         const playlistVideosData: any = await youtube.getPlaylist(playlistId);
-        if (!playlistVideosData) {
-            throw new Error(`${colors.red("@error: ")} Unable to fetch playlist data.`);
-        }
+        if (!playlistVideosData) throw new Error(`${colors.red("@error: ")} Unable to fetch playlist data.`);
         const result = playlistVideosData.videos.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, thumbnails: item.thumbnails }));
         return { id: playlistVideosData.id, title: playlistVideosData.title, videoCount: playlistVideosData.videoCount, result };
     } catch (error: any) {
@@ -26,13 +24,9 @@ export default async function playlist_data({ playlistLink, verbose }: z.infer<t
     try {
         ZodSchema.parse({ playlistLink, verbose });
         const playlistId = await YouTubeID(playlistLink);
-        if (!playlistId) {
-            throw new Error(`${colors.red("@error: ")} Incorrect playlist link provided.`);
-        }
+        if (!playlistId) throw new Error(`${colors.red("@error: ")} Incorrect playlist link provided.`);
         const metaData: playlistVideosType | null = await playlistVideos({ playlistId });
-        if (!metaData) {
-            throw new Error(`${colors.red("@error: ")} Unable to retrieve playlist information.`);
-        }
+        if (!metaData) throw new Error(`${colors.red("@error: ")} Unable to retrieve playlist information.`);
         return { data: metaData };
     } catch (error: any) {
         if (error instanceof ZodError) {

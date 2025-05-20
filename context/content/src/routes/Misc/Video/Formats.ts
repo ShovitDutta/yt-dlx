@@ -27,9 +27,7 @@ export default async function list_formats({ query, verbose }: z.infer<typeof Zo
     try {
         ZodSchema.parse({ query, verbose });
         const metaBody: EngineOutput = await Tuber({ query, verbose });
-        if (!metaBody) {
-            throw new Error(`${colors.red("@error:")} Unable to get response from YouTube.`);
-        }
+        if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response from YouTube.`);
         const data: ListFormatsData = {
             ManifestLow: metaBody.ManifestLow?.map(item => ({ format: item.format, tbr: item.tbr })) || [],
             ManifestHigh: metaBody.ManifestHigh?.map(item => ({ format: item.format, tbr: item.tbr })) || [],

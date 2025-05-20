@@ -29,9 +29,7 @@ export default async function search_channels({ query, verbose }: z.infer<typeof
     try {
         ZodSchema.parse({ query, verbose });
         const channels = await searchChannels({ query });
-        if (!channels || channels.length === 0) {
-            throw new Error(`${colors.red("@error: ")} No channels found for the provided query.`);
-        }
+        if (!channels || channels.length === 0) throw new Error(`${colors.red("@error: ")} No channels found for the provided query.`);
         return { data: channels };
     } catch (error: any) {
         if (error instanceof ZodError) {

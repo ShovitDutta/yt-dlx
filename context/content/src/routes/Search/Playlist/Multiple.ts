@@ -23,17 +23,11 @@ export default async function search_playlists({ playlistLink, verbose }: z.infe
     try {
         ZodSchema.parse({ playlistLink, verbose });
         const isID = await YouTubeID(playlistLink);
-        if (isID) {
-            throw new Error(`${colors.red("@error: ")} Use playlist_data() for playlist link!`);
-        }
+        if (isID) throw new Error(`${colors.red("@error: ")} Use playlist_data() for playlist link!`);
         const metaDataArray: searchPlaylistsType[] = await searchPlaylists({ query: playlistLink });
-        if (!metaDataArray.length) {
-            throw new Error(`${colors.red("@error: ")} No playlists found for the provided query.`);
-        }
+        if (!metaDataArray.length) throw new Error(`${colors.red("@error: ")} No playlists found for the provided query.`);
         const metaData: searchPlaylistsType = metaDataArray[0];
-        if (!metaData) {
-            throw new Error(`${colors.red("@error: ")} Unable to get playlist data.`);
-        }
+        if (!metaData) throw new Error(`${colors.red("@error: ")} Unable to get playlist data.`);
         return { data: metaData };
     } catch (error: any) {
         if (error instanceof ZodError) {

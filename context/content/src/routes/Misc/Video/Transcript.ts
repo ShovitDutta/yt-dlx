@@ -34,13 +34,9 @@ export default async function videoTranscript({ videoLink, verbose }: VideoTrans
     try {
         ZodSchema.parse({ videoLink, verbose });
         const vId = await YouTubeID(videoLink);
-        if (!vId) {
-            throw new Error(`${colors.red("@error:")} Incorrect video link`);
-        }
+        if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link`);
         const transcriptData: VideoTranscriptType[] = await getVideoTranscript({ videoId: vId });
-        if (!transcriptData || transcriptData.length === 0) {
-            throw new Error(`${colors.red("@error:")} Unable to get transcript for this video!`);
-        }
+        if (!transcriptData || transcriptData.length === 0) throw new Error(`${colors.red("@error:")} Unable to get transcript for this video!`);
         return transcriptData;
     } catch (error: any) {
         if (error instanceof ZodError) {

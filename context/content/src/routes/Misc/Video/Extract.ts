@@ -177,17 +177,11 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const { query, useTor, verbose: parsedVerbose } = parsedOptions;
         verbose = parsedVerbose ?? false;
         const metaBody: EngineOutput = await Tuber({ query, verbose, useTor });
-        if (!metaBody) {
-            throw new Error(`${colors.red("@error:")} Unable to get response!`);
-        }
-        if (!metaBody.metaData) {
-            throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
-        }
+        if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response!`);
+        if (!metaBody.metaData) throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
         let uploadDate: Date | undefined;
         try {
-            if (metaBody.metaData.upload_date) {
-                uploadDate = new Date(metaBody.metaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
-            }
+            if (metaBody.metaData.upload_date) uploadDate = new Date(metaBody.metaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
         } catch (error) {
             throw new Error(`${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
         }

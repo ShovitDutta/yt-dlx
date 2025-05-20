@@ -44,9 +44,7 @@ export default async function searchVideos({ query, minViews, maxViews, orderBy,
             if (orderBy === "viewCount") videos.sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
             else if (orderBy === "date") videos.sort((a, b) => new Date(b.uploadDate ?? 0).getTime() - new Date(a.uploadDate ?? 0).getTime());
         }
-        if (videos.length === 0) {
-            throw new Error(`${colors.red("@error:")} No videos found with the given criteria.`);
-        }
+        if (videos.length === 0) throw new Error(`${colors.red("@error:")} No videos found with the given criteria.`);
         return videos;
     } catch (error: any) {
         if (error instanceof ZodError) {
