@@ -320,8 +320,6 @@ export default function Home() {
         ],
         [region],
     );
-    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
-    const { valtioData, sectionVideos: valtioSectionVideos, sectionsLoading: valtioSectionsLoading } = useSnapshot(valtioStore);
     const handleSearch = useCallback(async (query: string) => {
         setIsSearchLoading(true);
         setSearchQuery(query);
@@ -335,6 +333,8 @@ export default function Home() {
             setIsSearchLoading(false);
         }
     }, []);
+    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
+    const { valtioData, sectionVideos: valtioSectionVideos, sectionsLoading: valtioSectionsLoading } = useSnapshot(valtioStore);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
