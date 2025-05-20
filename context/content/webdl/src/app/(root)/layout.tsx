@@ -7,14 +7,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             try {
                 const response = await fetch("/api/Trending");
                 const data = await response.json();
-                mainStore.setData(data);
+                mainStore.getState().setData(data);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         };
-
         fetchData();
     }, []);
-
     return <>{children}</>;
 }
