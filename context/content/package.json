@@ -1,6 +1,6 @@
 {
     "name": "yt-dlx",
-    "version": "19.2.1",
+    "version": "19.4.2",
     "license": "Apache-2.0",
     "main": "package/cjs/src/index.js",
     "types": "package/types/index.d.ts",
