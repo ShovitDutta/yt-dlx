@@ -219,7 +219,8 @@ const SearchResults = memo(({ searchResults, isLoading }: { isLoading: boolean; 
         </AnimatePresence>
     );
 });
-
+// ====================================================================================================
+// ====================================================================================================
 const VideoSection = memo(({ title, message, icon, videos, isLoading }: { title: string; message: string; isLoading: boolean; videos: VideoType[]; icon: React.ReactNode }) => {
     return (
         <AnimatePresence>
