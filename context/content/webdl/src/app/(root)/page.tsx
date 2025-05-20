@@ -311,7 +311,7 @@ export default function Home() {
             },
             {
                 id: "technology",
-                title: "Technology",
+                title: "Technology`,
                 message: `Latest Tech Videos In ${region}`,
                 icon: <FaMicrochip className="mr-2 text-indigo-500" />,
                 endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Tech Videos In ${region}`)}`,
@@ -358,3 +358,25 @@ export default function Home() {
         </div>
     );
 }
+
+</file_content>
+
+Now that you have the latest state of the file, try the operation again with fewer, more precise SEARCH blocks. For large files especially, it may be prudent to try to limit yourself to <5 SEARCH/REPLACE blocks at a time, then wait for the user to respond with the result of the operation before following up with another replace_in_file call to make additional edits.
+(If you run into this error 3 times in a row, you may use the write_to_file tool as a fallback.)
+</error><environment_details>
+# VSCode Visible Files
+src/app/(root)/page.tsx
+
+# VSCode Open Tabs
+src/app/(root)/layout.tsx
+src/app/(root)/page.tsx
+
+# Current Time
+5/20/2025, 8:02:15 AM (Asia/Calcutta, UTC+5.5:00)
+
+# Context Window Usage
+230,955 / 1,048.576K tokens used (22%)
+
+# Current Mode
+ACT MODE
+</environment_details>
