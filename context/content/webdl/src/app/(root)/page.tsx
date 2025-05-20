@@ -2,8 +2,7 @@
 import Image from "next/image";
 import { regions } from "@/lib/region";
 import { motion, AnimatePresence } from "framer-motion";
-import { useZustandStore } from "@/store/root";
-import React, { useState, useCallback, useMemo, memo, Fragment } from "react";
+import React, { useState, useCallback, useEffect, useMemo, memo, Fragment } from "react";
 import { FaSearch, FaFire, FaHistory, FaThumbsUp, FaRegBookmark, FaMusic, FaGamepad, FaNewspaper, FaFilm, FaFutbol, FaGraduationCap, FaMicrochip } from "react-icons/fa";
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 interface VideoType {
@@ -22,7 +21,7 @@ interface VideoType {
 }
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const GlassCard = memo(({ children, className = "" }: { className?: string; children: React.ReactNode }) => (
-    <div className={`bg-neutral-900 backdrop-blur-lg rounded-xl shadow-red-950 shadow-2xl border border-neutral-900/50 ${className}`}>{children}</div>
+    <div className={`bg-neutral-900/60 backdrop-blur-lg rounded-full shadow-lg border border-neutral-900/50 ${className}`}>{children}</div>
 ));
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const LoadingSpinner = memo(() => (
@@ -50,7 +49,7 @@ const SearchBar = ({
     };
     return (
         <motion.div className="mb-8 sticky top-0 z-50 py-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <GlassCard className="p-2 rounded-full">
+            <GlassCard className="p-2 rounded-full border-2 border-red-800">
                 <div className="flex items-center">
                     <div className="relative flex-grow">
                         <input
@@ -59,10 +58,14 @@ const SearchBar = ({
                             onKeyDown={handleKeyDown}
                             placeholder="Search videos..."
                             onChange={e => setQuery(e.target.value)}
-                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/50 backdrop-blur-sm text-white border-2 border-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full px-4 py-3 rounded-l-full bg-neutral-900/70 text-white border-0 focus:outline-none focus:ring-2 focus:ring-red-500"
                         />
                     </div>
-                    <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4.5 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-4.5 px-5 rounded-r-md"
+                        onClick={handleSearch}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}>
                         <FaSearch />
                     </motion.button>
                     <div className="ml-4">
@@ -123,7 +126,7 @@ const VideoCard = memo(({ video }: { video: VideoType }) => {
             className="relative overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            <GlassCard className="overflow-hidden relative h-full bg-stone-900 border-2 border-red-950">
+            <GlassCard className="overflow-hidden relative h-full border-2 border-red-950">
                 <div className="relative">
                     {video.thumbnails && video.thumbnails.length > 0 ? (
                         <Fragment>
@@ -254,12 +257,12 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
-    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
-
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState<VideoType[]>([]);
+    const [sectionVideos, setSectionVideos] = useState<{ [key: string]: VideoType[] }>({});
+    const [sectionsLoading, setSectionsLoading] = useState<{ [key: string]: boolean }>({});
     const contentSections: ContentSection[] = useMemo(
         () => [
             {
@@ -334,12 +337,30 @@ export default function Home() {
             setIsSearchLoading(false);
         }
     }, []);
+    const fetchSectionVideos = useCallback(async (section: ContentSection) => {
+        setSectionsLoading(prev => ({ ...prev, [section.id]: true }));
+        try {
+            const response = await fetch(section.endpoint);
+            const data = await response.json();
+            setSectionVideos(prev => ({ ...prev, [section.id]: data.result }));
+        } catch (error) {
+            console.error(`Error fetching videos for ${section.title}:`, error);
+        } finally {
+            setSectionsLoading(prev => ({ ...prev, [section.id]: false }));
+        }
+    }, []);
+    useEffect(() => {
+        contentSections.forEach((section, index) => {
+            setTimeout(() => {
+                fetchSectionVideos(section);
+            }, index * 100);
+        });
+    }, [contentSections, fetchSectionVideos]);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
-                    <div>Zustand Data: {zustandData}</div>
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
@@ -348,8 +369,8 @@ export default function Home() {
                             icon={section.icon}
                             title={section.title}
                             message={section.message}
-                            videos={zustandSectionVideos[section.id] || []}
-                            isLoading={zustandSectionsLoading[section.id]}
+                            isLoading={sectionsLoading[section.id]}
+                            videos={sectionVideos[section.id] || []}
                         />
                     ))}
                 </div>
