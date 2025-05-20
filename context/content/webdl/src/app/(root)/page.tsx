@@ -49,7 +49,7 @@ const SearchBar = ({
     };
     return (
         <motion.div className="mb-8 sticky top-0 z-50" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <GlassCard className="p-2 rounded-full border-2 border-rved-800">
+            <GlassCard className="p-2 rounded-full border-2 border-red-800">
                 <div className="flex items-center">
                     <div className="relative flex-grow">
                         <input
@@ -58,7 +58,7 @@ const SearchBar = ({
                             onKeyDown={handleKeyDown}
                             placeholder="Search videos..."
                             onChange={e => setQuery(e.target.value)}
-                            className="w-full px-4 py-3 rounded-l-md text-white border-2 border-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full px-4 py-3 rounded-l-md bg-neutral-900/50 backdrop-blur-sm text-white border-2 border-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                         />
                     </div>
                     <motion.button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4.5 px-5 rounded-r-md" onClick={handleSearch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
