@@ -254,6 +254,8 @@ interface ContentSection {
     icon: React.ReactNode;
 }
 export default function Home() {
+    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
+
     const [region, setRegion] = useState("India");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -332,15 +334,12 @@ export default function Home() {
             setIsSearchLoading(false);
         }
     }, []);
-    const { zustandData, sectionVideos: zustandSectionVideos, sectionsLoading: zustandSectionsLoading } = useZustandStore();
-    const { valtioData, sectionVideos: valtioSectionVideos, sectionsLoading: valtioSectionsLoading } = useSnapshot(valtioStore);
     return (
         <div className="min-h-screen bg-stone-900">
             <Sidebar />
             <div className="md:ml-20 lg:ml-56">
                 <div className="container mx-auto px-4 py-6">
                     <div>Zustand Data: {zustandData}</div>
-                    <div>Valtio Data: {valtioData}</div>
                     <SearchBar onSearch={handleSearch} region={region} setRegion={setRegion} query={searchQuery} setQuery={setSearchQuery} />
                     <SearchResults searchResults={searchResults} isLoading={isSearchLoading} />
                     {contentSections.map(section => (
@@ -349,8 +348,8 @@ export default function Home() {
                             icon={section.icon}
                             title={section.title}
                             message={section.message}
-                            videos={zustandSectionVideos[section.id] || valtioSectionVideos[section.id] || []}
-                            isLoading={zustandSectionsLoading[section.id] || valtioSectionsLoading[section.id]}
+                            videos={zustandSectionVideos[section.id] || []}
+                            isLoading={zustandSectionsLoading[section.id]}
                         />
                     ))}
                 </div>
@@ -358,25 +357,3 @@ export default function Home() {
         </div>
     );
 }
-
-</file_content>
-
-Now that you have the latest state of the file, try the operation again with fewer, more precise SEARCH blocks. For large files especially, it may be prudent to try to limit yourself to <5 SEARCH/REPLACE blocks at a time, then wait for the user to respond with the result of the operation before following up with another replace_in_file call to make additional edits.
-(If you run into this error 3 times in a row, you may use the write_to_file tool as a fallback.)
-</error><environment_details>
-# VSCode Visible Files
-src/app/(root)/page.tsx
-
-# VSCode Open Tabs
-src/app/(root)/layout.tsx
-src/app/(root)/page.tsx
-
-# Current Time
-5/20/2025, 8:02:15 AM (Asia/Calcutta, UTC+5.5:00)
-
-# Context Window Usage
-230,955 / 1,048.576K tokens used (22%)
-
-# Current Mode
-ACT MODE
-</environment_details>
