@@ -313,7 +313,7 @@ export default function Home() {
             },
             {
                 id: "technology",
-                title: "Technology`,
+                title: "Technology",
                 message: `Latest Tech Videos In ${region}`,
                 icon: <FaMicrochip className="mr-2 text-indigo-500" />,
                 endpoint: `/api/Search/Video/Multiple?query=${encodeURIComponent(`Latest Tech Videos In ${region}`)}`,
