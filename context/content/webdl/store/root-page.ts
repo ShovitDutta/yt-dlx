@@ -12,14 +12,12 @@ interface VideoType {
     authorBadges: any[];
     shortViewCount: string;
 }
-
 interface ContentSection {
     id: string;
     title: string;
     message: string;
     endpoint: string;
 }
-
 interface VideoState {
     region: string;
     searchQuery: string;
@@ -34,7 +32,6 @@ interface VideoState {
     fetchSectionVideos: (section: ContentSection) => Promise<void>;
     initializeSections: () => void;
 }
-
 export const useVideoStore = create<VideoState>((set, get) => ({
     region: "India",
     searchQuery: "",
@@ -46,7 +43,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
         {
             id: "trending",
             title: "Trending",
-            message: "Today's Trending", // Message will be appended with region in component
+            message: "Today's Trending",
             endpoint: "/api/Trending",
         },
         {
@@ -95,7 +92,6 @@ export const useVideoStore = create<VideoState>((set, get) => ({
 
     setRegion: (region: string) => {
         set({ region });
-        // When region changes, re-fetch all section videos
         get().initializeSections();
     },
     setSearchQuery: (query: string) => set({ searchQuery: query }),
