@@ -1,10 +1,8 @@
-// Suggestion: Enable strict mode by setting `"strict": true` in the `compilerOptions`. Consider specifying `"moduleResolution": "node"` and `"esModuleInterop": true` for better compatibility with ES modules.
 {
     "compilerOptions": {
         "strict": true,
         "target": "esnext",
-        "esModuleInterop": true,
-        "moduleResolution": "nodenext"
+        "esModuleInterop": true
     },
     "include": ["src/**/*.ts"],
     "extends": "./src/config/root.json",
