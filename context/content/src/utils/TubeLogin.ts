@@ -1,4 +1,3 @@
-// Suggestion: Add JSDoc comments to the function, explaining its purpose, parameters, and return value. Also, consider adding more robust error handling, such as retrying the authentication process or providing more specific error messages to the user. Avoid using global variables and instead pass the `TubeType` instance as a parameter to the functions that need it.
 import * as fs from "fs";
 import * as path from "path";
 import colors from "colors";
