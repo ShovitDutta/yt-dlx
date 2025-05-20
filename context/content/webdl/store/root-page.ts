@@ -1,23 +1,28 @@
+// store/videoStore.ts
 import { create } from "zustand";
+
 interface VideoType {
     type: string;
     title: string;
     videoId: string;
     authorId: string;
-    thumbnails: any[];
+    thumbnails: { url: string; width: number; height: number }[]; // Added structure
     authorUrl: string;
     viewCount: string;
     authorName: string;
     description: string;
-    authorBadges: any[];
+    authorBadges: any[]; // Assuming badges can be anything for now, or define a more specific type
     shortViewCount: string;
+    authorThumbnails: { url: string; width: number; height: number }[]; // <-- ADDED THIS LINE
 }
+
 interface ContentSection {
     id: string;
     title: string;
     message: string;
     endpoint: string;
 }
+
 interface VideoState {
     region: string;
     searchQuery: string;
@@ -32,6 +37,7 @@ interface VideoState {
     fetchSectionVideos: (section: ContentSection) => Promise<void>;
     initializeSections: () => void;
 }
+
 export const useVideoStore = create<VideoState>((set, get) => ({
     region: "India",
     searchQuery: "",
@@ -40,20 +46,62 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     sectionVideos: {},
     sectionsLoading: {},
     contentSections: [
-        { id: "trending", title: "Trending", message: "Today's Trending", endpoint: "/api/Trending" },
-        { id: "music", title: "Music Hits", message: "Latest Most Popular Music Videos", endpoint: "/api/Search/Video/Multiple" },
-        { id: "gaming", title: "Gaming", message: "Latest Top Gaming Content", endpoint: "/api/Search/Video/Multiple" },
-        { id: "news", title: "Latest News", message: "Latest Breaking News", endpoint: "/api/Search/Video/Multiple" },
-        { id: "movies", title: "Movies", message: "Latest Top Movie Trailers And Clips", endpoint: "/api/Search/Video/Multiple" },
-        { id: "sports", title: "Sports", message: "Latest Sports Highlights", endpoint: "/api/Search/Video/Multiple" },
-        { id: "education", title: "Education", message: "Latest Educational Content", endpoint: "/api/Search/Video/Multiple" },
-        { id: "technology", title: "Technology", message: "Latest Tech Videos", endpoint: "/api/Search/Video/Multiple" },
+        {
+            id: "trending",
+            title: "Trending",
+            message: "Today's Trending",
+            endpoint: "/api/Trending",
+        },
+        {
+            id: "music",
+            title: "Music Hits",
+            message: "Latest Most Popular Music Videos",
+            endpoint: "/api/Search/Video/Multiple",
+        },
+        {
+            id: "gaming",
+            title: "Gaming",
+            message: "Latest Top Gaming Content",
+            endpoint: "/api/Search/Video/Multiple",
+        },
+        {
+            id: "news",
+            title: "Latest News",
+            message: "Latest Breaking News",
+            endpoint: "/api/Search/Video/Multiple",
+        },
+        {
+            id: "movies",
+            title: "Movies",
+            message: "Latest Top Movie Trailers And Clips",
+            endpoint: "/api/Search/Video/Multiple",
+        },
+        {
+            id: "sports",
+            title: "Sports",
+            message: "Latest Sports Highlights",
+            endpoint: "/api/Search/Video/Multiple",
+        },
+        {
+            id: "education",
+            title: "Education",
+            message: "Latest Educational Content",
+            endpoint: "/api/Search/Video/Multiple",
+        },
+        {
+            id: "technology",
+            title: "Technology",
+            message: "Latest Tech Videos",
+            endpoint: "/api/Search/Video/Multiple",
+        },
     ],
+
     setRegion: (region: string) => {
         set({ region });
-        get().initializeSections();
+        get().initializeSections(); // Re-fetch sections when region changes
     },
     setSearchQuery: (query: string) => set({ searchQuery: query }),
+
     fetchSearchResults: async (query: string) => {
         set({ isSearchLoading: true, searchResults: [] });
         try {
@@ -67,24 +115,35 @@ export const useVideoStore = create<VideoState>((set, get) => ({
             set({ isSearchLoading: false });
         }
     },
+
     fetchSectionVideos: async (section: ContentSection) => {
-        set(state => ({ sectionsLoading: { ...state.sectionsLoading, [section.id]: true } }));
+        set(state => ({
+            sectionsLoading: { ...state.sectionsLoading, [section.id]: true },
+        }));
         try {
             const currentRegion = get().region;
-            const query = `${section.message} In ${currentRegion}`;
+            const query = `${section.message} In ${currentRegion}`; // Build query with current region
             const response = await fetch(`${section.endpoint}?query=${encodeURIComponent(query)}`);
             const data = await response.json();
-            set(state => ({ sectionVideos: { ...state.sectionVideos, [section.id]: data.result } }));
+            set(state => ({
+                sectionVideos: { ...state.sectionVideos, [section.id]: data.result },
+            }));
         } catch (error) {
             console.error(`Error fetching videos for ${section.title}:`, error);
-            set(state => ({ sectionVideos: { ...state.sectionVideos, [section.id]: [] } }));
+            set(state => ({
+                sectionVideos: { ...state.sectionVideos, [section.id]: [] },
+            }));
         } finally {
-            set(state => ({ sectionsLoading: { ...state.sectionsLoading, [section.id]: false } }));
+            set(state => ({
+                sectionsLoading: { ...state.sectionsLoading, [section.id]: false },
+            }));
         }
     },
+
     initializeSections: () => {
         const { contentSections, fetchSectionVideos } = get();
         contentSections.forEach((section, index) => {
+            // Added small delay to avoid hammering the API if many sections
             setTimeout(() => {
                 fetchSectionVideos(section);
             }, index * 100);
