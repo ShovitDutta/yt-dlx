@@ -66,7 +66,7 @@ const SearchBar = ({
                     </motion.button>
                     <div className="ml-4">
                         <select
-                            className="px-4 py-3 rounded-full bg-neutral-900/70 text-white border border-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="px-4 py-3 rounded-r-full bg-neutral-900/70 text-white border border-red-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                             value={region}
                             onChange={e => setRegion(e.target.value)}>
                             {regions.map(region => (
