@@ -17,21 +17,16 @@ interface Video {
     description: string;
 }
 export default async function watch_history(options: WatchHistoryOptions & { verbose?: boolean }): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
+    let verbose = false;
     try {
         ZodSchema.parse(options);
-        const { verbose = false, cookies, sort } = options;
-        if (verbose) console.log(colors.green("@info:"), "Starting watch history fetch...");
-        if (!cookies) {
-            throw new Error(`${colors.red("@error:")} Cookies not provided!`);
-        }
+        const { verbose: parsedVerbose = false, cookies, sort } = options;
+        verbose = parsedVerbose;
+        if (!cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
         const client: TubeType = await TubeLogin(cookies);
-        if (!client) {
-            throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
-        }
+        if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         const history = await client.getHistory();
-        if (!history) {
-            throw new Error(`${colors.red("@error:")} Failed to fetch watch history.`);
-        }
+        if (!history) throw new Error(`${colors.red("@error:")} Failed to fetch watch history.`);
         const result: TubeResponse<{ Shorts: Short[]; Videos: Video[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
         history.sections?.forEach(section => {
             section.contents?.forEach(content => {
@@ -94,5 +89,6 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

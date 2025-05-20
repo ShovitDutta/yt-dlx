@@ -25,21 +25,16 @@ interface Video {
     shortViewCount: string;
 }
 export default async function home_feed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
+    let verbose = false;
     try {
         ZodSchema.parse(options);
-        const { verbose, cookies, sort } = options;
-        if (verbose) console.log(colors.green("@info:"), "Fetching home feed...");
-        if (!cookies) {
-            throw new Error(`${colors.red("@error:")} Cookies not provided!`);
-        }
+        const { verbose: parsedVerbose, cookies, sort } = options;
+        verbose = parsedVerbose ?? false;
+        if (!cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
         const client: TubeType = await TubeLogin(cookies);
-        if (!client) {
-            throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
-        }
+        if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         const homeFeed = await client.getHomeFeed();
-        if (!homeFeed) {
-            throw new Error(`${colors.red("@error:")} Failed to fetch home feed.`);
-        }
+        if (!homeFeed) throw new Error(`${colors.red("@error:")} Failed to fetch home feed.`);
         const result: TubeResponse<{ Shorts: Short[]; Videos: Video[] }> = { status: "success", data: { Shorts: [], Videos: [] } };
         homeFeed.contents?.contents?.forEach((section: any) => {
             if (section?.type === "RichItem" && section?.content?.type === "Video") {
@@ -110,5 +105,6 @@ export default async function home_feed(options: HomeFeedOptions): Promise<TubeR
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

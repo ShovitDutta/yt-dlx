@@ -68,5 +68,6 @@ export default async function subscriptions_feed({ cookies, verbose = false }: s
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

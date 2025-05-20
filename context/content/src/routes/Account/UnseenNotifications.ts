@@ -5,21 +5,17 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
 type UnseenNotificationsOptions = z.infer<typeof ZodSchema>;
 export default async function unseen_notifications(options: UnseenNotificationsOptions): Promise<TubeResponse<{ count: number }>> {
+    let verbose = false;
     try {
         ZodSchema.parse(options);
-        const { verbose, cookies } = options;
+        const { verbose: parsedVerbose, cookies } = options;
+        verbose = parsedVerbose ?? false;
         if (verbose) console.log(colors.green("@info:"), "Fetching unseen notifications...");
-        if (!cookies) {
-            throw new Error(`${colors.red("@error:")} Cookies not provided!`);
-        }
+        if (!cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
         const client: TubeType = await TubeLogin(cookies);
-        if (!client) {
-            throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
-        }
+        if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         const count = await client.getUnseenNotificationsCount();
-        if (count === undefined) {
-            throw new Error(`${colors.red("@error:")} Failed to fetch unseen notifications count.`);
-        }
+        if (count === undefined) throw new Error(`${colors.red("@error:")} Failed to fetch unseen notifications count.`);
         const result: TubeResponse<{ count: number }> = { status: "success", data: { count: Number(count) || 0 } };
         return result;
     } catch (error: any) {
@@ -36,5 +32,6 @@ export default async function unseen_notifications(options: UnseenNotificationsO
             throw new Error(unexpectedError);
         }
     } finally {
+        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
