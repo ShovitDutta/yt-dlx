@@ -4,7 +4,6 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Agent from "../../utils/Agent";
-import type { EngineOutput } from "../../interfaces/EngineOutput";
 import progbar from "../../utils/progbar";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
@@ -67,13 +66,14 @@ export default async function AudioVideoLowest({
             if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.metaData.thumbnails?.[0]?.url)
-                instance.addInput(EngineMeta.metaData.thumbnails[0].url);
+            if (EngineMeta.metaData.thumbnails?.[0]?.url) instance.addInput(EngineMeta.metaData.thumbnails[0].url);
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        if (!EngineMeta.ManifestLow || EngineMeta.ManifestLow.length === 0 || !EngineMeta.ManifestLow[EngineMeta.ManifestLow.length - 1]?.url) throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
-        instance.addInput(EngineMeta.ManifestLow[EngineMeta.ManifestLow.length - 1].url);
+        if (!EngineMeta.ManifestLow || EngineMeta.ManifestLow.length === 0 || !EngineMeta.ManifestLow[0]?.url) {
+            throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
+        }
+        instance.addInput(EngineMeta.ManifestLow[0].url);
         if (!EngineMeta.BestAudioLow?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL not found.`);
         instance.addInput(EngineMeta.BestAudioLow.url);
         instance.withOutputFormat("matroska");

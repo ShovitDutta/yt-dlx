@@ -71,8 +71,10 @@ export default async function AudioVideoHighest({
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        if (!EngineMeta.ManifestHigh || EngineMeta.ManifestHigh.length === 0 || !EngineMeta.ManifestHigh[0]?.url) throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
-        instance.addInput(EngineMeta.ManifestHigh[0].url);
+        if (!EngineMeta.ManifestHigh || EngineMeta.ManifestHigh.length === 0 || !EngineMeta.ManifestHigh[EngineMeta.ManifestHigh.length - 1]?.url) {
+            throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
+        }
+        instance.addInput(EngineMeta.ManifestHigh[EngineMeta.ManifestHigh.length - 1].url);
         if (!EngineMeta.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL not found.`);
         instance.addInput(EngineMeta.BestAudioHigh.url);
         instance.withOutputFormat("matroska");

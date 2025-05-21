@@ -69,7 +69,9 @@ export default async function VideoLowest({
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        if (!EngineMeta.ManifestLow || EngineMeta.ManifestLow.length === 0 || !EngineMeta.ManifestLow[0]?.url) throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
+        if (!EngineMeta.ManifestLow || EngineMeta.ManifestLow.length === 0 || !EngineMeta.ManifestLow[0]?.url) {
+            throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
+        }
         instance.addInput(EngineMeta.ManifestLow[0].url);
         instance.withOutputFormat("mp4");
         const filterMap: Record<string, string[]> = {
