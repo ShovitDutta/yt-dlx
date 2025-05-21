@@ -95,8 +95,8 @@ export default async function AudioVideoHighest({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails?.[0]?.url) {
-                instance.addInput(EngineMeta.MetaData.thumbnails[0].url);
+            if (EngineMeta.MetaData.thumbnails?.Highest?.url) {
+                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
