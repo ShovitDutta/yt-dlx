@@ -298,7 +298,14 @@ export default async function Engine(options: {
                 Combined: Object.values(i.thumbnails || {}).filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail),
             },
         },
-        AvailableFormats: { Audio: AvailableParsedAudioFormats, Video: AvailableParsedVideoFormats, Manifest: AvailableParsedManifestFormats },
+        AvailableFormats: {
+            Audio: AvailableParsedAudioFormats.map(a => a.format),
+            Video: AvailableParsedVideoFormats.map(v => v.format),
+            Manifest: {
+                Audio: AvailableParsedManifestFormats.filter(m => m.vcodec === "none").map(m => m.format),
+                Video: AvailableParsedManifestFormats.filter(m => m.vcodec !== "none").map(m => m.format),
+            },
+        },
         Audio: {
             HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
             SingleQuality: { Lowest: audioSingleQuality.Lowest!, Highest: audioSingleQuality.Highest! },
