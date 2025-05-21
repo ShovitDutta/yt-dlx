@@ -188,8 +188,8 @@ export default async function Engine(options: {
         const formatNote = tube.format_note || "";
         const isDRC = formatNote.includes("DRC");
         const isHDR = formatNote.includes("HDR");
-        const isVideo = tube.vcodec !== "none" && tube.vcodec !== undefined;
-        const isAudio = tube.acodec !== "none" && tube.acodec !== undefined;
+        const isVideo = tube.vcodec !== "none" && tube.vcodec !== undefined && tube.vcodec !== null;
+        const isAudio = tube.acodec !== "none" && tube.acodec !== undefined && tube.acodec !== null;
         const isManifest = tube.protocol === "m3u8_native";
         if (isManifest) {
             const mappedManifest = MapManifest(tube);
