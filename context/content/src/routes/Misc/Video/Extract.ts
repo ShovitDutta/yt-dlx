@@ -167,7 +167,6 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
     }
 }
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
-    // Changed return type here
     let verbose = false;
     try {
         const parsedOptions = ZodSchema.parse(options);
