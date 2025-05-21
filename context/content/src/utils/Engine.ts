@@ -205,16 +205,16 @@ export default async function Engine(options: {
             }
         } else if (isAudio) {
             const mappedAudio = MapAudioFormat(tube);
-            delete mappedManifest.fps;
-            delete mappedManifest.width;
-            delete mappedManifest.height;
-            delete mappedManifest.vcodec;
-            delete mappedManifest.dynamic_range;
-            delete mappedManifest.aspect_ratio;
-            delete mappedManifest.video_ext;
-            delete mappedManifest.vbr;
-            delete mappedManifest.url;
-            delete mappedManifest.manifest_url;
+            delete mappedAudio.fps;
+            delete mappedAudio.width;
+            delete mappedAudio.height;
+            delete mappedAudio.vcodec;
+            delete mappedAudio.dynamic_range;
+            delete mappedAudio.aspect_ratio;
+            delete mappedAudio.video_ext;
+            delete mappedAudio.vbr;
+            delete mappedAudio.url;
+            delete mappedAudio.manifest_url;
             AvailableParsedAudioFormats.push(mappedAudio);
             if (isDRC) {
                 if (!audioHasDRC.Lowest || (mappedAudio.filesize !== undefined && audioHasDRC.Lowest[0]?.filesize !== undefined && mappedAudio.filesize < audioHasDRC.Lowest[0].filesize)) {
