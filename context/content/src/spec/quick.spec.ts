@@ -1,4 +1,4 @@
-import extract from "../src/routes/Misc/Video/Extract";
+import extract from "../routes/Misc/Video/Extract";
 import fs from "fs";
 import dotenv from "dotenv";
 import * as vitest from "vitest";
