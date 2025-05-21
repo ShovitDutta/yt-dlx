@@ -336,7 +336,6 @@ export default async function Engine(options: {
             duration_string: i.duration_string,
             channel_follower_count: i.channel_follower_count,
         },
-        // Updated these to only contain the 'format' string arrays
         AvailableFormats: { Audio: AvailableParsedAudioFormats, Video: AvailableParsedVideoFormats, Manifest: AvailableParsedManifestFormats },
         Audio: {
             HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
