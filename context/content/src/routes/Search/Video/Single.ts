@@ -27,7 +27,7 @@ async function singleVideo({ videoId }: { videoId: string }): Promise<SingleVide
         return {
             id: singleVideoData.id,
             title: singleVideoData.title,
-            thumbnails: singleVideoData.thumbnails,
+            thumbnails: singleVideoData.thumbnails?.[0] || null,
             uploadDate: singleVideoData.uploadDate,
             description: singleVideoData.description,
             duration: singleVideoData.duration,
