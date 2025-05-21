@@ -14,7 +14,7 @@ async function playlistVideos({ playlistId }: { playlistId: string }): Promise<p
         const youtube = new Client();
         const playlistVideosData: any = await youtube.getPlaylist(playlistId);
         if (!playlistVideosData) throw new Error(`${colors.red("@error: ")} Unable to fetch playlist data.`);
-        const result = playlistVideosData.videos.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, thumbnails: item.thumbnails }));
+        const result = playlistVideosData.videos.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, thumbnails: item.thumbnails?.[0] || null }));
         return { id: playlistVideosData.id, title: playlistVideosData.title, videoCount: playlistVideosData.videoCount, result };
     } catch (error: any) {
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
