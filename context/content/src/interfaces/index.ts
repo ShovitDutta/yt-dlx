@@ -84,7 +84,11 @@ export interface Entry {
     id: string;
     title: string;
     formats: Format[];
-    thumbnails: Thumbnail[];
+    thumbnails: {
+        Highest: Thumbnail | null;
+        Lowest: Thumbnail | null;
+        Combined: Thumbnail[];
+    };
     description: string;
     channel_id: string;
     channel_url: string;
