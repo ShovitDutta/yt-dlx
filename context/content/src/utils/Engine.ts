@@ -342,7 +342,6 @@ export default async function Engine(options: {
         AvailableFormats: {
             Audio: AvailableParsedAudioFormats,
             Video: AvailableParsedVideoFormats,
-            // Restructured Manifest
             Manifest: {
                 Audio: AvailableParsedManifestAudioFormats,
                 Video: AvailableParsedManifestVideoFormats,
