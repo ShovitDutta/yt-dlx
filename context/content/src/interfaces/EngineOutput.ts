@@ -2,12 +2,17 @@ import type { VideoInfo } from "./VideoInfo";
 import type { AudioFormat } from "./AudioFormat";
 import type { VideoFormat } from "./VideoFormat";
 import type { ManifestFormat } from "./ManifestFormat";
+
 export interface EngineOutput {
     MetaData: VideoInfo;
     AvailableFormats: {
-        Audio: String[];
-        Video: String[];
-        Manifest: String[];
+        Audio: string[];
+        Video: string[];
+        Manifest: {
+            // Changed to an object
+            Audio: string[]; // Array of strings for audio-only manifests
+            Video: string[]; // Array of strings for video manifests
+        };
     };
     Audio: {
         SingleQuality: {
