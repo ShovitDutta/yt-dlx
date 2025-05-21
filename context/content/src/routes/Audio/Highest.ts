@@ -88,7 +88,7 @@ export default async function AudioHighest({
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
             // Access thumbnails correctly from the new structure
-            if (EngineMeta.MetaData.thumbnails?.Highest?.url) {
+            if (EngineMeta.MetaData.thumbnails.Highest) {
                 instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
