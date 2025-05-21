@@ -192,16 +192,7 @@ export default async function Engine(options: {
         const isManifest = tube.protocol === "m3u8_native";
         if (isManifest) {
             const mappedManifest = MapManifest(tube);
-            delete mappedAudio.fps;
-            delete mappedAudio.width;
-            delete mappedAudio.height;
-            delete mappedAudio.vcodec;
-            delete mappedAudio.dynamic_range;
-            delete mappedAudio.aspect_ratio;
-            delete mappedAudio.video_ext;
-            delete mappedAudio.vbr;
-            delete mappedAudio.url;
-            delete mappedAudio.manifest_url;
+            delete mappedManifest.placeholder;
             AvailableParsedManifestFormats.push(mappedManifest);
             if (mappedManifest.tbr !== undefined) {
                 if (!manifestSingleQuality.Lowest || (manifestSingleQuality.Lowest && (mappedManifest.tbr ?? 0) < (manifestSingleQuality.Lowest.tbr ?? 0))) {
@@ -215,16 +206,7 @@ export default async function Engine(options: {
             }
         } else if (isAudio) {
             const mappedAudio = MapAudioFormat(tube);
-            delete mappedAudio.fps;
-            delete mappedAudio.width;
-            delete mappedAudio.height;
-            delete mappedAudio.vcodec;
-            delete mappedAudio.dynamic_range;
-            delete mappedAudio.aspect_ratio;
-            delete mappedAudio.video_ext;
-            delete mappedAudio.vbr;
-            delete mappedAudio.url;
-            delete mappedAudio.manifest_url;
+            delete mappedAudio.placeholder;
             AvailableParsedAudioFormats.push(mappedAudio);
             if (isDRC) {
                 if (!audioHasDRC.Lowest || (mappedAudio.filesize !== undefined && audioHasDRC.Lowest[0]?.filesize !== undefined && mappedAudio.filesize < audioHasDRC.Lowest[0].filesize)) {
@@ -251,16 +233,7 @@ export default async function Engine(options: {
             }
         } else if (isVideo) {
             const mappedVideo = MapVideoFormat(tube);
-            delete mappedAudio.fps;
-            delete mappedAudio.width;
-            delete mappedAudio.height;
-            delete mappedAudio.vcodec;
-            delete mappedAudio.dynamic_range;
-            delete mappedAudio.aspect_ratio;
-            delete mappedAudio.video_ext;
-            delete mappedAudio.vbr;
-            delete mappedAudio.url;
-            delete mappedAudio.manifest_url;
+            delete mappedVideo.placeholder;
             AvailableParsedVideoFormats.push(mappedVideo);
             if (isHDR) {
                 if (!videoHasHDR.Lowest || (mappedVideo.filesize !== undefined && videoHasHDR.Lowest[0]?.filesize !== undefined && mappedVideo.filesize < videoHasHDR.Lowest[0].filesize)) {
