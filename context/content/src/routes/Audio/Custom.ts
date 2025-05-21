@@ -16,7 +16,7 @@ const ZodSchema = z.object({
     verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    resolution: z.enum(["high", "medium", "low", "ultralow"]),
+    resolution: z.enum(["high", "medium", "low", "ultralow"]), // Assuming these map to format_note or similar
     filter: z
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
@@ -106,13 +106,23 @@ export default async function AudioCustom({
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
+
+        // Find the custom audio format based on resolution
+        // Note: The 'resolution' enum values ("high", "medium", "low", "ultralow")
+        // might need to map to specific 'format_note' or 'abr' values in your AudioFormat.
+        // I'm assuming 'resolution' as provided maps to some string within 'format' or 'format_note'.
         const AudioMeta = EngineMeta.AvailableFormats.Audio.find(i => i.format_note?.toLowerCase().includes(resolution) || i.format?.toLowerCase().includes(resolution));
+
         if (!AudioMeta) {
             throw new Error(`${colors.red("@error:")} No Audio data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Extract()' command to see available formats.`);
         }
-        if (!AudioMeta.url) throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
+        if (!AudioMeta.url) {
+            throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
+        }
+
         instance.addInput(AudioMeta.url);
         instance.withOutputFormat("avi");
+
         const filterMap: { [key: string]: string[] } = {
             speed: ["atempo=2"],
             flanger: ["flanger"],
