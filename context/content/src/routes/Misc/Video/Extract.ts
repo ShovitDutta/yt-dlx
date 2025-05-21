@@ -4,8 +4,11 @@ import { Client } from "youtubei";
 import { z, ZodError } from "zod";
 import Tuber from "../../../utils/Agent";
 import { Innertube, UniversalCache } from "youtubei.js";
-import { CommentType } from "../../../interfaces/CommentType";
-import type EngineOutput from "../../../interfaces/EngineOutput";
+import type { CommentType } from "../../../interfaces/CommentType";
+import type { AudioFormat } from "../../../interfaces/AudioFormat";
+import type { VideoFormat } from "../../../interfaces/VideoFormat";
+import type { EngineOutput } from "../../../interfaces/EngineOutput";
+import type { ManifestFormat } from "../../../interfaces/ManifestFormat";
 const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
 interface CaptionSegment {
     utf8: string;
@@ -63,21 +66,22 @@ interface MetadataPayload extends Omit<BaseEngineMetaData, "duration"> {
     comment_count_formatted: string;
     channel_follower_count_formatted: string;
 }
+
 interface PayloadType {
-    BestAudioLow?: any;
-    BestAudioHigh?: any;
-    BestVideoLow?: any;
-    BestVideoHigh?: any;
-    AudioLowDRC?: any;
-    AudioHighDRC?: any;
-    AudioLow?: any;
-    AudioHigh?: any;
-    VideoLowHDR?: any;
-    VideoHighHDR?: any;
-    VideoLow?: any;
-    VideoHigh?: any;
-    ManifestLow?: any;
-    ManifestHigh?: any;
+    BestAudioLow?: AudioFormat;
+    BestAudioHigh?: AudioFormat;
+    BestVideoLow?: VideoFormat;
+    BestVideoHigh?: VideoFormat;
+    AudioLowDRC?: AudioFormat[];
+    AudioHighDRC?: AudioFormat[];
+    AudioLow?: AudioFormat[];
+    AudioHigh?: AudioFormat[];
+    VideoLowHDR?: VideoFormat[];
+    VideoHighHDR?: VideoFormat[];
+    VideoLow?: VideoFormat[];
+    VideoHigh?: VideoFormat[];
+    ManifestLow?: ManifestFormat[];
+    ManifestHigh?: ManifestFormat[];
     meta_data: MetadataPayload;
     comments: CommentType[] | null;
     transcript: VideoTranscriptType[] | null;
@@ -194,7 +198,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const viewCountFormatted = metaBody.metaData.view_count !== undefined ? formatCount(metaBody.metaData.view_count) : "N/A";
         const likeCountFormatted = metaBody.metaData.like_count !== undefined ? formatCount(metaBody.metaData.like_count) : "N/A";
         const commentCountFormatted = metaBody.metaData.comment_count !== undefined ? formatCount(metaBody.metaData.comment_count) : "N/A";
-        const channelFollowerCountFormatted = metaBody.metaData.channel_follower_count !== undefined ? formatCount(metaBody.metaData.channel_follower_count) : "N/A";
+        const channelFollowerCountFormatted = metaBody.metaData.channel_follower_count !== undefined ? formatCount(metaBody.metaData.channel_follower_count || 0) : "N/A";
         const commentsPromise = fetchCommentsByVideoId(metaBody.metaData.id, verbose ?? false);
         const transcriptPromise = fetchVideoTranscript(metaBody.metaData.id, verbose ?? false);
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
@@ -214,15 +218,15 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             ManifestLow: metaBody.ManifestLow,
             ManifestHigh: metaBody.ManifestHigh,
             meta_data: {
-                ...metaBody.metaData,
+                ...(metaBody.metaData as any),
                 view_count_formatted: viewCountFormatted,
                 like_count_formatted: likeCountFormatted,
-                duration: videoDuration.seconds,
+                duration: videoDuration.seconds ?? 0,
                 upload_date: prettyDate,
                 upload_ago: daysAgo,
                 upload_ago_formatted: uploadAgoObject,
                 comment_count_formatted: commentCountFormatted,
-                channel_follower_count_formatted: channelFollowerCountFormatted,
+                channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
             },
             comments,
             transcript,

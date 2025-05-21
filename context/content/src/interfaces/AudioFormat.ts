@@ -1,16 +1,14 @@
-// Suggestion: Add JSDoc comments to each property of the interface to provide more context and explain the meaning of each field.
-export default interface AudioFormat {
-    filesize: number;
-    filesizeP?: string | number | null;
-    asr: number;
+export interface AudioFormat {
+    filesize?: number;
+    asr?: number;
     format_note: string;
-    tbr: number;
+    tbr: number | null;
     url: string;
     ext: string;
     acodec: string;
-    container: string;
-    resolution: string;
-    audio_ext: string;
+    container?: string;
+    resolution?: string | null;
+    audio_ext?: string;
     abr?: number | null;
     format: string;
 }

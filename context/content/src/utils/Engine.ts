@@ -1,22 +1,24 @@
-import colors from "colors";
-import retry from "async-retry";
-import readline from "readline";
+import * as colors from "colors";
+import * as retry from "async-retry";
+import * as readline from "readline";
 import { promisify } from "util";
 import { locator } from "./locator";
-import { spawn, execFile } from "child_process";
-import type sizeFormat from "../interfaces/sizeFormat";
-import type AudioFormat from "../interfaces/AudioFormat";
-import type VideoFormat from "../interfaces/VideoFormat";
-import type EngineOutput from "../interfaces/EngineOutput";
-let cachedLocatedPaths: any = null;
-export const getLocatedPaths = async () => {
+// import type sizeFormat from "../interfaces/sizeFormat";
+import type { AudioFormat } from "../interfaces/AudioFormat";
+import type { VideoFormat } from "../interfaces/VideoFormat";
+import type { Format, Entry } from "../interfaces/ytprobe";
+import type { EngineOutput } from "../interfaces/EngineOutput";
+import type { ManifestFormat } from "../interfaces/ManifestFormat";
+import { spawn, execFile, ChildProcessWithoutNullStreams } from "child_process";
+let cachedLocatedPaths: Record<string, string> | null = null;
+export const getLocatedPaths = async (): Promise<Record<string, string>> => {
     if (cachedLocatedPaths === null) cachedLocatedPaths = await locator();
     return cachedLocatedPaths;
 };
-const startTor = async (ytDlxPath: string, verbose = false) => {
+const startTor = async (ytDlxPath: string, verbose = false): Promise<ChildProcessWithoutNullStreams> => {
     return new Promise(async (resolve, reject) => {
         if (verbose) console.log(colors.green("@info:"), `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
-        const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] });
+        const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as any as ChildProcessWithoutNullStreams;
         const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
         const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
         rlStdout.on("line", line => {
@@ -42,9 +44,9 @@ const startTor = async (ytDlxPath: string, verbose = false) => {
         if (verbose) console.log(colors.green("@info:"), `Spawned yt-dlx --tor process with PID: ${torProcess.pid} using ${ytDlxPath}. Waiting for bootstrap...`);
     });
 };
-export var sizeFormat: sizeFormat = (filesize: number): string | number => {
+export var sizeFormat = (filesize: number): string | number => {
     if (isNaN(filesize) || filesize < 0) return filesize;
-    var bytesPerMegabyte = 1024 * 1024;
+    let bytesPerMegabyte = 1024 * 1024;
     var bytesPerGigabyte = bytesPerMegabyte * 1024;
     var bytesPerTerabyte = bytesPerGigabyte * 1024;
     if (filesize < bytesPerMegabyte) return filesize + " B";
@@ -54,95 +56,102 @@ export var sizeFormat: sizeFormat = (filesize: number): string | number => {
         return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
     } else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
 };
-function CleanAudioFormat(i: any) {
-    i.filesizeP = sizeFormat(i.filesize);
-    delete i.format_id;
-    delete i.source_preference;
-    delete i.has_drm;
-    delete i.quality;
-    delete i.fps;
-    delete i.height;
-    delete i.width;
-    delete i.language;
-    delete i.language_preference;
-    delete i.preference;
-    delete i.dynamic_range;
-    delete i.downloader_options;
-    delete i.protocol;
-    delete i.aspect_ratio;
-    delete i.vbr;
-    delete i.vcodec;
-    delete i.http_headers;
-    delete i.video_ext;
+function CleanAudioFormat(i: Format): AudioFormat {
+    // i.filesizeP = sizeFormat(i.filesize);
+    const item = i as any;
+    if (item.format_id) delete item.format_id;
+    if (item.source_preference) delete item.source_preference;
+    if (item.has_drm) delete item.has_drm;
+    if (item.quality) delete item.quality;
+    if (item.fps) delete item.fps;
+    if (item.height) delete item.height;
+    if (item.width) delete item.width;
+    if (item.language) delete item.language;
+    if (item.language_preference) delete item.language_preference;
+    if (item.preference) delete item.preference;
+    if (item.dynamic_range) delete item.dynamic_range;
+    if (item.downloader_options) delete item.downloader_options;
+    if (item.protocol) delete item.protocol;
+    if (item.aspect_ratio) delete item.aspect_ratio;
+    if (item.vbr) delete item.vbr;
+    if (item.vcodec) delete item.vcodec;
+    if (item.http_headers) delete item.http_headers;
+    if (item.video_ext) delete item.video_ext;
+    return i as AudioFormat;
+}
+function CeanVideoFormat(i: VideoFormat): VideoFormat {
+    // i.filesizeP = sizeFormat(i.filesize);
     return i;
 }
-function CeanVideoFormat(i: VideoFormat) {
-    i.filesizeP = sizeFormat(i.filesize);
-    return i;
-}
-function MapAudioFormat(i: any) {
+function MapAudioFormat(i: Format): AudioFormat {
     return {
-        filesize: i.filesize as number,
-        filesizeP: sizeFormat(i.filesize) as string,
-        asr: parseFloat(i.asr) as number,
-        format_note: i.format_note as string,
-        tbr: parseFloat(i.tbr) as number,
-        url: i.url as string,
-        ext: i.ext as string,
-        acodec: i.acodec as string,
-        container: i.container as string,
-        resolution: i.resolution as string,
-        audio_ext: i.audio_ext as string,
-        abr: parseFloat(i.abr) as number,
-        format: i.format as string,
+        filesize: i.filesize,
+        // filesizeP: sizeFormat(i.filesize) as string,
+        asr: i.asr,
+        format_note: i.format_note,
+        tbr: i.tbr,
+        url: i.url,
+        ext: i.ext,
+        acodec: i.acodec,
+        container: i.container,
+        resolution: i.resolution,
+        audio_ext: i.audio_ext,
+        abr: i.abr,
+        format: i.format,
     };
 }
-function MapVideoFormat(i: any) {
+function MapVideoFormat(i: Format): VideoFormat {
     return {
-        filesize: i.filesize as number,
-        filesizeP: sizeFormat(i.filesize) as string,
-        format_note: i.format_note as string,
-        fps: parseFloat(i.fps) as number,
-        height: parseFloat(i.height) as number,
-        width: parseFloat(i.width) as number,
-        tbr: parseFloat(i.tbr) as number,
-        url: i.url as string,
-        ext: i.ext as string,
-        vcodec: i.vcodec as string,
-        dynamic_range: i.dynamic_range as string,
-        container: i.container as string,
-        resolution: i.resolution as string,
-        aspect_ratio: parseFloat(i.aspect_ratio) as number,
-        video_ext: i.video_ext as string,
-        vbr: parseFloat(i.vbr) as number,
-        format: i.format as string,
+        filesize: i.filesize,
+        // filesizeP: sizeFormat(i.filesize) as string,
+        format_note: i.format_note,
+        fps: i.fps,
+        height: i.height,
+        width: i.width,
+        tbr: i.tbr,
+        url: i.url,
+        ext: i.ext,
+        vcodec: i.vcodec,
+        dynamic_range: i.dynamic_range,
+        container: i.container,
+        resolution: i.resolution,
+        aspect_ratio: i.aspect_ratio,
+        video_ext: i.video_ext,
+        vbr: i.vbr,
+        format: i.format,
     };
 }
-function MapManifest(i: any) {
+function MapManifest(i: Format): ManifestFormat {
     return {
-        url: i.url as string,
-        manifest_url: i.manifest_url as string,
-        tbr: parseFloat(i.tbr) as number,
-        ext: i.ext as string,
-        fps: parseFloat(i.fps) as number,
-        width: parseFloat(i.width) as number,
-        height: parseFloat(i.height) as number,
-        vcodec: i.vcodec as string,
-        dynamic_range: i.dynamic_range as string,
-        aspect_ratio: parseFloat(i.aspect_ratio) as number,
-        video_ext: i.video_ext as string,
-        vbr: parseFloat(i.vbr) as number,
-        format: i.format as string,
+        url: i.url,
+        manifest_url: i.manifest_url,
+        tbr: i.tbr,
+        ext: i.ext,
+        fps: i.fps,
+        width: i.width,
+        height: i.height,
+        vcodec: i.vcodec,
+        dynamic_range: i.dynamic_range,
+        aspect_ratio: i.aspect_ratio,
+        video_ext: i.video_ext,
+        vbr: i.vbr,
+        format: i.format,
     };
 }
-function FilterFormats(formats: any[]) {
+function FilterFormats(formats: Format[]): Format[] {
     return formats.filter(i => {
         return !i.format_note.includes("DRC") && !i.format_note.includes("HDR");
     });
 }
 const config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
-export default async function Engine({ query, useTor = false, verbose = false, retryConfig = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 } }) {
-    let torProcess: any = null;
+export default async function Engine(options: {
+    query: string;
+    useTor?: boolean;
+    verbose?: boolean;
+    retryConfig?: { factor: number; retries: number; minTimeout: number; maxTimeout: number };
+}): Promise<EngineOutput | null> {
+    const { query, useTor = false, verbose = false, retryConfig = config } = options;
+    let torProcess: ChildProcessWithoutNullStreams | null = null;
     const located = await getLocatedPaths();
     const ytDlxPath = located["yt-dlx"];
     const ffmpegPath = located["ffmpeg"];
@@ -157,23 +166,23 @@ export default async function Engine({ query, useTor = false, verbose = false, r
             if (verbose) console.log(colors.green("@info:"), `Tor is ready for ${process.platform === "win32" ? "Windows" : "Linux"}.`);
         } catch (error) {
             console.error(colors.red("@error:"), "Failed to start Tor:", error);
-            useTor = false;
+            let useTor = false;
         }
     }
-    var AudioLow: any = {};
-    var AudioHigh: any = {};
-    var VideoLow: any = {};
-    var VideoHigh: any = {};
-    var ManifestLow: any = {};
-    var ManifestHigh: any = {};
-    var AudioLowDRC: any = {};
-    var AudioHighDRC: any = {};
-    var VideoLowHDR: any = {};
-    var VideoHighHDR: any = {};
-    var BestAudioLow: AudioFormat | any = null;
-    var BestAudioHigh: AudioFormat | any = null;
-    var BestVideoLow: VideoFormat | any = null;
-    var BestVideoHigh: VideoFormat | any = null;
+    var AudioLow: Record<string, Format> = {};
+    var AudioHigh: Record<string, Format> = {};
+    var VideoLow: Record<string, Format> = {};
+    var VideoHigh: Record<string, Format> = {};
+    var ManifestLow: Record<string, Format> = {};
+    var ManifestHigh: Record<string, Format> = {};
+    var AudioLowDRC: Record<string, Format> = {};
+    var AudioHighDRC: Record<string, Format> = {};
+    var VideoLowHDR: Record<string, Format> = {};
+    var VideoHighHDR: Record<string, Format> = {};
+    var BestAudioLow: AudioFormat | null = null;
+    var BestAudioHigh: AudioFormat | null = null;
+    var BestVideoLow: VideoFormat | null = null;
+    var BestVideoHigh: VideoFormat | null = null;
     const ytprobeArgs = [
         "--ytprobe",
         "--dump-single-json",
@@ -207,33 +216,35 @@ export default async function Engine({ query, useTor = false, verbose = false, r
     if (argsToInsert.length > 0) {
         ytprobeArgs.splice(insertIndex, 0, ...argsToInsert);
     }
-    var metaCore = await retry(async () => {
+    var metaCore = await retry.default(async () => {
         return await promisify(execFile)(ytDlxPath, ytprobeArgs);
     }, config);
     if (torProcess) {
         torProcess.kill();
         if (verbose) console.log(colors.green("@info:"), `Tor process terminated on ${process.platform === "win32" ? "Windows" : "Linux"}`);
     }
-    var i = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
-    i.formats.forEach((tube: any) => {
+    const i: Entry = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
+    i.formats.forEach((tube: Format) => {
         var rm = new Set(["storyboard", "Default"]);
         if (!rm.has(tube.format_note) && tube.protocol === "m3u8_native" && tube.vbr) {
-            if (!ManifestLow[tube.resolution] || tube.vbr < ManifestLow[tube.resolution].vbr) ManifestLow[tube.resolution] = tube;
-            if (!ManifestHigh[tube.resolution] || tube.vbr > ManifestHigh[tube.resolution].vbr) ManifestHigh[tube.resolution] = tube;
+            if (tube.resolution && (!ManifestLow[tube.resolution] || tube.vbr < ManifestLow[tube.resolution].vbr)) ManifestLow[tube.resolution] = tube;
+            if (tube.resolution && (!ManifestHigh[tube.resolution] || tube.vbr > ManifestHigh[tube.resolution].vbr)) ManifestHigh[tube.resolution] = tube;
         }
         if (rm.has(tube.format_note) || tube.filesize === undefined || null) return;
         if (tube.format_note.includes("DRC")) {
-            if (AudioLow[tube.resolution] && !AudioLowDRC[tube.resolution]) {
+            if (tube.resolution && AudioLow[tube.resolution] && !AudioLowDRC[tube.resolution]) {
                 AudioLowDRC[tube.resolution] = AudioLow[tube.resolution];
             }
-            if (AudioHigh[tube.resolution] && !AudioHighDRC[tube.resolution]) {
+            if (tube.resolution && AudioHigh[tube.resolution] && !AudioHighDRC[tube.resolution]) {
                 AudioHighDRC[tube.resolution] = AudioHigh[tube.resolution];
             }
             AudioLowDRC[tube.format_note] = tube;
             AudioHighDRC[tube.format_note] = tube;
         } else if (tube.format_note.includes("HDR")) {
-            if (!VideoLowHDR[tube.format_note] || tube.filesize < VideoLowHDR[tube.format_note].filesize) VideoLowHDR[tube.format_note] = tube;
-            if (!VideoHighHDR[tube.format_note] || tube.filesize > VideoHighHDR[tube.format_note].filesize) VideoHighHDR[tube.format_note] = tube;
+            const videoLowHDRFilesize = VideoLowHDR[tube.format_note] ? VideoLowHDR[tube.format_note].filesize : undefined;
+            const videoHighHDRFilesize = VideoHighHDR[tube.format_note] ? VideoHighHDR[tube.format_note].filesize : undefined;
+            if (VideoLowHDR[tube.format_note] && (!VideoLowHDR[tube.format_note] || (videoLowHDRFilesize && tube.filesize < videoLowHDRFilesize))) VideoLowHDR[tube.format_note] = tube;
+            if (VideoHighHDR[tube.format_note] && (!VideoHighHDR[tube.format_note] || (videoHighHDRFilesize && tube.filesize > videoHighHDRFilesize))) VideoHighHDR[tube.format_note] = tube;
         }
         var prevLowVideo = VideoLow[tube.format_note];
         var prevHighVideo = VideoHigh[tube.format_note];
@@ -241,22 +252,22 @@ export default async function Engine({ query, useTor = false, verbose = false, r
         var prevHighAudio = AudioHigh[tube.format_note];
         switch (true) {
             case tube.format_note.includes("p"):
-                if (!prevLowVideo || tube.filesize < prevLowVideo.filesize) VideoLow[tube.format_note] = tube;
-                if (!prevHighVideo || tube.filesize > prevHighVideo.filesize) VideoHigh[tube.format_note] = tube;
+                if (prevLowVideo && (!prevLowVideo || (prevLowVideo.filesize && tube.filesize < prevLowVideo.filesize))) VideoLow[tube.format_note] = tube;
+                if (prevHighVideo && (!prevHighVideo || (prevHighVideo.filesize && tube.filesize > prevHighVideo.filesize))) VideoHigh[tube.format_note] = tube;
                 break;
             default:
-                if (!prevLowAudio || tube.filesize < prevLowAudio.filesize) AudioLow[tube.format_note] = tube;
-                if (!prevHighAudio || tube.filesize > prevHighAudio.filesize) AudioHigh[tube.format_note] = tube;
+                if (prevLowAudio && (!prevLowAudio || (prevLowAudio.filesize && tube.filesize < prevLowAudio.filesize))) AudioLow[tube.format_note] = tube;
+                if (prevHighAudio && (!prevHighAudio || (prevHighAudio.filesize && tube.filesize > prevHighAudio.filesize))) AudioHigh[tube.format_note] = tube;
                 break;
         }
     });
     (Object.values(AudioLow) as AudioFormat[]).forEach((audio: AudioFormat) => {
         if (audio.filesize !== null) {
             switch (true) {
-                case !BestAudioLow || audio.filesize < BestAudioLow.filesize:
+                case !BestAudioLow || (audio.filesize && BestAudioLow.filesize && audio.filesize < BestAudioLow.filesize):
                     BestAudioLow = audio;
                     break;
-                case !BestAudioHigh || audio.filesize > BestAudioHigh.filesize:
+                case !BestAudioHigh || (audio.filesize && BestAudioHigh.filesize && audio.filesize > BestAudioHigh.filesize):
                     BestAudioHigh = audio;
                     break;
                 default:
@@ -267,10 +278,10 @@ export default async function Engine({ query, useTor = false, verbose = false, r
     (Object.values(VideoLow) as VideoFormat[]).forEach((video: VideoFormat) => {
         if (video.filesize !== null) {
             switch (true) {
-                case !BestVideoLow || video.filesize < BestVideoLow.filesize:
+                case !BestVideoLow || (video.filesize && BestVideoLow.filesize && video.filesize < BestVideoLow.filesize):
                     BestVideoLow = video;
                     break;
-                case !BestVideoHigh || video.filesize > BestVideoHigh.filesize:
+                case !BestVideoHigh || (video.filesize && BestVideoHigh.filesize && video.filesize > BestVideoHigh.filesize):
                     BestVideoHigh = video;
                     break;
                 default:
@@ -281,11 +292,11 @@ export default async function Engine({ query, useTor = false, verbose = false, r
     var payLoad: EngineOutput = {
         BestAudioLow: (() => {
             var i = BestAudioLow || ({} as AudioFormat);
-            return CleanAudioFormat(i);
+            return CleanAudioFormat(i as any);
         })(),
         BestAudioHigh: (() => {
             var i = BestAudioHigh || ({} as AudioFormat);
-            return CleanAudioFormat(i);
+            return CleanAudioFormat(i as any);
         })(),
         BestVideoLow: (() => {
             var i = BestVideoLow || ({} as VideoFormat);
@@ -307,29 +318,29 @@ export default async function Engine({ query, useTor = false, verbose = false, r
         ManifestLow: Object.values(ManifestLow).map(i => MapManifest(i)),
         ManifestHigh: Object.values(ManifestHigh).map(i => MapManifest(i)),
         metaData: {
-            id: i.id as string,
-            title: i.title as string,
-            channel: i.channel as string,
-            uploader: i.uploader as string,
-            duration: i.duration as number,
-            thumbnail: i.thumbnail as string,
-            age_limit: i.age_limit as number,
-            channel_id: i.channel_id as string,
-            categories: i.categories as string[],
-            display_id: i.display_id as string,
-            view_count: i.view_count as number,
-            like_count: i.like_count as number,
-            description: i.description as string,
-            channel_url: i.channel_url as string,
-            webpage_url: i.webpage_url as string,
-            live_status: i.live_status as string,
-            upload_date: i.upload_date as string,
-            uploader_id: i.uploader_id as string,
-            original_url: i.original_url as string,
-            uploader_url: i.uploader_url as string,
-            comment_count: i.comment_count as number,
-            duration_string: i.duration_string as string,
-            channel_follower_count: i.channel_follower_count as number,
+            id: i.id,
+            title: i.title,
+            channel: i.channel,
+            uploader: i.uploader,
+            duration: i.duration,
+            thumbnails: i.thumbnails,
+            age_limit: i.age_limit,
+            channel_id: i.channel_id,
+            categories: i.categories,
+            display_id: i.display_id,
+            view_count: i.view_count,
+            like_count: i.like_count,
+            description: i.description,
+            channel_url: i.channel_url,
+            webpage_url: i.webpage_url,
+            live_status: i.live_status,
+            upload_date: i.upload_date,
+            uploader_id: i.uploader_id,
+            original_url: i.original_url,
+            uploader_url: i.uploader_url,
+            comment_count: i.comment_count,
+            duration_string: i.duration_string,
+            channel_follower_count: i.channel_follower_count,
         },
     };
     return payLoad;
