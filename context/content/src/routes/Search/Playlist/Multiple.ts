@@ -13,7 +13,7 @@ async function searchPlaylists({ query }: { query: string }): Promise<searchPlay
     try {
         const youtube = new Client();
         const searchPlaylists = await youtube.search(query, { type: "playlist" });
-        const result: searchPlaylistsType[] = searchPlaylists.items.map((item: any) => ({ id: item.id, title: item.title, videoCount: item.videoCount, thumbnails: item.thumbnails }));
+        const result: searchPlaylistsType[] = searchPlaylists.items.map((item: any) => ({ id: item.id, title: item.title, videoCount: item.videoCount, thumbnails: item.thumbnails?.[0] || null }));
         return result;
     } catch (error: any) {
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
