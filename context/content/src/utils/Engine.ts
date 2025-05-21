@@ -271,15 +271,6 @@ export default async function Engine(options: {
             channel: i.channel,
             uploader: i.uploader,
             duration: i.duration,
-            thumbnails: {
-                Highest: Object.values(i.thumbnails || {})
-                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail)
-                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => ((prev?.width ?? 0) * (prev?.height ?? 0) > curr.width * curr.height ? prev : curr), null),
-                Lowest: Object.values(i.thumbnails || {})
-                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail)
-                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => ((prev?.width ?? 0) * (prev?.height ?? 0) < curr.width * curr.height ? prev : curr), null),
-                Combined: Object.values(i.thumbnails || {}).filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail),
-            },
             age_limit: i.age_limit,
             channel_id: i.channel_id,
             categories: i.categories,
@@ -297,6 +288,15 @@ export default async function Engine(options: {
             comment_count: i.comment_count,
             duration_string: i.duration_string,
             channel_follower_count: i.channel_follower_count,
+            thumbnails: {
+                Highest: Object.values(i.thumbnails || {})
+                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail)
+                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => ((prev?.width ?? 0) * (prev?.height ?? 0) > curr.width * curr.height ? prev : curr), null),
+                Lowest: Object.values(i.thumbnails || {})
+                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail)
+                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => ((prev?.width ?? 0) * (prev?.height ?? 0) < curr.width * curr.height ? prev : curr), null),
+                Combined: Object.values(i.thumbnails || {}).filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail),
+            },
         },
         AvailableFormats: { Audio: AvailableParsedAudioFormats, Video: AvailableParsedVideoFormats, Manifest: AvailableParsedManifestFormats },
         Audio: {
