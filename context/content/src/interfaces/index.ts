@@ -86,10 +86,10 @@ export interface Entry {
     formats: Format[];
     thumbnails?: {
         [key: string]: Thumbnail;
-    };
-    description: string;
-    channel_id: string;
-    channel_url: string;
+   };
+   description: string;
+   channel_id: string;
+   channel_url: string;
     duration: number;
     view_count: number;
     average_rating: null;
