@@ -45,7 +45,7 @@ export default async function home_feed(options: HomeFeedOptions): Promise<TubeR
                         title: sanitized.content.title?.text || "",
                         videoId: sanitized.content.video_id || "",
                         description: sanitized.content.description_snippet?.text || "",
-                        thumbnails: sanitized.content.thumbnails || [],
+                        thumbnails: sanitized.content.thumbnails?.[0]?.Highest?.url || [],
                         authorId: sanitized.content.author?.id || "",
                         authorName: sanitized.content.author?.name || "",
                         authorThumbnails: sanitized.content.author.thumbnails || [],
