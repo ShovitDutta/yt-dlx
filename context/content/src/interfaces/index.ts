@@ -9,8 +9,8 @@ export interface Thumbnail {
     url: string;
     preference: number;
     id: string;
-    width?: number;
-    height?: number;
+    width: number;
+    height: number;
     resolution?: string;
 }
 
