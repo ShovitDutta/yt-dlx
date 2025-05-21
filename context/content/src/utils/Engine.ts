@@ -192,6 +192,16 @@ export default async function Engine(options: {
         const isManifest = tube.protocol === "m3u8_native";
         if (isManifest) {
             const mappedManifest = MapManifest(tube);
+            delete mappedManifest.fps;
+            delete mappedManifest.width;
+            delete mappedManifest.height;
+            delete mappedManifest.vcodec;
+            delete mappedManifest.dynamic_range;
+            delete mappedManifest.aspect_ratio;
+            delete mappedManifest.video_ext;
+            delete mappedManifest.vbr;
+            delete mappedManifest.url;
+            delete mappedManifest.manifest_url;
             AvailableParsedManifestFormats.push(mappedManifest);
             if (mappedManifest.tbr !== undefined) {
                 if (!manifestSingleQuality.Lowest || (manifestSingleQuality.Lowest && (mappedManifest.tbr ?? 0) < (manifestSingleQuality.Lowest.tbr ?? 0))) {
