@@ -28,12 +28,12 @@
         "react-player": "^2.16.0",
         "react-tooltip": "^5.28.1",
         "yt-dlx": "^19.4.2",
-        "zod": "^3.25.7"
+        "zod": "^3.25.12"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",
         "@tailwindcss/postcss": "^4.1.7",
-        "@types/node": "^22.15.18",
+        "@types/node": "^22.15.21",
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19",
         "eslint": "^9.27.0",
