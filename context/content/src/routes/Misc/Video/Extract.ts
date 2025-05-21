@@ -7,6 +7,7 @@ import type { CommentType } from "../../../interfaces/CommentType";
 import type { AudioFormat } from "../../../interfaces/AudioFormat";
 import type { VideoFormat } from "../../../interfaces/VideoFormat";
 import type { ManifestFormat } from "../../../interfaces/ManifestFormat";
+import path from "path";
 const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
 interface CaptionSegment {
     utf8: string;
@@ -104,12 +105,12 @@ function formatCount(count: number): string {
 }
 async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promise<CommentType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Working on comments for video ID: ${videoId}`);
-        if (!Tube) {
-            console.error(colors.red("@error:"), "Tube instance not initialized. Call TubeLogin first.");
-            return null;
-        }
-        const response = await Tube.getComments(videoId);
+        if (verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${videoId}`);
+        const youtubeInnertube = await Innertube.create({
+            user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
+        });
+        const response = await youtubeInnertube.getComments(videoId);
         const comments: CommentType[] = response.contents
             .map(thread => {
                 const comment = thread?.comment;
