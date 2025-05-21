@@ -166,7 +166,8 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
         return null;
     }
 }
-export default async function extract(options: z.infer<typeof ZodSchema>): Promise<{ data: PayloadType }> {
+export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
+    // Changed return type here
     let verbose = false;
     try {
         const parsedOptions = ZodSchema.parse(options);
@@ -231,7 +232,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             comments,
             transcript,
         };
-        return { data: payload };
+        return payload; // Changed return statement here
     } catch (error: any) {
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
