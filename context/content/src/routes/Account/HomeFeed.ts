@@ -58,11 +58,11 @@ export default async function home_feed(options: HomeFeedOptions): Promise<TubeR
             } else if (section?.type === "RichSection" && section?.content?.type === "RichShelf") {
                 section.content.contents?.forEach((item: any) => {
                     if (item?.content?.type === "ShortsLockupView") {
-                        const short = { title: item.content.accessibility_text || "", videoId: item.content.on_tap_endpoint?.payload?.videoId, thumbnails: item.content.thumbnail || [] };
+                        const short = { title: item.content.accessibility_text || "", videoId: item.content.on_tap_endpoint?.payload?.videoId, thumbnails: item.content.thumbnail?.Highest?.url || null };
                         result.data?.Shorts.push(short);
-                    }
-                });
-            }
+                }
+        });
+}
         });
         switch (sort) {
             case "oldest":
