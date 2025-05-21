@@ -32,10 +32,10 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
             section.contents?.forEach(content => {
                 const sanitized = sanitizeContentItem(content);
                 if (sanitized?.type === "ReelShelf") {
-                    const shorts = sanitized.items?.map((item: any) => ({ title: item?.accessibility_text, videoId: item?.on_tap_endpoint?.payload?.videoId, thumbnails: item?.thumbnail?.Highest?.url || null })) || [];
+                    const shorts = sanitized.items?.map((item: any) => ({ title: item?.accessibility_text, videoId: item?.on_tap_endpoint?.payload?.videoId, thumbnails: item?.thumbnail })) || [];
                     if (result.data?.Shorts) result.data.Shorts.push(...shorts);
                 } else if (sanitized?.type === "Video") {
-                    const video = { title: sanitized?.title?.text, videoId: sanitized?.videoId, thumbnails: sanitized?.thumbnails?.Highest?.url || null, description: sanitized?.description || "" };
+                    const video = { title: sanitized?.title?.text, videoId: sanitized?.videoId, thumbnails: sanitized?.thumbnails, description: sanitized?.description || "" };
                     if (result.data?.Videos) result.data.Videos.push(video);
                 }
             });
