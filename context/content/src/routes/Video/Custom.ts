@@ -3,7 +3,7 @@ import colors from "colors";
 import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
-import Tuber from "../../utils/Agent";
+import Agent from "../../utils/Agent";
 import progbar from "../../utils/progbar";
 import { locator } from "../../utils/locator";
 import { Readable, PassThrough } from "stream";
@@ -36,15 +36,15 @@ export default async function VideoCustom({
             throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
         }
         if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
-        const EngineMeta = await Tuber({ query, verbose, useTor });
+        const EngineMeta = await Agent({ query, verbose, useTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
         if (metadata) {
             return {
                 metadata: {
                     metaData: EngineMeta.metaData,
-                    VideoLowF: EngineMeta.VideoLowF,
-                    VideoHighF: EngineMeta.VideoHighF,
+                    VideoLow: EngineMeta.VideoLow,
+                    VideoHigh: EngineMeta.VideoHigh,
                     VideoLowHDR: EngineMeta.VideoLowHDR,
                     VideoHighHDR: EngineMeta.VideoHighHDR,
                     ManifestLow: EngineMeta.ManifestLow,
@@ -69,7 +69,7 @@ export default async function VideoCustom({
             if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.metaData.thumbnail) instance.addInput(EngineMeta.metaData.thumbnail);
+            if (EngineMeta.metaData.thumbnails?.[0]?.url) instance.addInput(EngineMeta.metaData.thumbnails[0].url);
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }

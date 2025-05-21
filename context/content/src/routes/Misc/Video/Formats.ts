@@ -1,19 +1,17 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import Tuber from "../../../utils/Agent";
-import type EngineOutput from "../../../interfaces/EngineOutput";
+import type { EngineOutput } from "../../../interfaces/EngineOutput";
 const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
 interface ManifestFormat {
     format: string;
-    tbr: number;
+    tbr: number | null;
 }
 interface OtherFormat {
-    filesizeP?: string | number | null;
     format_note?: string;
+    filesize?: number | null;
 }
 interface ListFormatsData {
-    ManifestLow: ManifestFormat[];
-    ManifestHigh: ManifestFormat[];
     AudioLow: OtherFormat[];
     VideoLow: OtherFormat[];
     VideoHigh: OtherFormat[];
@@ -22,6 +20,8 @@ interface ListFormatsData {
     AudioLowDRC: OtherFormat[];
     AudioHighDRC: OtherFormat[];
     VideoHighHDR: OtherFormat[];
+    ManifestLow: ManifestFormat[];
+    ManifestHigh: ManifestFormat[];
 }
 export default async function list_formats({ query, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: ListFormatsData }> {
     try {
@@ -31,14 +31,14 @@ export default async function list_formats({ query, verbose }: z.infer<typeof Zo
         const data: ListFormatsData = {
             ManifestLow: metaBody.ManifestLow?.map(item => ({ format: item.format, tbr: item.tbr })) || [],
             ManifestHigh: metaBody.ManifestHigh?.map(item => ({ format: item.format, tbr: item.tbr })) || [],
-            AudioLow: metaBody.AudioLow?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            VideoLow: metaBody.VideoLow?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            VideoHigh: metaBody.VideoHigh?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            AudioHigh: metaBody.AudioHigh?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            VideoLowHDR: metaBody.VideoLowHDR?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            AudioLowDRC: metaBody.AudioLowDRC?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            AudioHighDRC: metaBody.AudioHighDRC?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
-            VideoHighHDR: metaBody.VideoHighHDR?.map(item => ({ filesizeP: item.filesizeP, format_note: item.format_note })) || [],
+            AudioLow: metaBody.AudioLow?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            VideoLow: metaBody.VideoLow?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            VideoHigh: metaBody.VideoHigh?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            AudioHigh: metaBody.AudioHigh?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            VideoLowHDR: metaBody.VideoLowHDR?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            AudioLowDRC: metaBody.AudioLowDRC?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            AudioHighDRC: metaBody.AudioHighDRC?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
+            VideoHighHDR: metaBody.VideoHighHDR?.map(item => ({ filesize: item.filesize, format_note: item.format_note })) || [],
         };
         return { data };
     } catch (error: any) {

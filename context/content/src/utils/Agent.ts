@@ -2,6 +2,7 @@ import colors from "colors";
 import Engine from "./Engine";
 import { Client } from "youtubei";
 import YouTubeID from "./YouTubeId";
+import type { EngineOutput } from "../interfaces/EngineOutput";
 export async function VideoInfo({ videoId }: { videoId: string }): Promise<VideoInfoType | null> {
     try {
         const youtube = new Client();
@@ -9,17 +10,17 @@ export async function VideoInfo({ videoId }: { videoId: string }): Promise<Video
         if (!VideoInfoData) throw new Error(`${colors.red("@error: ")} Unable to fetch video data for id: ${videoId}`);
         return {
             id: VideoInfoData.id,
+            tags: VideoInfoData.tags,
             title: VideoInfoData.title,
+            duration: VideoInfoData.duration,
+            likeCount: VideoInfoData.likeCount,
+            viewCount: VideoInfoData.viewCount,
+            isLive: VideoInfoData.isLiveContent,
             thumbnails: VideoInfoData.thumbnails,
             uploadDate: VideoInfoData.uploadDate,
-            description: VideoInfoData.description,
-            duration: VideoInfoData.duration,
-            isLive: VideoInfoData.isLiveContent,
-            viewCount: VideoInfoData.viewCount,
             channelid: VideoInfoData.channel?.id,
+            description: VideoInfoData.description,
             channelname: VideoInfoData.channel?.name,
-            tags: VideoInfoData.tags,
-            likeCount: VideoInfoData.likeCount,
         };
     } catch (error: any) {
         throw new Error(`${colors.red("@error: ")} Error fetching video data: ${error.message}`);
@@ -28,16 +29,16 @@ export async function VideoInfo({ videoId }: { videoId: string }): Promise<Video
 export interface VideoInfoType {
     id: string;
     title: string;
-    thumbnails: string[];
+    isLive: boolean;
+    duration: number;
+    viewCount: number;
     uploadDate: string;
     description: string;
-    duration: number;
-    isLive: boolean;
-    viewCount: number;
-    channelid: string | undefined;
-    channelname: string | undefined;
+    thumbnails: string[];
     tags: string[] | undefined;
     likeCount: number | undefined;
+    channelid: string | undefined;
+    channelname: string | undefined;
 }
 export interface searchVideosType {
     id: string;
@@ -51,11 +52,11 @@ export interface searchVideosType {
     description: string;
     thumbnails: string[];
 }
-export default async function Agent({ query, useTor = false, verbose = false }: { query: string; useTor?: boolean; verbose?: boolean }): Promise<any> {
-    if (verbose && useTor) console.log(colors.green("@info:"), "Using Tor for request anonymization");
+export default async function Agent({ query, useTor = false, verbose = false }: { query: string; useTor?: boolean; verbose?: boolean }): Promise<EngineOutput | null> {
     let url: string;
-    const videoId: string | undefined = await YouTubeID(query);
     const youtube = new Client();
+    const videoId: string | undefined = await YouTubeID(query);
+    if (verbose && useTor) console.log(colors.green("@info:"), "Using Tor for request anonymization");
     if (!videoId) {
         try {
             const searchResults = await youtube.search(query, { type: "video" });
