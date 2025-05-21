@@ -41,7 +41,7 @@ export default async function subscriptions_feed({ cookies, verbose = false }: s
                     type: sanitized?.type || "",
                     title: sanitized?.title?.text || "",
                     videoId: sanitized?.videoId || "",
-                    thumbnails: sanitized?.thumbnails || [],
+                    thumbnails: sanitized?.thumbnails?.[0]?.Highest?.url || [],
                     description: sanitized?.description?.text || "",
                     authorId: sanitized?.author?.id || "",
                     authorName: sanitized?.author?.name || "",
