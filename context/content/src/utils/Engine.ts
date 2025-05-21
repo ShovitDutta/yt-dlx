@@ -117,6 +117,7 @@ function MapManifest(i: Format): ManifestFormat {
         video_ext: i.video_ext,
         vbr: i.vbr,
         format: i.format,
+        resolution: i.resolution, // This line is correct once "resolution" is picked
     };
 }
 
