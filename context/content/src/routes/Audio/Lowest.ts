@@ -89,9 +89,9 @@ export default async function AudioLowest({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails?.[0]?.url) {
+            if (EngineMeta.MetaData.thumbnails?.Highest?.url) {
                 // Corrected
-                instance.addInput(EngineMeta.MetaData.thumbnails[0].url); // Corrected
+                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url); // Corrected
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
