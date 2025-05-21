@@ -95,7 +95,7 @@ export default async function AudioVideoHighest({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails?.Highest?.url) {
+            if (EngineMeta.MetaData.thumbnails.Highest) {
                 instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
