@@ -1,0 +1,6 @@
+{
+    "include": ["src/**/*.ts"],
+    "extends": "./src/config/root.json",
+    "exclude": ["package", "node_modules", "examples"],
+    "compilerOptions": { "strict": true, "target": "esnext", "esModuleInterop": true }
+}

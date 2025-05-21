@@ -1,0 +1,1 @@
+{ "extends": "./root.json", "compilerOptions": { "target": "esnext", "module": "commonjs", "outDir": "../../package/cjs" } }
