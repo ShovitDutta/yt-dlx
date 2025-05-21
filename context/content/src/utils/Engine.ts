@@ -271,9 +271,9 @@ export default async function Engine(options: {
             uploader: i.uploader,
             duration: i.duration,
             thumbnails: {
-                Highest: i.thumbnails?.Combined ? i.thumbnails.Combined.reduce((prev, curr) => (prev.preference > curr.preference ? prev : curr)) : null,
-                Lowest: i.thumbnails?.Combined ? i.thumbnails.Combined.reduce((prev, curr) => (prev.preference < curr.preference ? prev : curr)) : null,
-                Combined: i.thumbnails?.Combined ?? []
+                Highest: i.thumbnails ? i.thumbnails.reduce((prev, curr) => (prev.preference > curr.preference ? prev : curr)) : null,
+                Lowest: i.thumbnails ? i.thumbnails.reduce((prev, curr) => (prev.preference < curr.preference ? prev : curr)) : null,
+                Combined: i.thumbnails ?? [],
             },
             age_limit: i.age_limit,
             channel_id: i.channel_id,
