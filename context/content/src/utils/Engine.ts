@@ -270,7 +270,11 @@ export default async function Engine(options: {
             channel: i.channel,
             uploader: i.uploader,
             duration: i.duration,
-            thumbnails: i.thumbnails,
+            thumbnails: {
+                Highest: i.thumbnails ? i.thumbnails.reduce((prev, curr) => (prev.preference > curr.preference ? prev : curr)) : null,
+                Lowest: i.thumbnails ? i.thumbnails.reduce((prev, curr) => (prev.preference < curr.preference ? prev : curr)) : null,
+                Combined: i.thumbnails ?? [],
+            },
             age_limit: i.age_limit,
             channel_id: i.channel_id,
             categories: i.categories,
