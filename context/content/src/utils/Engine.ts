@@ -3,7 +3,7 @@ import { promisify } from "util";
 import { locator } from "./Locator";
 import * as readline from "readline";
 import * as retry from "async-retry";
-import type { Format, Entry, EngineOutput, Thumbnail, AudioFormat, VideoFormat, ManifestFormat } from "../interfaces";
+import type { Format, Entry, EngineOutput, Thumbnail } from "../interfaces";
 import { spawn, execFile, ChildProcessWithoutNullStreams } from "child_process";
 let cachedLocatedPaths: Record<string, string> | null = null;
 export const getLocatedPaths = async (): Promise<Record<string, string>> => {
@@ -15,7 +15,7 @@ const startTor = async (ytDlxPath: string, verbose = false): Promise<ChildProces
         if (verbose) console.log(colors.green("@info:"), `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
         const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as unknown as ChildProcessWithoutNullStreams;
         const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
-        const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stdout, terminal: false });
+        const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
         rlStdout.on("line", line => {
             if (verbose) console.log(colors.green("@info:"), line);
             if (line.includes("Bootstrapped 100% (done): Done")) {
@@ -303,12 +303,12 @@ export default async function Engine(options: {
         },
         Audio: {
             HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
-            SingleQuality: { Lowest: audioSingleQuality.Lowest!, Highest: audioSingleQuality.Highest! },
+            SingleQuality: { Lowest: audioSingleQuality.Lowest ?? null, Highest: audioSingleQuality.Highest ?? null },
             MultipleQuality: { Lowest: audioMultipleQuality.Lowest, Highest: audioMultipleQuality.Highest },
         },
         Video: {
             HasHDR: videoHasHDR.Lowest || videoHasHDR.Highest ? videoHasHDR : {},
-            SingleQuality: { Lowest: videoSingleQuality.Lowest!, Highest: videoSingleQuality.Highest! },
+            SingleQuality: { Lowest: videoSingleQuality.Lowest ?? null, Highest: videoSingleQuality.Highest! },
             MultipleQuality: { Lowest: videoMultipleQuality.Lowest, Highest: videoMultipleQuality.Highest },
         },
         Manifest: {
