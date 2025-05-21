@@ -4,6 +4,7 @@ import { locator } from "./Locator";
 import * as readline from "readline";
 import * as retry from "async-retry";
 import type { Format, Entry } from "../interfaces";
+import { Thumbnail } from "../interfaces";
 import type { AudioFormat } from "../interfaces/AudioFormat";
 import type { VideoFormat } from "../interfaces/VideoFormat";
 import type { EngineOutput } from "../interfaces/EngineOutput";
@@ -273,11 +274,11 @@ export default async function Engine(options: {
             thumbnails: {
                 Highest: Object.values(i.thumbnails || {})
                     .filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail)
-                    .reduce((prev: any, curr: any) => (prev?.width * prev?.height > curr?.width * curr?.height ? prev : curr), null) as any,
+                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => (prev?.width * prev?.height > curr?.width * curr?.height ? prev : curr), null),
                 Lowest: Object.values(i.thumbnails || {})
                     .filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail)
-                    .reduce((prev: any, curr: any) => (prev?.width * prev?.height < curr?.width * curr?.height ? prev : curr), null) as any,
-                Combined: Object.values(i.thumbnails || {}).filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail) as any,
+                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => (prev?.width * prev?.height < curr?.width * curr?.height ? prev : curr), null),
+                Combined: Object.values(i.thumbnails || {}).filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail) as Thumbnail[],
             },
             age_limit: i.age_limit,
             channel_id: i.channel_id,
