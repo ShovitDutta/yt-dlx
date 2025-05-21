@@ -18,7 +18,7 @@ async function searchChannels({ query }: { query: string }): Promise<channelSear
             name: item.name,
             subscriberCount: item.subscriberCount,
             description: item.description,
-            thumbnails: item.thumbnails,
+            thumbnails: item.thumbnails?.[0] || null,
         }));
         return result;
     } catch (error: any) {
