@@ -2,6 +2,8 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import Tuber from "../../../utils/Agent";
+import { Tube } from "../../../utils/TubeLogin";
+import type { CommentType } from "../../../interfaces/CommentType";
 import type { AudioFormat } from "../../../interfaces/AudioFormat";
 import type { VideoFormat } from "../../../interfaces/VideoFormat";
 import type { ManifestFormat } from "../../../interfaces/ManifestFormat";
@@ -72,6 +74,8 @@ interface PayloadType {
         HasHDR: { Lowest?: VideoFormat[]; Highest?: VideoFormat[] };
     };
     Manifest: { SingleQuality: { Lowest: ManifestFormat; Highest: ManifestFormat }; MultipleQuality: { Lowest: ManifestFormat[]; Highest: ManifestFormat[] } };
+    comments: CommentType[] | null;
+    transcript: VideoTranscriptType[] | null;
 }
 function calculateUploadAgo(days: number): UploadAgo {
     const years = Math.floor(days / 365);
@@ -97,6 +101,69 @@ function formatCount(count: number): string {
         }
     }
     return `${count}`;
+}
+async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promise<CommentType[] | null> {
+    try {
+        if (verbose) console.log(colors.green("@info:"), `Working on comments for video ID: ${videoId}`);
+        if (!Tube) {
+            console.error(colors.red("@error:"), "Tube instance not initialized. Call TubeLogin first.");
+            return null;
+        }
+        const response = await Tube.getComments(videoId);
+        const comments: CommentType[] = response.contents
+            .map(thread => {
+                const comment = thread?.comment;
+                if (!comment || !comment.content?.text || !comment.published_time || !comment.author?.name) return null;
+                return {
+                    comment_id: comment.comment_id || "",
+                    is_pinned: comment.is_pinned || false,
+                    comment: comment.content.text,
+                    published_time: comment.published_time,
+                    author_is_channel_owner: comment.author_is_channel_owner || false,
+                    creator_thumbnail_url: comment.creator_thumbnail_url || "",
+                    like_count: comment.like_count || 0,
+                    is_member: comment.is_member || false,
+                    author: comment.author.name,
+                    is_hearted: comment.is_hearted || false,
+                    is_liked: comment.is_liked || false,
+                    is_disliked: comment.is_disliked || false,
+                    reply_count: comment.reply_count || 0,
+                    hasReplies: thread.has_replies || false,
+                } as CommentType;
+            })
+            .filter((item): item is CommentType => item !== null);
+        if (comments.length === 0) {
+            if (verbose) console.log(colors.red("@error:"), "No comments found for the video");
+            return null;
+        }
+        if (verbose) console.log(colors.green("@info:"), "Video comments fetched!");
+        return comments;
+    } catch (error: any) {
+        if (verbose) console.error(colors.red("@error: ") + error.message);
+        return null;
+    }
+}
+async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<VideoTranscriptType[] | null> {
+    try {
+        if (verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${videoId}`);
+        const youtube = new Client();
+        const captions = await youtube.getVideoTranscript(videoId);
+        if (!captions) {
+            if (verbose) console.log(colors.red("@error:"), "No transcript found for the video");
+            return null;
+        }
+        const transcript = captions.map(caption => ({
+            text: caption.text,
+            start: caption.start,
+            duration: caption.duration,
+            segments: caption.segments.map(segment => ({ utf8: segment.utf8, tOffsetMs: segment.tOffsetMs, acAsrConf: segment.acAsrConf })),
+        }));
+        if (verbose) console.log(colors.green("@info:"), "Video transcript fetched!");
+        return transcript;
+    } catch (error: any) {
+        if (verbose) console.error(colors.red("@error: ") + error.message);
+        return null;
+    }
 }
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<{ data: PayloadType }> {
     let verbose = false;
@@ -129,6 +196,9 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const commentCountFormatted = metaBody.MetaData.comment_count !== undefined ? formatCount(metaBody.MetaData.comment_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
+        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.id, verbose ?? false);
+        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.id, verbose ?? false);
+        const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
         const payload: PayloadType = {
             MetaData: {
                 ...metaBody.MetaData,
@@ -157,12 +227,14 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 SingleQuality: { Lowest: metaBody.Manifest.SingleQuality.Lowest, Highest: metaBody.Manifest.SingleQuality.Highest },
                 MultipleQuality: { Lowest: metaBody.AvailableFormats.Manifest, Highest: metaBody.AvailableFormats.Manifest },
             },
+            comments,
+            transcript,
         };
         return { data: payload };
     } catch (error: any) {
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
-        console.error(errorMessage);
+            console.error(errorMessage);
             throw new Error(errorMessage);
         } else if (error instanceof Error) {
             console.error(error.message);
