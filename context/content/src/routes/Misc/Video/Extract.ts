@@ -1,4 +1,5 @@
-import colors from "colors";
+import * as path from "path";
+import * as colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import Tuber from "../../../utils/Agent";
@@ -7,7 +8,6 @@ import type { CommentType } from "../../../interfaces/CommentType";
 import type { AudioFormat } from "../../../interfaces/AudioFormat";
 import type { VideoFormat } from "../../../interfaces/VideoFormat";
 import type { ManifestFormat } from "../../../interfaces/ManifestFormat";
-import path from "path";
 const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
 interface CaptionSegment {
     utf8: string;
