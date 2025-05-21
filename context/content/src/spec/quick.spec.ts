@@ -1,6 +1,6 @@
 import extract from "../routes/Misc/Video/Extract";
-import dotenv from "dotenv";
 import fs from "fs";
+import dotenv from "dotenv";
 dotenv.config();
 console.clear();
 
