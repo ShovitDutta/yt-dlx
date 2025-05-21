@@ -86,10 +86,10 @@ export interface Entry {
     formats: Format[];
     thumbnails?: {
         [key: string]: Thumbnail;
-   };
-   description: string;
-   channel_id: string;
-   channel_url: string;
+    };
+    description: string;
+    channel_id: string;
+    channel_url: string;
     duration: number;
     view_count: number;
     average_rating: null;
@@ -161,4 +161,80 @@ export interface Entry {
         asr: number;
         audio_channels: number;
     }[];
+}
+
+export interface EngineOutput {
+    MetaData: {
+        id: string;
+        title: string;
+        channel: string;
+        uploader: string;
+        duration: number;
+        thumbnails?: {
+            [key: string]: Thumbnail;
+        };
+        age_limit: number;
+        channel_id: string;
+        categories: string[];
+        display_id: string;
+        view_count: number;
+        like_count: number;
+        description: string;
+        channel_url: string;
+        webpage_url: string;
+        live_status: string;
+        upload_date: string;
+        uploader_id: string;
+        original_url: string;
+        uploader_url: string;
+        comment_count: number;
+        duration_string: string;
+        channel_follower_count: number | null;
+    };
+    AvailableFormats: {
+        Audio: string[];
+        Video: string[];
+        Manifest: {
+            Audio: string[];
+            Video: string[];
+        };
+    };
+    Audio: {
+        HasDRC: {
+            Lowest?: AudioFormat[];
+            Highest?: AudioFormat[];
+        };
+        SingleQuality: {
+            Lowest: AudioFormat;
+            Highest: AudioFormat;
+        };
+        MultipleQuality: {
+            Lowest: AudioFormat[];
+            Highest: AudioFormat[];
+        };
+    };
+    Video: {
+        HasHDR: {
+            Lowest?: VideoFormat[];
+            Highest?: VideoFormat[];
+        };
+        SingleQuality: {
+            Lowest: VideoFormat;
+            Highest: VideoFormat;
+        };
+        MultipleQuality: {
+            Lowest: VideoFormat[];
+            Highest: VideoFormat[];
+        };
+    };
+    Manifest: {
+        SingleQuality: {
+            Lowest: ManifestFormat;
+            Highest: ManifestFormat;
+        };
+        MultipleQuality: {
+            Lowest: ManifestFormat[];
+            Highest: ManifestFormat[];
+        };
+    };
 }
