@@ -1,1 +1,1 @@
-export type CommentType = import("./ytprobe").CommentType;
+export type CommentType = import(".").CommentType;

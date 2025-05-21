@@ -7,7 +7,6 @@ import { Innertube, UniversalCache } from "youtubei.js";
 import type { CommentType } from "../../../interfaces/CommentType";
 import type { AudioFormat } from "../../../interfaces/AudioFormat";
 import type { VideoFormat } from "../../../interfaces/VideoFormat";
-import type { EngineOutput } from "../../../interfaces/EngineOutput";
 import type { ManifestFormat } from "../../../interfaces/ManifestFormat";
 const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
 interface CaptionSegment {
@@ -180,7 +179,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const parsedOptions = ZodSchema.parse(options);
         const { query, useTor, verbose: parsedVerbose } = parsedOptions;
         verbose = parsedVerbose ?? false;
-        const metaBody: EngineOutput = await Tuber({ query, verbose, useTor });
+        const metaBody = await Tuber({ query, verbose, useTor });
         if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response!`);
         if (!metaBody.metaData) throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
         let uploadDate: Date | undefined;

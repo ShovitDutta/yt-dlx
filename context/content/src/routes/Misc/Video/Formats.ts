@@ -1,7 +1,6 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import Tuber from "../../../utils/Agent";
-import type { EngineOutput } from "../../../interfaces/EngineOutput";
 const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
 interface ManifestFormat {
     format: string;
@@ -26,7 +25,7 @@ interface ListFormatsData {
 export default async function list_formats({ query, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: ListFormatsData }> {
     try {
         ZodSchema.parse({ query, verbose });
-        const metaBody: EngineOutput = await Tuber({ query, verbose });
+        const metaBody = await Tuber({ query, verbose });
         if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response from YouTube.`);
         const data: ListFormatsData = {
             ManifestLow: metaBody.ManifestLow?.map(item => ({ format: item.format, tbr: item.tbr })) || [],

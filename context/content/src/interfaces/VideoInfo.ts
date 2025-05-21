@@ -1,5 +1,5 @@
 export type VideoInfo = Pick<
-    import("./ytprobe").Entry,
+    import(".").Entry,
     | "id"
     | "title"
     | "channel"

@@ -6,7 +6,7 @@ import { locator } from "./locator";
 // import type sizeFormat from "../interfaces/sizeFormat";
 import type { AudioFormat } from "../interfaces/AudioFormat";
 import type { VideoFormat } from "../interfaces/VideoFormat";
-import type { Format, Entry } from "../interfaces/ytprobe";
+import type { Format, Entry } from "../interfaces";
 import type { EngineOutput } from "../interfaces/EngineOutput";
 import type { ManifestFormat } from "../interfaces/ManifestFormat";
 import { spawn, execFile, ChildProcessWithoutNullStreams } from "child_process";
