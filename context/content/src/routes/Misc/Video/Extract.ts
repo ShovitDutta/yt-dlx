@@ -231,7 +231,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             comments,
             transcript,
         };
-        return payload;
+        return { data: payload };
     } catch (error: any) {
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
