@@ -16,7 +16,7 @@ const ZodSchema = z.object({
     verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    resolution: z.enum(["high", "medium", "low", "ultralow"]), // Assuming these map to format_note or similar
+    resolution: z.enum(["high", "medium", "low", "ultralow"]),
     filter: z
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
