@@ -271,9 +271,13 @@ export default async function Engine(options: {
             uploader: i.uploader,
             duration: i.duration,
             thumbnails: {
-                Combined: Object.values(i.thumbnails || {}).filter(thumbnail => thumbnail && typeof thumbnail === 'object' && 'url' in thumbnail) as any,
-                Highest: Object.values(i.thumbnails || {}).filter(thumbnail => thumbnail && typeof thumbnail === 'object' && 'url' in thumbnail).reduce((prev: any, curr: any) => ((prev?.width * prev?.height) > (curr?.width * curr?.height) ? prev : curr), null) as any,
-                Lowest: Object.values(i.thumbnails || {}).filter(thumbnail => thumbnail && typeof thumbnail === 'object' && 'url' in thumbnail).reduce((prev: any, curr: any) => ((prev?.width * prev?.height) < (curr?.width * curr?.height) ? prev : curr), null) as any,
+                Combined: Object.values(i.thumbnails || {}).filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail) as any,
+                Highest: Object.values(i.thumbnails || {})
+                    .filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail)
+                    .reduce((prev: any, curr: any) => (prev?.width * prev?.height > curr?.width * curr?.height ? prev : curr), null) as any,
+                Lowest: Object.values(i.thumbnails || {})
+                    .filter(thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail)
+                    .reduce((prev: any, curr: any) => (prev?.width * prev?.height < curr?.width * curr?.height ? prev : curr), null) as any,
             },
             age_limit: i.age_limit,
             channel_id: i.channel_id,
