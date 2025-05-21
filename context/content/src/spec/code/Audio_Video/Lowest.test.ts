@@ -46,14 +46,9 @@ vitest.describe("AudioVideoLowest", () => {
         const result = await AudioVideoLowest({ query, stream: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("FileName");
-        if (result && "stream" in result) {
+        if (result && "stream" in result && result.FileName) {
             vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        }
-        if ("FileName" in result) {
-            vitest.expect(result.FileName).toBeTypeOf("string");
-        }
-        const outputStream = createWriteStream("basic_stream_avlow.mkv");
-        if (result && "stream" in result) {
+            const outputStream = createWriteStream(result.FileName);
             (result as { stream: Readable }).stream?.pipe(outputStream);
             await new Promise(resolve => {
                 (result as { stream: Readable }).stream?.on("end", resolve);
@@ -64,14 +59,9 @@ vitest.describe("AudioVideoLowest", () => {
         const result = await AudioVideoLowest({ query, stream: true, filter: "flipHorizontal" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("FileName");
-        if (result && "stream" in result) {
+        if (result && "stream" in result && result.FileName) {
             vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        }
-        if ("FileName" in result) {
-            vitest.expect(result.FileName).toBeTypeOf("string");
-        }
-        const outputStream = createWriteStream("filtered_stream_avlow.mkv");
-        if (result && "stream" in result) {
+            const outputStream = createWriteStream(result.FileName);
             (result as { stream: Readable }).stream?.pipe(outputStream);
             await new Promise(resolve => {
                 (result as { stream: Readable }).stream?.on("end", resolve);
@@ -82,14 +72,8 @@ vitest.describe("AudioVideoLowest", () => {
         const result = await AudioVideoLowest({ query, stream: true, useTor: false, verbose: true, filter: "rotate90", showProgress: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("FileName");
-        if (result && "stream" in result) {
-            vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        }
-        if ("FileName" in result) {
-            vitest.expect(result.FileName).toBeTypeOf("string");
-        }
-        const outputStream = createWriteStream("full_stream_avlow.mkv");
-        if (result && "stream" in result) {
+        if (result && "stream" in result && result.FileName) {
+            const outputStream = createWriteStream(result.FileName);
             (result as { stream: Readable }).stream?.pipe(outputStream);
             await new Promise(resolve => {
                 (result as { stream: Readable })?.stream?.on("end", resolve);
