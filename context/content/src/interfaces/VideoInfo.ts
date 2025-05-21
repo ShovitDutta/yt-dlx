@@ -6,32 +6,28 @@ export interface ThumbnailInfo {
     Combined: Thumbnail[];
 }
 
-export type VideoInfo = Pick<
-    import(".").Entry,
-"id"
-"title"
-"channel"
-"uploader"
-"duration"
-"age_limit"
-"channel_id"
-"categories"
-"display_id"
-"description"
-"channel_url"
-"webpage_url"
-"live_status"
-"upload_date"
-"uploader_id"
-"original_url"
-"uploader_url"
-"comment_count"
-"view_count"
-"like_count"
-"duration_string"
-"channel_follower_count"
->;
-
 export interface VideoInfo {
+    id: string;
+    title: string;
+    channel: string;
+    uploader: string;
+    duration: number;
+    age_limit: number;
+    channel_id: string;
+    categories: string[];
+    display_id: string;
+    description: string;
+    channel_url: string;
+    webpage_url: string;
+    live_status: string;
+    upload_date: string;
+    uploader_id: string;
+    original_url: string;
+    uploader_url: string;
+    comment_count: number;
+    view_count: number;
+    like_count: number;
+    duration_string: string;
+    channel_follower_count: number | null;
     thumbnails: ThumbnailInfo;
 }
