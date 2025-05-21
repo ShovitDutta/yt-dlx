@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import Tuber from "../../../utils/Agent";
-import { Tube } from "../../../utils/TubeLogin";
+import { Innertube, UniversalCache } from "youtubei.js";
 import type { CommentType } from "../../../interfaces/CommentType";
 import type { AudioFormat } from "../../../interfaces/AudioFormat";
 import type { VideoFormat } from "../../../interfaces/VideoFormat";
