@@ -123,7 +123,6 @@ export interface Entry {
     extractor: string;
     extractor_key: string;
     playlist_count: number;
-    playlist: string;
     playlist_id: string;
     playlist_title: string;
     playlist_uploader: null;
