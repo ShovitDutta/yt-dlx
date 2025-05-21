@@ -273,12 +273,12 @@ export default async function Engine(options: {
             duration: i.duration,
             thumbnails: {
                 Highest: Object.values(i.thumbnails || {})
-                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail)
-                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => (prev?.width * prev?.height > curr.width * curr.height ? prev : curr), null),
+                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail)
+                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => ((prev?.width ?? 0) * (prev?.height ?? 0) > curr.width * curr.height ? prev : curr), null),
                 Lowest: Object.values(i.thumbnails || {})
-                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail)
-                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => (prev?.width * prev?.height < curr.width * curr.height ? prev : curr), null),
-                Combined: Object.values(i.thumbnails || {}).filter((thumbnail): thumbnail is Thumbnail => thumbnail && typeof thumbnail === "object" && "url" in thumbnail),
+                    .filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail)
+                    .reduce((prev: Thumbnail | null, curr: Thumbnail) => ((prev?.width ?? 0) * (prev?.height ?? 0) < curr.width * curr.height ? prev : curr), null),
+                Combined: Object.values(i.thumbnails || {}).filter((thumbnail): thumbnail is Thumbnail => thumbnail != null && typeof thumbnail === "object" && "url" in thumbnail),
             },
             age_limit: i.age_limit,
             channel_id: i.channel_id,
