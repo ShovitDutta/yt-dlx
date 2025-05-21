@@ -1,7 +1,7 @@
-import extract from "../src/routes/Misc/Video/Extract";
-import fs from "fs";
-import dotenv from "dotenv";
 import * as vitest from "vitest";
+import dotenv from "dotenv";
+import YouTubeDLX from "..";
+import fs from "fs";
 dotenv.config();
 console.clear();
 
