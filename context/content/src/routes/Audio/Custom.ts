@@ -110,13 +110,9 @@ export default async function AudioCustom({
         if (!AudioMeta) {
             throw new Error(`${colors.red("@error:")} No Audio data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Extract()' command to see available formats.`);
         }
-        if (!AudioMeta.url) {
-            throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
-        }
-
+        if (!AudioMeta.url) throw new Error(`${colors.red("@error:")} The audio URL was not found.`);
         instance.addInput(AudioMeta.url);
         instance.withOutputFormat("avi");
-
         const filterMap: { [key: string]: string[] } = {
             speed: ["atempo=2"],
             flanger: ["flanger"],
