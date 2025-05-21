@@ -5,9 +5,6 @@ export interface HTTPHeaders {
     "Sec-Fetch-Mode": string;
 }
 
-import type { AudioFormat } from "./AudioFormat";
-import type { VideoFormat } from "./VideoFormat";
-import type { ManifestFormat } from "./ManifestFormat";
 export interface Thumbnail {
     url: string;
     preference: number;
@@ -203,13 +200,13 @@ export interface EngineOutput {
         };
     };
     Audio: {
-        HasDRC: {
+        HasDRC?: {
             Lowest?: AudioFormat[];
             Highest?: AudioFormat[];
         };
         SingleQuality: {
-            Lowest: AudioFormat;
-            Highest: AudioFormat;
+            Lowest?: AudioFormat;
+            Highest?: AudioFormat;
         };
         MultipleQuality: {
             Lowest: AudioFormat[];
@@ -217,13 +214,13 @@ export interface EngineOutput {
         };
     };
     Video: {
-        HasHDR: {
+        HasHDR?: {
             Lowest?: VideoFormat[];
             Highest?: VideoFormat[];
         };
         SingleQuality: {
-            Lowest: VideoFormat;
-            Highest: VideoFormat;
+            Lowest?: VideoFormat;
+            Highest?: VideoFormat;
         };
         MultipleQuality: {
             Lowest: VideoFormat[];
@@ -232,8 +229,8 @@ export interface EngineOutput {
     };
     Manifest: {
         SingleQuality: {
-            Lowest: ManifestFormat;
-            Highest: ManifestFormat;
+            Lowest?: ManifestFormat;
+            Highest?: ManifestFormat;
         };
         MultipleQuality: {
             Lowest: ManifestFormat[];
