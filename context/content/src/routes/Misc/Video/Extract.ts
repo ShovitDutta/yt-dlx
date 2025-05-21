@@ -130,6 +130,10 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const commentCountFormatted = metaBody.MetaData.comment_count !== undefined ? formatCount(metaBody.MetaData.comment_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
+        let client: TubeType | undefined;
+        if (options.cookies) {
+            client = await TubeLogin(options.cookies);
+        }
         const payload: PayloadType = {
             MetaData: {
                 ...metaBody.MetaData,
