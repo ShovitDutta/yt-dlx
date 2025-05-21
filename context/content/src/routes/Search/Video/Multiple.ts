@@ -34,7 +34,7 @@ export default async function searchVideos({ query, minViews, maxViews, orderBy,
             viewCount: item.viewCount,
             uploadDate: item.uploadDate,
             channelid: item.channel?.id,
-            thumbnails: item.thumbnails,
+            thumbnails: item.thumbnails?.[0]?.Highest?.url || null,
             description: item.description,
             channelname: item.channel?.name,
         }));
