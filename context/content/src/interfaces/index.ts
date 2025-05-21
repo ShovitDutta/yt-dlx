@@ -5,6 +5,9 @@ export interface HTTPHeaders {
     "Sec-Fetch-Mode": string;
 }
 
+import type { AudioFormat } from "./AudioFormat";
+import type { VideoFormat } from "./VideoFormat";
+import type { ManifestFormat } from "./ManifestFormat";
 export interface Thumbnail {
     url: string;
     preference: number;
