@@ -205,7 +205,6 @@ export default async function Engine(options: {
             }
         } else if (isAudio) {
             const mappedAudio = MapAudioFormat(tube);
-            
             AvailableParsedAudioFormats.push(mappedAudio);
             if (isDRC) {
                 if (!audioHasDRC.Lowest || (mappedAudio.filesize !== undefined && audioHasDRC.Lowest[0]?.filesize !== undefined && mappedAudio.filesize < audioHasDRC.Lowest[0].filesize)) {
@@ -271,11 +270,7 @@ export default async function Engine(options: {
             channel: i.channel,
             uploader: i.uploader,
             duration: i.duration,
-            thumbnails: {
-                Highest: Array.isArray(i.thumbnails) && i.thumbnails.length > 0 ? i.thumbnails.reduce((prev, curr) => (prev.preference > curr.preference ? prev : curr)) : null,
-                Lowest: Array.isArray(i.thumbnails) && i.thumbnails.length > 0 ? i.thumbnails.reduce((prev, curr) => (prev.preference < curr.preference ? prev : curr)) : null,
-                Combined: Array.isArray(i.thumbnails) ? i.thumbnails : [],
-            },
+            thumbnails: i.thumbnails,
             age_limit: i.age_limit,
             channel_id: i.channel_id,
             categories: i.categories,
