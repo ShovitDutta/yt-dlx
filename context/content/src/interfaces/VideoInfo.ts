@@ -6,6 +6,8 @@ export type VideoInfo = Pick<
     | "uploader"
     | "duration"
     | "thumbnails"
+    | "like_count"
+    | "view_count"
     | "age_limit"
     | "channel_id"
     | "categories"
