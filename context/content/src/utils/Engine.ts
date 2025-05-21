@@ -149,10 +149,11 @@ export default async function Engine(options: {
         }
     }
 
-    // Changed these to store only the 'format' string
     const AvailableParsedAudioFormats: string[] = [];
     const AvailableParsedVideoFormats: string[] = [];
-    const AvailableParsedManifestFormats: string[] = [];
+    // Changed to store audio and video manifests separately as strings
+    const AvailableParsedManifestAudioFormats: string[] = [];
+    const AvailableParsedManifestVideoFormats: string[] = [];
 
     const audioSingleQuality: { Lowest: AudioFormat | null; Highest: AudioFormat | null } = { Lowest: null, Highest: null };
     const audioMultipleQuality: { Lowest: AudioFormat[]; Highest: AudioFormat[] } = { Lowest: [], Highest: [] };
@@ -223,10 +224,15 @@ export default async function Engine(options: {
 
         if (isManifest) {
             const mappedManifest = MapManifest(tube);
+            // Check if it's an audio-only manifest based on resolution
             if (mappedManifest.format) {
-                // Only push if format is available
-                AvailableParsedManifestFormats.push(mappedManifest.format);
+                if (mappedManifest.resolution === "audio only") {
+                    AvailableParsedManifestAudioFormats.push(mappedManifest.format);
+                } else {
+                    AvailableParsedManifestVideoFormats.push(mappedManifest.format);
+                }
             }
+
             if (mappedManifest.tbr !== undefined) {
                 if (!manifestSingleQuality.Lowest || (manifestSingleQuality.Lowest && (mappedManifest.tbr ?? 0) < (manifestSingleQuality.Lowest.tbr ?? 0))) {
                     manifestSingleQuality.Lowest = mappedManifest;
@@ -240,7 +246,6 @@ export default async function Engine(options: {
         } else if (isAudio) {
             const mappedAudio = MapAudioFormat(tube);
             if (mappedAudio.format) {
-                // Only push if format is available
                 AvailableParsedAudioFormats.push(mappedAudio.format);
             }
             if (isDRC) {
@@ -269,7 +274,6 @@ export default async function Engine(options: {
         } else if (isVideo) {
             const mappedVideo = MapVideoFormat(tube);
             if (mappedVideo.format) {
-                // Only push if format is available
                 AvailableParsedVideoFormats.push(mappedVideo.format);
             }
             if (isHDR) {
@@ -298,7 +302,6 @@ export default async function Engine(options: {
         }
     });
 
-    // Sorting is not needed for the new string arrays, but keeping for the other objects
     audioMultipleQuality.Lowest.sort((a, b) => (a.filesize || 0) - (b.filesize || 0));
     audioMultipleQuality.Highest.sort((a, b) => (b.filesize || 0) - (a.filesize || 0));
     videoMultipleQuality.Lowest.sort((a, b) => (a.filesize || 0) - (b.filesize || 0));
@@ -336,8 +339,15 @@ export default async function Engine(options: {
             duration_string: i.duration_string,
             channel_follower_count: i.channel_follower_count,
         },
-        // Updated these to only contain the 'format' string arrays
-        AvailableFormats: { Audio: AvailableParsedAudioFormats, Video: AvailableParsedVideoFormats, Manifest: AvailableParsedManifestFormats },
+        AvailableFormats: {
+            Audio: AvailableParsedAudioFormats,
+            Video: AvailableParsedVideoFormats,
+            // Restructured Manifest
+            Manifest: {
+                Audio: AvailableParsedManifestAudioFormats,
+                Video: AvailableParsedManifestVideoFormats,
+            },
+        },
         Audio: {
             HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
             SingleQuality: { Lowest: audioSingleQuality.Lowest!, Highest: audioSingleQuality.Highest! },
