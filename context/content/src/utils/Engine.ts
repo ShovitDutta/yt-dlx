@@ -3,8 +3,11 @@ import { promisify } from "util";
 import { locator } from "./Locator";
 import * as readline from "readline";
 import * as retry from "async-retry";
-import type { Format, Entry, EngineOutput, Thumbnail, AudioFormat, VideoFormat, ManifestFormat } from "../interfaces";
+import type { Format, Entry, EngineOutput, Thumbnail } from "../interfaces";
 import { spawn, execFile, ChildProcessWithoutNullStreams } from "child_process";
+import type { AudioFormat } from "../interfaces/AudioFormat";
+import type { VideoFormat } from "../interfaces/VideoFormat";
+import type { ManifestFormat } from "../interfaces/ManifestFormat";
 let cachedLocatedPaths: Record<string, string> | null = null;
 export const getLocatedPaths = async (): Promise<Record<string, string>> => {
     if (cachedLocatedPaths === null) cachedLocatedPaths = await locator();
@@ -49,6 +52,59 @@ export var sizeFormat = (filesize: number): string | number => {
     else if (filesize < bytesPerTerabyte) return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
     else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
 };
+function MapAudioFormat(i: Format): AudioFormat {
+    return {
+        filesize: i.filesize,
+        asr: i.asr,
+        format_note: i.format_note,
+        tbr: i.tbr,
+        url: i.url,
+        ext: i.ext,
+        acodec: i.acodec,
+        container: i.container,
+        resolution: i.resolution,
+        audio_ext: i.audio_ext,
+        abr: i.abr,
+        format: i.format,
+    };
+}
+function MapVideoFormat(i: Format): VideoFormat {
+    return {
+        fps: i.fps,
+        tbr: i.tbr,
+        url: i.url,
+        ext: i.ext,
+        vbr: i.vbr,
+        width: i.width,
+        format: i.format,
+        height: i.height,
+        vcodec: i.vcodec,
+        filesize: i.filesize,
+        video_ext: i.video_ext,
+        container: i.container,
+        resolution: i.resolution,
+        format_note: i.format_note,
+        aspect_ratio: i.aspect_ratio,
+        dynamic_range: i.dynamic_range,
+    };
+}
+function MapManifest(i: Format): ManifestFormat {
+    return {
+        url: i.url,
+        manifest_url: i.manifest_url,
+        tbr: i.tbr,
+        ext: i.ext,
+        fps: i.fps,
+        width: i.width,
+        height: i.height,
+        vcodec: i.vcodec,
+        dynamic_range: i.dynamic_range,
+        aspect_ratio: i.aspect_ratio,
+        video_ext: i.video_ext,
+        vbr: i.vbr,
+        format: i.format,
+    };
+}
 const config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
 export default async function Engine(options: {
     query: string;
