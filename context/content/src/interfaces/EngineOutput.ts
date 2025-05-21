@@ -5,9 +5,9 @@ import type { ManifestFormat } from "./ManifestFormat";
 export interface EngineOutput {
     MetaData: VideoInfo;
     AvailableFormats: {
-        Audio: AudioFormat[];
-        Video: VideoFormat[];
-        Manifest: ManifestFormat[];
+        Audio: String[];
+        Video: String[];
+        Manifest: String[];
     };
     Audio: {
         SingleQuality: {
