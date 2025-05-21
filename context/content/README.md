@@ -22,31 +22,31 @@ companion, ensuring seamless and efficient media acquisition.
 
 ## Key Features 🔑
 
-- **Versatile Format Support**: Download and stream audio/video content in a variety of formats, including AAC, MP3, MP4, WebM, and more, ensuring compatibility with diverse devices and platforms.
-- **Effortless Downloads**: Simplify the downloading process with YT-DLX's user-friendly command-line interface and flexible API integration, enabling seamless integration into existing workflows and
-  applications.
-- **Continuous Improvement**: Stay ahead of the curve with regular updates and enhancements, ensuring YT-DLX remains at the forefront of multimedia downloading technology, delivering improved
-  performance, stability, and compatibility with evolving online platforms.
-- **Comprehensive Functionality**: Benefit from a comprehensive suite of features inherited from renowned tools like youtube-dl and python yt-dlp, including support for advanced options such as
-  subtitles extraction, metadata retrieval, playlist handling, and more, empowering users to tailor their downloading experience to their specific requirements.
-- **Dynamic Streaming**: Seamlessly access streaming content from various sources with YT-DLX's dynamic streaming capabilities, enabling on-the-fly extraction and downloading of audio/video streams
-  from websites, streaming platforms, and online services.
-- **Customization Options**: Fine-tune downloading preferences with a wide range of customization options, including bitrate selection, resolution settings, audio codec preferences, and more,
-  providing users with full control over their media downloads to achieve the optimal balance between file size, quality, and compatibility.
+-   **Versatile Format Support**: Download and stream audio/video content in a variety of formats, including AAC, MP3, MP4, WebM, and more, ensuring compatibility with diverse devices and platforms.
+-   **Effortless Downloads**: Simplify the downloading process with YT-DLX's user-friendly command-line interface and flexible API integration, enabling seamless integration into existing workflows
+    and applications.
+-   **Continuous Improvement**: Stay ahead of the curve with regular updates and enhancements, ensuring YT-DLX remains at the forefront of multimedia downloading technology, delivering improved
+    performance, stability, and compatibility with evolving online platforms.
+-   **Comprehensive Functionality**: Benefit from a comprehensive suite of features inherited from renowned tools like youtube-dl and python yt-dlp, including support for advanced options such as
+    subtitles extraction, metadata retrieval, playlist handling, and more, empowering users to tailor their downloading experience to their specific requirements.
+-   **Dynamic Streaming**: Seamlessly access streaming content from various sources with YT-DLX's dynamic streaming capabilities, enabling on-the-fly extraction and downloading of audio/video streams
+    from websites, streaming platforms, and online services.
+-   **Customization Options**: Fine-tune downloading preferences with a wide range of customization options, including bitrate selection, resolution settings, audio codec preferences, and more,
+    providing users with full control over their media downloads to achieve the optimal balance between file size, quality, and compatibility.
 
 ## Installation 💻
 
 You can install yt-dlx using any package manager of your choice:
 
-- **bun** add yt-dlx | **bun** add -g yt-dlx
-- **yarn** add yt-dlx | **yarn** global add yt-dlx
-- **pnpm** add yt-dlx | **pnpm** install -g yt-dlx
-- **npm** install yt-dlx | **npm** install -g yt-dlx
+-   **bun** add yt-dlx | **bun** add -g yt-dlx
+-   **yarn** add yt-dlx | **yarn** global add yt-dlx
+-   **pnpm** add yt-dlx | **pnpm** install -g yt-dlx
+-   **npm** install yt-dlx | **npm** install -g yt-dlx
 
 ## Usage 🚀
 
-YT-DLX is straightforward and hassle-free. Detailed usage instructions and additional information can be found on the [yt-dlx Website](https://yt-dlx-shovit.koyeb.app/), ensuring a smooth experience
-for all users.
+YT-DLX is straightforward and hassle-free. Detailed usage instructions and additional information can be found on the [yt-dlx Website](https://yt-dlx.vercel.app/), ensuring a smooth experience for all
+users.
 
 ## Contribute 🤝
 

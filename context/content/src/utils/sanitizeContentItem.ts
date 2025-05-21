@@ -1,5 +1,5 @@
-import extractText from "./extractText";
-import sanitizeRenderer from "./sanitizeRenderer";
+import extractText from "./ExtractText";
+import sanitizeRenderer from "./SanitizeRenderer";
 export default function sanitizeContentItem(item: any): any {
     if (!item) return null;
     if (item.type === "RichItem" && item.content?.videoRenderer) {

@@ -8,7 +8,7 @@ vitest.describe("videoComments", () => {
         try {
             const result = await videoComments({ query: validQuery });
             vitest.expect(Array.isArray(result)).toBe(true);
-            if (result.length > 0) {
+            if (result && result.length > 0) {
                 vitest.expect(result[0]).toHaveProperty("comment_id");
                 vitest.expect(result[0]).toHaveProperty("comment");
                 vitest.expect(result[0]).toHaveProperty("author");
@@ -22,7 +22,7 @@ vitest.describe("videoComments", () => {
         try {
             const result = await videoComments({ query: validQuery, verbose: true });
             vitest.expect(Array.isArray(result)).toBe(true);
-            if (result.length > 0) {
+            if (result && result.length > 0) {
                 vitest.expect(result[0]).toHaveProperty("comment_id");
             }
         } catch (error) {

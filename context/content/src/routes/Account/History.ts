@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
-import sanitizeContentItem from "../../utils/sanitizeContentItem";
+import sanitizeContentItem from "../../utils/SanitizeContentItem";
 const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(), sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 type WatchHistoryOptions = z.infer<typeof ZodSchema>;
 interface Short {

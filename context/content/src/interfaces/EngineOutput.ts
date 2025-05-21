@@ -2,22 +2,49 @@ import type { VideoInfo } from "./VideoInfo";
 import type { AudioFormat } from "./AudioFormat";
 import type { VideoFormat } from "./VideoFormat";
 import type { ManifestFormat } from "./ManifestFormat";
-
 export interface EngineOutput {
-    metaData: VideoInfo;
-    BestAudioLow: AudioFormat;
-    BestAudioHigh: AudioFormat;
-    AudioLow: AudioFormat[];
-    AudioHigh: AudioFormat[];
-    AudioLowDRC?: AudioFormat[];
-    AudioHighDRC?: AudioFormat[];
-    BestVideoLow: VideoFormat;
-    BestVideoHigh: VideoFormat;
-    VideoLow: VideoFormat[];
-    VideoHigh: VideoFormat[];
-    VideoLowHDR?: VideoFormat[];
-    VideoHighHDR?: VideoFormat[];
-    ManifestLow: ManifestFormat[];
-    ManifestHigh: ManifestFormat[];
-    allFormats: (AudioFormat | VideoFormat | ManifestFormat)[];
+    MetaData: VideoInfo;
+    AvailableFormats: {
+        Audio: AudioFormat[];
+        Video: VideoFormat[];
+        Manifest: ManifestFormat[];
+    };
+    Audio: {
+        SingleQuality: {
+            Lowest: AudioFormat;
+            Highest: AudioFormat;
+        };
+        MultipleQuality: {
+            Lowest: AudioFormat[];
+            Highest: AudioFormat[];
+        };
+        HasDRC: {
+            Lowest?: AudioFormat[];
+            Highest?: AudioFormat[];
+        };
+    };
+    Video: {
+        SingleQuality: {
+            Lowest: VideoFormat;
+            Highest: VideoFormat;
+        };
+        MultipleQuality: {
+            Lowest: VideoFormat[];
+            Highest: VideoFormat[];
+        };
+        HasHDR: {
+            Lowest?: VideoFormat[];
+            Highest?: VideoFormat[];
+        };
+    };
+    Manifest: {
+        SingleQuality: {
+            Lowest: ManifestFormat;
+            Highest: ManifestFormat;
+        };
+        MultipleQuality: {
+            Lowest: ManifestFormat[];
+            Highest: ManifestFormat[];
+        };
+    };
 }

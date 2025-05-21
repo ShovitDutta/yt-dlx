@@ -19,7 +19,10 @@ vitest.describe("unseen_notifications", () => {
         vitest.expect(result.status).toBe("success");
         vitest.expect(result).toHaveProperty("data");
         vitest.expect(result.data).toHaveProperty("count");
-        vitest.expect(typeof result.data?.count).toBe("number");
+        if (result.data) {
+            vitest.expect(typeof result.data?.count).toBe("number");
+            vitest.expect(result.data.count).toBeGreaterThanOrEqual(0);
+        }
     });
     vitest.it("should handle unseen notifications fetch with verbose logging", async () => {
         if (!cookies) {
@@ -29,6 +32,9 @@ vitest.describe("unseen_notifications", () => {
         const result = await unseen_notifications({ cookies: mockCookies, verbose: true });
         vitest.expect(result.status).toBe("success");
         vitest.expect(result.data).toBeInstanceOf(Object);
-        vitest.expect(typeof result.data?.count).toBe("number");
+        if (result.data) {
+            vitest.expect(typeof result.data?.count).toBe("number");
+            vitest.expect(result.data.count).toBeGreaterThanOrEqual(0);
+        }
     });
 });

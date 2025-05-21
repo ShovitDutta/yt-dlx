@@ -1,4 +1,4 @@
-import progbar from "./utils/progbar";
+import ProgBar from "./utils/ProgBar";
 import YouTubeID from "./utils/YouTubeId";
 import help from "./routes/Misc/System/Help";
 import AudioLowest from "./routes/Audio/Lowest";
@@ -11,7 +11,6 @@ import VideoHighest from "./routes/Video/Highest";
 import home_feed from "./routes/Account/HomeFeed";
 import watch_history from "./routes/Account/History";
 import video_data from "./routes/Search/Video/Single";
-import list_formats from "./routes/Misc/Video/Formats";
 import related_videos from "./routes/Misc/Video/Related";
 import video_comments from "./routes/Misc/Video/Comments";
 import channel_data from "./routes/Search/Channel/Single";
@@ -64,12 +63,11 @@ var YouTubeDLX = {
     Misc: {
         System: {
             Help: help, // YouTubeDLX.Misc.System.Help
-            ProgressBar: progbar, // YouTubeDLX.Misc.System.ProgressBar
+            ProgressBar: ProgBar, // YouTubeDLX.Misc.System.ProgressBar
         },
         Video: {
             GetId: YouTubeID, // YouTubeDLX.Misc.Video.GetId
             Extract: extract, // YouTubeDLX.Misc.Video.Extract
-            Formats: list_formats, // YouTubeDLX.Misc.Video.Formats
             Related: related_videos, // YouTubeDLX.Misc.Video.Related
             Comments: video_comments, // YouTubeDLX.Video.Misc.Comments
             Transcript: video_transcript, // YouTubeDLX.Misc.Video.Transcript

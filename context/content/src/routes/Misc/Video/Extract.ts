@@ -1,9 +1,8 @@
-import path from "path";
 import colors from "colors";
-import { Client } from "youtubei";
 import { z, ZodError } from "zod";
+import { Client } from "youtubei";
 import Tuber from "../../../utils/Agent";
-import { Innertube, UniversalCache } from "youtubei.js";
+import { Tube } from "../../../utils/TubeLogin";
 import type { CommentType } from "../../../interfaces/CommentType";
 import type { AudioFormat } from "../../../interfaces/AudioFormat";
 import type { VideoFormat } from "../../../interfaces/VideoFormat";
@@ -32,7 +31,7 @@ interface VideoDuration {
     seconds: number;
     formatted: string;
 }
-interface BaseEngineMetaData {
+interface VideoInfo {
     id: string;
     original_url?: string;
     webpage_url?: string;
@@ -54,34 +53,27 @@ interface BaseEngineMetaData {
     channel_name?: string;
     channel_url?: string;
     channel_follower_count?: number;
-}
-interface MetadataPayload extends Omit<BaseEngineMetaData, "duration"> {
     view_count_formatted: string;
     like_count_formatted: string;
-    duration: number;
-    upload_date: string;
     upload_ago: number;
     upload_ago_formatted: UploadAgo;
     comment_count_formatted: string;
     channel_follower_count_formatted: string;
 }
-
 interface PayloadType {
-    BestAudioLow?: AudioFormat;
-    BestAudioHigh?: AudioFormat;
-    BestVideoLow?: VideoFormat;
-    BestVideoHigh?: VideoFormat;
-    AudioLowDRC?: AudioFormat[];
-    AudioHighDRC?: AudioFormat[];
-    AudioLow?: AudioFormat[];
-    AudioHigh?: AudioFormat[];
-    VideoLowHDR?: VideoFormat[];
-    VideoHighHDR?: VideoFormat[];
-    VideoLow?: VideoFormat[];
-    VideoHigh?: VideoFormat[];
-    ManifestLow?: ManifestFormat[];
-    ManifestHigh?: ManifestFormat[];
-    meta_data: MetadataPayload;
+    MetaData: VideoInfo;
+    AvailableFormats: { Audio: AudioFormat[]; Video: VideoFormat[]; Manifest: ManifestFormat[] };
+    Audio: {
+        SingleQuality: { Lowest: AudioFormat; Highest: AudioFormat };
+        MultipleQuality: { Lowest: AudioFormat[]; Highest: AudioFormat[] };
+        HasDRC: { Lowest?: AudioFormat[]; Highest?: AudioFormat[] };
+    };
+    Video: {
+        SingleQuality: { Lowest: VideoFormat; Highest: VideoFormat };
+        MultipleQuality: { Lowest: VideoFormat[]; Highest: VideoFormat[] };
+        HasHDR: { Lowest?: VideoFormat[]; Highest?: VideoFormat[] };
+    };
+    Manifest: { SingleQuality: { Lowest: ManifestFormat; Highest: ManifestFormat }; MultipleQuality: { Lowest: ManifestFormat[]; Highest: ManifestFormat[] } };
     comments: CommentType[] | null;
     transcript: VideoTranscriptType[] | null;
 }
@@ -112,12 +104,12 @@ function formatCount(count: number): string {
 }
 async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promise<CommentType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${videoId}`);
-        const youtubeInnertube = await Innertube.create({
-            user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
-        });
-        const response = await youtubeInnertube.getComments(videoId);
+        if (verbose) console.log(colors.green("@info:"), `Working on comments for video ID: ${videoId}`);
+        if (!Tube) {
+            console.error(colors.red("@error:"), "Tube instance not initialized. Call TubeLogin first.");
+            return null;
+        }
+        const response = await Tube.getComments(videoId);
         const comments: CommentType[] = response.contents
             .map(thread => {
                 const comment = thread?.comment;
@@ -153,7 +145,7 @@ async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promis
 }
 async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Workspaceing transcript for video ID: ${videoId}`);
+        if (verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${videoId}`);
         const youtube = new Client();
         const captions = await youtube.getVideoTranscript(videoId);
         if (!captions) {
@@ -180,11 +172,17 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const { query, useTor, verbose: parsedVerbose } = parsedOptions;
         verbose = parsedVerbose ?? false;
         const metaBody = await Tuber({ query, verbose, useTor });
-        if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response!`);
-        if (!metaBody.metaData) throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
+        if (!metaBody) {
+            throw new Error(`${colors.red("@error:")} Unable to get response!`);
+        }
+        if (!metaBody.MetaData) {
+            throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
+        }
         let uploadDate: Date | undefined;
         try {
-            if (metaBody.metaData.upload_date) uploadDate = new Date(metaBody.metaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
+            if (metaBody.MetaData.upload_date) {
+                uploadDate = new Date(metaBody.MetaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
+            }
         } catch (error) {
             throw new Error(`${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
         }
@@ -192,32 +190,18 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const daysAgo = uploadDate ? Math.floor((currentDate.getTime() - uploadDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
         const prettyDate = uploadDate?.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) || "N/A";
         const uploadAgoObject = calculateUploadAgo(daysAgo);
-        const videoTimeInSeconds = metaBody.metaData.duration;
+        const videoTimeInSeconds = metaBody.MetaData.duration;
         const videoDuration = calculateVideoDuration(videoTimeInSeconds);
-        const viewCountFormatted = metaBody.metaData.view_count !== undefined ? formatCount(metaBody.metaData.view_count) : "N/A";
-        const likeCountFormatted = metaBody.metaData.like_count !== undefined ? formatCount(metaBody.metaData.like_count) : "N/A";
-        const commentCountFormatted = metaBody.metaData.comment_count !== undefined ? formatCount(metaBody.metaData.comment_count) : "N/A";
-        const channelFollowerCountFormatted = metaBody.metaData.channel_follower_count !== undefined ? formatCount(metaBody.metaData.channel_follower_count || 0) : "N/A";
-        const commentsPromise = fetchCommentsByVideoId(metaBody.metaData.id, verbose ?? false);
-        const transcriptPromise = fetchVideoTranscript(metaBody.metaData.id, verbose ?? false);
+        const viewCountFormatted = metaBody.MetaData.view_count !== undefined ? formatCount(metaBody.MetaData.view_count) : "N/A";
+        const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
+        const commentCountFormatted = metaBody.MetaData.comment_count !== undefined ? formatCount(metaBody.MetaData.comment_count) : "N/A";
+        const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
+        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.id, verbose ?? false);
+        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.id, verbose ?? false);
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
         const payload: PayloadType = {
-            BestAudioLow: metaBody.BestAudioLow,
-            BestAudioHigh: metaBody.BestAudioHigh,
-            BestVideoLow: metaBody.BestVideoLow,
-            BestVideoHigh: metaBody.BestVideoHigh,
-            AudioLowDRC: metaBody.AudioLowDRC,
-            AudioHighDRC: metaBody.AudioHighDRC,
-            AudioLow: metaBody.AudioLow,
-            AudioHigh: metaBody.AudioHigh,
-            VideoLowHDR: metaBody.VideoLowHDR,
-            VideoHighHDR: metaBody.VideoHighHDR,
-            VideoLow: metaBody.VideoLow,
-            VideoHigh: metaBody.VideoHigh,
-            ManifestLow: metaBody.ManifestLow,
-            ManifestHigh: metaBody.ManifestHigh,
-            meta_data: {
-                ...metaBody.metaData,
+            MetaData: {
+                ...metaBody.MetaData,
                 upload_date: prettyDate,
                 upload_ago: uploadAgoObject.days,
                 duration: videoDuration.seconds ?? 0,
@@ -226,7 +210,22 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 view_count_formatted: viewCountFormatted,
                 comment_count_formatted: commentCountFormatted,
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
-                channel_follower_count: metaBody.metaData.channel_follower_count !== null ? metaBody.metaData.channel_follower_count : undefined,
+                channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
+            },
+            AvailableFormats: { Audio: metaBody.AvailableFormats.Audio, Video: metaBody.AvailableFormats.Video, Manifest: metaBody.AvailableFormats.Manifest },
+            Audio: {
+                SingleQuality: { Lowest: metaBody.Audio.SingleQuality.Lowest, Highest: metaBody.Audio.SingleQuality.Highest },
+                MultipleQuality: { Lowest: metaBody.AvailableFormats.Audio, Highest: metaBody.AvailableFormats.Audio },
+                HasDRC: { Lowest: metaBody.Audio.HasDRC.Lowest, Highest: metaBody.Audio.HasDRC.Highest },
+            },
+            Video: {
+                SingleQuality: { Lowest: metaBody.Video.SingleQuality.Lowest, Highest: metaBody.Video.SingleQuality.Highest },
+                MultipleQuality: { Lowest: metaBody.AvailableFormats.Video, Highest: metaBody.AvailableFormats.Video },
+                HasHDR: { Lowest: metaBody.Video.HasHDR.Lowest, Highest: metaBody.Video.HasHDR.Highest },
+            },
+            Manifest: {
+                SingleQuality: { Lowest: metaBody.Manifest.SingleQuality.Lowest, Highest: metaBody.Manifest.SingleQuality.Highest },
+                MultipleQuality: { Lowest: metaBody.AvailableFormats.Manifest, Highest: metaBody.AvailableFormats.Manifest },
             },
             comments,
             transcript,

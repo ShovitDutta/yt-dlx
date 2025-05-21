@@ -2,6 +2,8 @@ import AudioLowest from "../../../routes/Audio/Lowest";
 import { createWriteStream } from "fs";
 import { Readable } from "stream";
 import * as vitest from "vitest";
+import { EngineOutput } from "../../../interfaces/EngineOutput";
+
 vitest.describe("AudioLowest", () => {
     const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     vitest.it("should handle basic download", async () => {
@@ -26,56 +28,56 @@ vitest.describe("AudioLowest", () => {
         }
     });
     vitest.it("should fetch metadata only", async () => {
-        const result = await AudioLowest({ query, metadata: true });
-        vitest.expect(result).toHaveProperty("metadata");
-        vitest.expect((result as { metadata: any }).metadata).toBeInstanceOf(Object);
-        vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
+        const result = await AudioLowest({ query, MetaData: true });
+        vitest.expect(result).toHaveProperty("MetaData");
+        if (result && "MetaData" in result) {
+            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
+            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+        }
     });
     vitest.it("should fetch metadata with Tor and verbose", async () => {
-        const result = await AudioLowest({ query, metadata: true, useTor: false, verbose: true });
-        vitest.expect(result).toHaveProperty("metadata");
-        vitest.expect((result as { metadata: any }).metadata).toHaveProperty("filename");
+        const result = await AudioLowest({ query, MetaData: true, useTor: false, verbose: true });
+        vitest.expect(result).toHaveProperty("MetaData");
+        if (result && "MetaData" in result) {
+            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+        }
     });
     vitest.it("should handle basic stream", async () => {
         const result = await AudioLowest({ query, stream: true });
         vitest.expect(result).toHaveProperty("stream");
-        vitest.expect(result).toHaveProperty("filename");
-        vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        if ("filename" in result) {
-            vitest.expect(result.filename).toBeTypeOf("string");
+        vitest.expect(result).toHaveProperty("FileName");
+        if (result && "stream" in result && result.FileName) {
+            vitest.expect((result as { stream: Readable; FileName: string }).stream).toBeInstanceOf(Readable);
+            const outputStream = createWriteStream(result.FileName);
+            (result as { stream: Readable }).stream?.pipe(outputStream);
+            await new Promise(resolve => {
+                (result as { stream: Readable }).stream?.on("end", resolve);
+            });
         }
-        const outputStream = createWriteStream("basic_stream_al.avi");
-        (result as { stream: Readable }).stream?.pipe(outputStream);
-        await new Promise(resolve => {
-            (result as { stream: Readable }).stream?.on("end", resolve);
-        });
     });
     vitest.it("should handle stream with filter", async () => {
         const result = await AudioLowest({ query, stream: true, filter: "nightcore" });
         vitest.expect(result).toHaveProperty("stream");
-        vitest.expect(result).toHaveProperty("filename");
-        vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        if ("filename" in result) {
-            vitest.expect(result.filename).toBeTypeOf("string");
+        vitest.expect(result).toHaveProperty("FileName");
+        if (result && "stream" in result && result.FileName) {
+            vitest.expect((result as { stream: Readable; FileName: string }).stream).toBeInstanceOf(Readable);
+            const outputStream = createWriteStream(result.FileName);
+            (result as { stream: Readable }).stream?.pipe(outputStream);
+            await new Promise(resolve => {
+                (result as { stream: Readable }).stream?.on("end", resolve);
+            });
         }
-        const outputStream = createWriteStream("filtered_stream_al.avi");
-        (result as { stream: Readable }).stream?.pipe(outputStream);
-        await new Promise(resolve => {
-            (result as { stream: Readable }).stream?.on("end", resolve);
-        });
     });
     vitest.it("should handle stream with all options", async () => {
         const result = await AudioLowest({ query, stream: true, useTor: false, verbose: true, filter: "superspeed", showProgress: true });
         vitest.expect(result).toHaveProperty("stream");
-        vitest.expect(result).toHaveProperty("filename");
-        vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
-        if ("filename" in result) {
-            vitest.expect(result.filename).toBeTypeOf("string");
+        vitest.expect(result).toHaveProperty("FileName");
+        if (result && "stream" in result && result.FileName) {
+            const outputStream = createWriteStream(result.FileName);
+            (result as { stream: Readable }).stream?.pipe(outputStream);
+            await new Promise(resolve => {
+                (result as { stream: Readable })?.stream?.on("end", resolve);
+            });
         }
-        const outputStream = createWriteStream("full_stream_al.avi");
-        (result as { stream: Readable }).stream?.pipe(outputStream);
-        await new Promise(resolve => {
-            (result as { stream: Readable })?.stream?.on("end", resolve);
-        });
     });
 });

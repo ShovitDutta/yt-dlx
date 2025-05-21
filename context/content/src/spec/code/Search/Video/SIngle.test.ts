@@ -10,17 +10,19 @@ vitest.describe("videoData", () => {
         try {
             const result = await videoData({ videoLink: validVideoLink });
             vitest.expect(result).toHaveProperty("id");
-            vitest.expect(typeof result.id).toBe("string");
-            vitest.expect(result).toHaveProperty("title");
-            vitest.expect(typeof result.title).toBe("string");
-            vitest.expect(result).toHaveProperty("duration");
-            vitest.expect(typeof result.duration).toBe("number");
-            vitest.expect(result).toHaveProperty("viewCount");
-            vitest.expect(typeof result.viewCount).toBe("number");
-            vitest.expect(result).toHaveProperty("channelid");
-            vitest.expect(typeof result.channelid).toBe("string");
-            vitest.expect(result).toHaveProperty("channelname");
-            vitest.expect(typeof result.channelname).toBe("string");
+            if (result) {
+                vitest.expect(typeof result.id).toBe("string");
+                vitest.expect(result).toHaveProperty("title");
+                vitest.expect(typeof result.title).toBe("string");
+                vitest.expect(result).toHaveProperty("duration");
+                vitest.expect(typeof result.duration).toBe("number");
+                vitest.expect(result).toHaveProperty("viewCount");
+                vitest.expect(typeof result.viewCount).toBe("number");
+                vitest.expect(result).toHaveProperty("channelid");
+                vitest.expect(typeof result.channelid).toBe("string");
+                vitest.expect(result).toHaveProperty("channelname");
+                vitest.expect(typeof result.channelname).toBe("string");
+            }
         } catch (error) {
             console.warn(`Basic video data fetch failed for ${validVideoLink}. This might require a real video link.`, error);
             throw error;
@@ -30,11 +32,13 @@ vitest.describe("videoData", () => {
         try {
             const result = await videoData({ videoLink: shortenedVideoLink });
             vitest.expect(result).toHaveProperty("id");
-            vitest.expect(typeof result.id).toBe("string");
-            vitest.expect(result).toHaveProperty("title");
-            vitest.expect(typeof result.title).toBe("string");
-            vitest.expect(result).toHaveProperty("duration");
-            vitest.expect(typeof result.duration).toBe("number");
+             if (result) {
+                vitest.expect(typeof result.id).toBe("string");
+                vitest.expect(result).toHaveProperty("title");
+                vitest.expect(typeof result.title).toBe("string");
+                vitest.expect(result).toHaveProperty("duration");
+                vitest.expect(typeof result.duration).toBe("number");
+            }
         } catch (error) {
             console.warn(`Video data fetch failed for ${shortenedVideoLink}. This might require a real video link.`, error);
             throw error;
@@ -44,11 +48,13 @@ vitest.describe("videoData", () => {
         try {
             const result = await videoData({ videoLink: rawVideoId });
             vitest.expect(result).toHaveProperty("id");
-            vitest.expect(typeof result.id).toBe("string");
-            vitest.expect(result).toHaveProperty("title");
-            vitest.expect(typeof result.title).toBe("string");
-            vitest.expect(result).toHaveProperty("duration");
-            vitest.expect(typeof result.duration).toBe("number");
+             if (result) {
+                vitest.expect(typeof result.id).toBe("string");
+                vitest.expect(result).toHaveProperty("title");
+                vitest.expect(typeof result.title).toBe("string");
+                vitest.expect(result).toHaveProperty("duration");
+                vitest.expect(typeof result.duration).toBe("number");
+            }
         } catch (error) {
             console.warn(`Video data fetch failed for ${rawVideoId}. This might require a real video ID.`, error);
             throw error;

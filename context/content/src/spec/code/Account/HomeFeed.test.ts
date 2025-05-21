@@ -22,6 +22,10 @@ vitest.describe("home_feed", () => {
         vitest.expect(result.data).toHaveProperty("Videos");
         vitest.expect(Array.isArray(result.data?.Shorts)).toBe(true);
         vitest.expect(Array.isArray(result.data?.Videos)).toBe(true);
+        if (result.data) {
+            vitest.expect(result.data.Shorts.length).toBeGreaterThanOrEqual(0);
+            vitest.expect(result.data.Videos.length).toBeGreaterThanOrEqual(0);
+        }
     });
     vitest.it("should handle home feed fetch with verbose logging", async () => {
         if (!cookies) {

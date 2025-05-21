@@ -20,6 +20,7 @@ vitest.describe("subscriptions_feed", () => {
         vitest.expect(result).toHaveProperty("data");
         vitest.expect(result.data).toHaveProperty("contents");
         vitest.expect(Array.isArray(result.data?.contents)).toBe(true);
+        if (result.data) vitest.expect(result.data.contents.length).toBeGreaterThanOrEqual(0);
     });
     vitest.it("should handle subscriptions feed fetch with verbose logging", async () => {
         if (!cookies) {

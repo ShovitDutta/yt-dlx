@@ -1,12 +1,11 @@
 import * as colors from "colors";
-import * as retry from "async-retry";
-import * as readline from "readline";
 import { promisify } from "util";
-import { locator } from "./locator";
-// import type sizeFormat from "../interfaces/sizeFormat";
+import { locator } from "./Locator";
+import * as readline from "readline";
+import * as retry from "async-retry";
+import type { Format, Entry } from "../interfaces";
 import type { AudioFormat } from "../interfaces/AudioFormat";
 import type { VideoFormat } from "../interfaces/VideoFormat";
-import type { Format, Entry } from "../interfaces";
 import type { EngineOutput } from "../interfaces/EngineOutput";
 import type { ManifestFormat } from "../interfaces/ManifestFormat";
 import { spawn, execFile, ChildProcessWithoutNullStreams } from "child_process";
@@ -18,7 +17,7 @@ export const getLocatedPaths = async (): Promise<Record<string, string>> => {
 const startTor = async (ytDlxPath: string, verbose = false): Promise<ChildProcessWithoutNullStreams> => {
     return new Promise(async (resolve, reject) => {
         if (verbose) console.log(colors.green("@info:"), `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
-        const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as any as ChildProcessWithoutNullStreams;
+        const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as unknown as ChildProcessWithoutNullStreams;
         const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
         const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
         rlStdout.on("line", line => {
@@ -50,43 +49,13 @@ export var sizeFormat = (filesize: number): string | number => {
     var bytesPerGigabyte = bytesPerMegabyte * 1024;
     var bytesPerTerabyte = bytesPerGigabyte * 1024;
     if (filesize < bytesPerMegabyte) return filesize + " B";
-    else if (filesize < bytesPerGigabyte) {
-        return (filesize / bytesPerGigabyte).toFixed(2) + " MB";
-    } else if (filesize < bytesPerTerabyte) {
-        return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
-    } else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
+    else if (filesize < bytesPerGigabyte) return (filesize / bytesPerMegabyte).toFixed(2) + " MB";
+    else if (filesize < bytesPerTerabyte) return (filesize / bytesPerGigabyte).toFixed(2) + " GB";
+    else return (filesize / bytesPerTerabyte).toFixed(2) + " TB";
 };
-function CleanAudioFormat(i: Format): AudioFormat {
-    // i.filesizeP = sizeFormat(i.filesize);
-    const item = i as any;
-    if (item.format_id) delete item.format_id;
-    if (item.source_preference) delete item.source_preference;
-    if (item.has_drm) delete item.has_drm;
-    if (item.quality) delete item.quality;
-    if (item.fps) delete item.fps;
-    if (item.height) delete item.height;
-    if (item.width) delete item.width;
-    if (item.language) delete item.language;
-    if (item.language_preference) delete item.language_preference;
-    if (item.preference) delete item.preference;
-    if (item.dynamic_range) delete item.dynamic_range;
-    if (item.downloader_options) delete item.downloader_options;
-    if (item.protocol) delete item.protocol;
-    if (item.aspect_ratio) delete item.aspect_ratio;
-    if (item.vbr) delete item.vbr;
-    if (item.vcodec) delete item.vcodec;
-    if (item.http_headers) delete item.http_headers;
-    if (item.video_ext) delete item.video_ext;
-    return i as AudioFormat;
-}
-function CeanVideoFormat(i: VideoFormat): VideoFormat {
-    // i.filesizeP = sizeFormat(i.filesize);
-    return i;
-}
 function MapAudioFormat(i: Format): AudioFormat {
     return {
         filesize: i.filesize,
-        // filesizeP: sizeFormat(i.filesize) as string,
         asr: i.asr,
         format_note: i.format_note,
         tbr: i.tbr,
@@ -102,23 +71,22 @@ function MapAudioFormat(i: Format): AudioFormat {
 }
 function MapVideoFormat(i: Format): VideoFormat {
     return {
-        filesize: i.filesize,
-        // filesizeP: sizeFormat(i.filesize) as string,
-        format_note: i.format_note,
         fps: i.fps,
-        height: i.height,
-        width: i.width,
         tbr: i.tbr,
         url: i.url,
         ext: i.ext,
+        vbr: i.vbr,
+        width: i.width,
+        format: i.format,
+        height: i.height,
         vcodec: i.vcodec,
-        dynamic_range: i.dynamic_range,
+        filesize: i.filesize,
+        video_ext: i.video_ext,
         container: i.container,
         resolution: i.resolution,
+        format_note: i.format_note,
         aspect_ratio: i.aspect_ratio,
-        video_ext: i.video_ext,
-        vbr: i.vbr,
-        format: i.format,
+        dynamic_range: i.dynamic_range,
     };
 }
 function MapManifest(i: Format): ManifestFormat {
@@ -137,11 +105,6 @@ function MapManifest(i: Format): ManifestFormat {
         vbr: i.vbr,
         format: i.format,
     };
-}
-function FilterFormats(formats: Format[]): Format[] {
-    return formats.filter(i => {
-        return !i.format_note.includes("DRC") && !i.format_note.includes("HDR");
-    });
 }
 const config = { factor: 2, retries: 3, minTimeout: 1000, maxTimeout: 3000 };
 export default async function Engine(options: {
@@ -166,23 +129,19 @@ export default async function Engine(options: {
             if (verbose) console.log(colors.green("@info:"), `Tor is ready for ${process.platform === "win32" ? "Windows" : "Linux"}.`);
         } catch (error) {
             console.error(colors.red("@error:"), "Failed to start Tor:", error);
-            let useTor = false;
         }
     }
-    var AudioLow: Record<string, Format> = {};
-    var AudioHigh: Record<string, Format> = {};
-    var VideoLow: Record<string, Format> = {};
-    var VideoHigh: Record<string, Format> = {};
-    var ManifestLow: Record<string, Format> = {};
-    var ManifestHigh: Record<string, Format> = {};
-    var AudioLowDRC: Record<string, Format> = {};
-    var AudioHighDRC: Record<string, Format> = {};
-    var VideoLowHDR: Record<string, Format> = {};
-    var VideoHighHDR: Record<string, Format> = {};
-    var BestAudioLow: AudioFormat | null = null;
-    var BestAudioHigh: AudioFormat | null = null;
-    var BestVideoLow: VideoFormat | null = null;
-    var BestVideoHigh: VideoFormat | null = null;
+    const AvailableParsedAudioFormats: AudioFormat[] = [];
+    const AvailableParsedVideoFormats: VideoFormat[] = [];
+    const AvailableParsedManifestFormats: ManifestFormat[] = [];
+    const audioSingleQuality: { Lowest: AudioFormat | null; Highest: AudioFormat | null } = { Lowest: null, Highest: null };
+    const audioMultipleQuality: { Lowest: AudioFormat[]; Highest: AudioFormat[] } = { Lowest: [], Highest: [] };
+    const audioHasDRC: { Lowest?: AudioFormat[]; Highest?: AudioFormat[] } = {};
+    const videoSingleQuality: { Lowest: VideoFormat | null; Highest: VideoFormat | null } = { Lowest: null, Highest: null };
+    const videoMultipleQuality: { Lowest: VideoFormat[]; Highest: VideoFormat[] } = { Lowest: [], Highest: [] };
+    const videoHasHDR: { Lowest?: VideoFormat[]; Highest?: VideoFormat[] } = {};
+    const manifestSingleQuality: { Lowest: ManifestFormat | null; Highest: ManifestFormat | null } = { Lowest: null, Highest: null };
+    const manifestMultipleQuality: { Lowest: ManifestFormat[]; Highest: ManifestFormat[] } = { Lowest: [], Highest: [] };
     const ytprobeArgs = [
         "--ytprobe",
         "--dump-single-json",
@@ -218,106 +177,94 @@ export default async function Engine(options: {
     }
     var metaCore = await retry.default(async () => {
         return await promisify(execFile)(ytDlxPath, ytprobeArgs);
-    }, config);
+    }, retryConfig);
     if (torProcess) {
         torProcess.kill();
         if (verbose) console.log(colors.green("@info:"), `Tor process terminated on ${process.platform === "win32" ? "Windows" : "Linux"}`);
     }
     const i: Entry = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
     i.formats.forEach((tube: Format) => {
-        var rm = new Set(["storyboard", "Default"]);
-        if (!rm.has(tube.format_note) && tube.protocol === "m3u8_native" && tube.vbr) {
-            if (tube.resolution && (!ManifestLow[tube.resolution] || tube.vbr < ManifestLow[tube.resolution].vbr)) ManifestLow[tube.resolution] = tube;
-            if (tube.resolution && (!ManifestHigh[tube.resolution] || tube.vbr > ManifestHigh[tube.resolution].vbr)) ManifestHigh[tube.resolution] = tube;
-        }
-        if (rm.has(tube.format_note) || tube.filesize === undefined || null) return;
-        if (tube.format_note.includes("DRC")) {
-            if (tube.resolution && AudioLow[tube.resolution] && !AudioLowDRC[tube.resolution]) {
-                AudioLowDRC[tube.resolution] = AudioLow[tube.resolution];
+        const formatNote = tube.format_note || "";
+        const isDRC = formatNote.includes("DRC");
+        const isHDR = formatNote.includes("HDR");
+        const isVideo = tube.vcodec !== "none" && tube.vcodec !== undefined;
+        const isAudio = tube.acodec !== "none" && tube.acodec !== undefined;
+        const isManifest = tube.protocol === "m3u8_native";
+        if (isManifest) {
+            const mappedManifest = MapManifest(tube);
+            AvailableParsedManifestFormats.push(mappedManifest);
+            if (mappedManifest.tbr !== undefined) {
+                if (!manifestSingleQuality.Lowest || (manifestSingleQuality.Lowest && (mappedManifest.tbr ?? 0) < (manifestSingleQuality.Lowest.tbr ?? 0))) {
+                    manifestSingleQuality.Lowest = mappedManifest;
+                }
+                if (!manifestSingleQuality.Highest || (manifestSingleQuality.Highest && (mappedManifest.tbr ?? 0) > (manifestSingleQuality.Highest.tbr ?? 0))) {
+                    manifestSingleQuality.Highest = mappedManifest;
+                }
+                manifestMultipleQuality.Lowest.push(mappedManifest);
+                manifestMultipleQuality.Highest.push(mappedManifest);
             }
-            if (tube.resolution && AudioHigh[tube.resolution] && !AudioHighDRC[tube.resolution]) {
-                AudioHighDRC[tube.resolution] = AudioHigh[tube.resolution];
+        } else if (isAudio) {
+            const mappedAudio = MapAudioFormat(tube);
+            AvailableParsedAudioFormats.push(mappedAudio);
+            if (isDRC) {
+                if (!audioHasDRC.Lowest || (mappedAudio.filesize !== undefined && audioHasDRC.Lowest[0]?.filesize !== undefined && mappedAudio.filesize < audioHasDRC.Lowest[0].filesize)) {
+                    audioHasDRC.Lowest = [mappedAudio];
+                }
+                if (!audioHasDRC.Highest || (mappedAudio.filesize !== undefined && audioHasDRC.Highest[0]?.filesize !== undefined && mappedAudio.filesize > audioHasDRC.Highest[0].filesize)) {
+                    audioHasDRC.Highest = [mappedAudio];
+                }
+            } else {
+                if (
+                    !audioSingleQuality.Lowest ||
+                    (mappedAudio.filesize !== undefined && audioSingleQuality.Lowest.filesize !== undefined && mappedAudio.filesize < audioSingleQuality.Lowest.filesize)
+                ) {
+                    audioSingleQuality.Lowest = mappedAudio;
+                }
+                if (
+                    !audioSingleQuality.Highest ||
+                    (mappedAudio.filesize !== undefined && audioSingleQuality.Highest.filesize !== undefined && mappedAudio.filesize > audioSingleQuality.Highest.filesize)
+                ) {
+                    audioSingleQuality.Highest = mappedAudio;
+                }
+                audioMultipleQuality.Lowest.push(mappedAudio);
+                audioMultipleQuality.Highest.push(mappedAudio);
             }
-            AudioLowDRC[tube.format_note] = tube;
-            AudioHighDRC[tube.format_note] = tube;
-        } else if (tube.format_note.includes("HDR")) {
-            const videoLowHDRFilesize = VideoLowHDR[tube.format_note] ? VideoLowHDR[tube.format_note].filesize : undefined;
-            const videoHighHDRFilesize = VideoHighHDR[tube.format_note] ? VideoHighHDR[tube.format_note].filesize : undefined;
-            if (VideoLowHDR[tube.format_note] && (!VideoLowHDR[tube.format_note] || (videoLowHDRFilesize && tube.filesize < videoLowHDRFilesize))) VideoLowHDR[tube.format_note] = tube;
-            if (VideoHighHDR[tube.format_note] && (!VideoHighHDR[tube.format_note] || (videoHighHDRFilesize && tube.filesize > videoHighHDRFilesize))) VideoHighHDR[tube.format_note] = tube;
-        }
-        var prevLowVideo = VideoLow[tube.format_note];
-        var prevHighVideo = VideoHigh[tube.format_note];
-        var prevLowAudio = AudioLow[tube.format_note];
-        var prevHighAudio = AudioHigh[tube.format_note];
-        switch (true) {
-            case tube.format_note.includes("p"):
-                if (prevLowVideo && (!prevLowVideo || (prevLowVideo.filesize && tube.filesize < prevLowVideo.filesize))) VideoLow[tube.format_note] = tube;
-                if (prevHighVideo && (!prevHighVideo || (prevHighVideo.filesize && tube.filesize > prevHighVideo.filesize))) VideoHigh[tube.format_note] = tube;
-                break;
-            default:
-                if (prevLowAudio && (!prevLowAudio || (prevLowAudio.filesize && tube.filesize < prevLowAudio.filesize))) AudioLow[tube.format_note] = tube;
-                if (prevHighAudio && (!prevHighAudio || (prevHighAudio.filesize && tube.filesize > prevHighAudio.filesize))) AudioHigh[tube.format_note] = tube;
-                break;
+        } else if (isVideo) {
+            const mappedVideo = MapVideoFormat(tube);
+            AvailableParsedVideoFormats.push(mappedVideo);
+            if (isHDR) {
+                if (!videoHasHDR.Lowest || (mappedVideo.filesize !== undefined && videoHasHDR.Lowest[0]?.filesize !== undefined && mappedVideo.filesize < videoHasHDR.Lowest[0].filesize)) {
+                    videoHasHDR.Lowest = [mappedVideo];
+                }
+                if (!videoHasHDR.Highest || (mappedVideo.filesize !== undefined && videoHasHDR.Highest[0]?.filesize !== undefined && mappedVideo.filesize > videoHasHDR.Highest[0].filesize)) {
+                    videoHasHDR.Highest = [mappedVideo];
+                }
+            } else {
+                if (
+                    !videoSingleQuality.Lowest ||
+                    (mappedVideo.filesize !== undefined && videoSingleQuality.Lowest.filesize !== undefined && mappedVideo.filesize < videoSingleQuality.Lowest.filesize)
+                ) {
+                    videoSingleQuality.Lowest = mappedVideo;
+                }
+                if (
+                    !videoSingleQuality.Highest ||
+                    (mappedVideo.filesize !== undefined && videoSingleQuality.Highest.filesize !== undefined && mappedVideo.filesize > videoSingleQuality.Highest.filesize)
+                ) {
+                    videoSingleQuality.Highest = mappedVideo;
+                }
+                videoMultipleQuality.Lowest.push(mappedVideo);
+                videoMultipleQuality.Highest.push(mappedVideo);
+            }
         }
     });
-    (Object.values(AudioLow) as AudioFormat[]).forEach((audio: AudioFormat) => {
-        if (audio.filesize !== null) {
-            switch (true) {
-                case !BestAudioLow || (audio.filesize && BestAudioLow.filesize && audio.filesize < BestAudioLow.filesize):
-                    BestAudioLow = audio;
-                    break;
-                case !BestAudioHigh || (audio.filesize && BestAudioHigh.filesize && audio.filesize > BestAudioHigh.filesize):
-                    BestAudioHigh = audio;
-                    break;
-                default:
-                    break;
-            }
-        }
-    });
-    (Object.values(VideoLow) as VideoFormat[]).forEach((video: VideoFormat) => {
-        if (video.filesize !== null) {
-            switch (true) {
-                case !BestVideoLow || (video.filesize && BestVideoLow.filesize && video.filesize < BestVideoLow.filesize):
-                    BestVideoLow = video;
-                    break;
-                case !BestVideoHigh || (video.filesize && BestVideoHigh.filesize && video.filesize > BestVideoHigh.filesize):
-                    BestVideoHigh = video;
-                    break;
-                default:
-                    break;
-            }
-        }
-    });
-    var payLoad: EngineOutput = {
-        BestAudioLow: (() => {
-            var i = BestAudioLow || ({} as AudioFormat);
-            return CleanAudioFormat(i as any);
-        })(),
-        BestAudioHigh: (() => {
-            var i = BestAudioHigh || ({} as AudioFormat);
-            return CleanAudioFormat(i as any);
-        })(),
-        BestVideoLow: (() => {
-            var i = BestVideoLow || ({} as VideoFormat);
-            return CeanVideoFormat(i);
-        })(),
-        BestVideoHigh: (() => {
-            var i = BestVideoHigh || ({} as VideoFormat);
-            return CeanVideoFormat(i);
-        })(),
-        allFormats: i.formats,
-        AudioLowDRC: Object.values(AudioLowDRC).map(i => MapAudioFormat(i)),
-        AudioHighDRC: Object.values(AudioHighDRC).map(i => MapAudioFormat(i)),
-        AudioLow: FilterFormats(Object.values(AudioLow)).map(i => MapAudioFormat(i)),
-        AudioHigh: FilterFormats(Object.values(AudioHigh)).map(i => MapAudioFormat(i)),
-        VideoLowHDR: Object.values(VideoLowHDR).map(i => MapVideoFormat(i)),
-        VideoHighHDR: Object.values(VideoHighHDR).map(i => MapVideoFormat(i)),
-        VideoLow: FilterFormats(Object.values(VideoLow)).map(i => MapVideoFormat(i)),
-        VideoHigh: FilterFormats(Object.values(VideoHigh)).map(i => MapVideoFormat(i)),
-        ManifestLow: Object.values(ManifestLow).map(i => MapManifest(i)),
-        ManifestHigh: Object.values(ManifestHigh).map(i => MapManifest(i)),
-        metaData: {
+    audioMultipleQuality.Lowest.sort((a, b) => (a.filesize || 0) - (b.filesize || 0));
+    audioMultipleQuality.Highest.sort((a, b) => (b.filesize || 0) - (a.filesize || 0));
+    videoMultipleQuality.Lowest.sort((a, b) => (a.filesize || 0) - (b.filesize || 0));
+    videoMultipleQuality.Highest.sort((a, b) => (b.filesize || 0) - (a.filesize || 0));
+    manifestMultipleQuality.Lowest.sort((a, b) => (a.tbr ?? 0) - (b.tbr ?? 0));
+    manifestMultipleQuality.Highest.sort((a, b) => (b.tbr ?? 0) - (a.tbr ?? 0));
+    const payLoad: EngineOutput = {
+        MetaData: {
             id: i.id,
             title: i.title,
             channel: i.channel,
@@ -341,6 +288,21 @@ export default async function Engine(options: {
             comment_count: i.comment_count,
             duration_string: i.duration_string,
             channel_follower_count: i.channel_follower_count,
+        },
+        AvailableFormats: { Audio: AvailableParsedAudioFormats, Video: AvailableParsedVideoFormats, Manifest: AvailableParsedManifestFormats },
+        Audio: {
+            HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
+            SingleQuality: { Lowest: audioSingleQuality.Lowest!, Highest: audioSingleQuality.Highest! },
+            MultipleQuality: { Lowest: audioMultipleQuality.Lowest, Highest: audioMultipleQuality.Highest },
+        },
+        Video: {
+            HasHDR: videoHasHDR.Lowest || videoHasHDR.Highest ? videoHasHDR : {},
+            SingleQuality: { Lowest: videoSingleQuality.Lowest!, Highest: videoSingleQuality.Highest! },
+            MultipleQuality: { Lowest: videoMultipleQuality.Lowest, Highest: videoMultipleQuality.Highest },
+        },
+        Manifest: {
+            SingleQuality: { Lowest: manifestSingleQuality.Lowest!, Highest: manifestSingleQuality.Highest! },
+            MultipleQuality: { Lowest: manifestMultipleQuality.Lowest, Highest: manifestMultipleQuality.Highest },
         },
     };
     return payLoad;

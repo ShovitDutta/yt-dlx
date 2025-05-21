@@ -4,8 +4,8 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Agent from "../../utils/Agent";
-import progbar from "../../utils/progbar";
-import { locator } from "../../utils/locator";
+import progbar from "../../utils/ProgBar";
+import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 var ZodSchema = z.object({
     query: z.string().min(2),
@@ -13,53 +13,86 @@ var ZodSchema = z.object({
     useTor: z.boolean().optional(),
     stream: z.boolean().optional(),
     verbose: z.boolean().optional(),
-    metadata: z.boolean().optional(),
+    MetaData: z.boolean().optional(),
     filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
     resolution: z.string().regex(/^\d+p(\d+)?$/),
-    showProgress: z.boolean().optional(),
+    ShowProgress: z.boolean().optional(),
 });
+
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
+
 export default async function AudioVideoCustom({
     query,
     stream,
     output,
     useTor,
     filter,
-    metadata,
+    MetaData,
     verbose,
     resolution,
-    showProgress,
-}: AudioVideoCustomOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
+    ShowProgress,
+}: AudioVideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ query, stream, output, useTor, filter, metadata, verbose, resolution, showProgress });
-        if (metadata && (stream || output || filter || showProgress)) {
-            throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
+        ZodSchema.parse({ query, stream, output, useTor, filter, MetaData, verbose, resolution, ShowProgress });
+
+        if (MetaData && (stream || output || filter || ShowProgress)) {
+            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'stream', 'output', 'filter', or 'ShowProgress'.`);
         }
-        if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
-        if (metadata && showProgress) throw new Error(`${colors.red("@error:")} The 'showProgress' parameter cannot be used when 'metadata' is true.`);
+        if (stream && output) {
+            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        }
+        if (MetaData && ShowProgress) {
+            throw new Error(`${colors.red("@error:")} The 'ShowProgress' parameter cannot be used when 'MetaData' is true.`);
+        }
+
         const EngineMeta = await Agent({ query, verbose, useTor });
-        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-        if (metadata) {
+
+        if (!EngineMeta) {
+            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        }
+        // Access MetaData correctly from the new structure
+        if (!EngineMeta.MetaData) {
+            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
+        }
+
+        if (MetaData) {
             return {
-                metadata: {
-                    metaData: EngineMeta.metaData,
-                    BestAudioLow: EngineMeta.BestAudioLow,
-                    BestAudioHigh: EngineMeta.BestAudioHigh,
-                    AudioLowDRC: EngineMeta.AudioLowDRC,
-                    AudioHighDRC: EngineMeta.AudioHighDRC,
-                    BestVideoLow: EngineMeta.BestVideoLow,
-                    BestVideoHigh: EngineMeta.BestVideoHigh,
-                    VideoLowHDR: EngineMeta.VideoLowHDR,
-                    VideoHighHDR: EngineMeta.VideoHighHDR,
-                    ManifestLow: EngineMeta.ManifestLow,
-                    ManifestHigh: EngineMeta.ManifestHigh,
-                    filename: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                MetaData: {
+                    MetaData: EngineMeta.MetaData,
+                    FileName: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                    Links: {
+                        Audio: {
+                            Highest: {
+                                DRC_Highest: EngineMeta.Audio.HasDRC.Highest,
+                                Highest: EngineMeta.Audio.SingleQuality.Highest,
+                                BestHighest: EngineMeta.Audio.SingleQuality.Highest,
+                            },
+                            Lowest: {
+                                DRC_Lowest: EngineMeta.Audio.HasDRC.Lowest,
+                                Lowest: EngineMeta.Audio.SingleQuality.Lowest,
+                                BestLowest: EngineMeta.Audio.SingleQuality.Lowest,
+                            },
+                        },
+                        Video: {
+                            Highest: {
+                                HDR_Highest: EngineMeta.Video.HasHDR.Highest,
+                                Highest: EngineMeta.Video.SingleQuality.Highest,
+                                BestHighest: EngineMeta.Video.SingleQuality.Highest,
+                            },
+                            Lowest: {
+                                HDR_Lowest: EngineMeta.Video.HasHDR.Lowest,
+                                Lowest: EngineMeta.Video.SingleQuality.Lowest,
+                                BestLowest: EngineMeta.Video.SingleQuality.Lowest,
+                            },
+                        },
+                    },
                 },
             };
         }
-        const title = EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
+
+        const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = output ? output : process.cwd();
+
         if (!stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -67,24 +100,39 @@ export default async function AudioVideoCustom({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError?.message}`);
             }
         }
+
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
+
         try {
             const paths = await locator();
-            if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+            if (!paths.ffmpeg) {
+                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            }
+            if (!paths.ffprobe) {
+                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+            }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.metaData.thumbnails?.[0]?.url) instance.addInput(EngineMeta.metaData.thumbnails[0].url);
+            if (EngineMeta.MetaData.thumbnails?.[0]?.url) {
+                instance.addInput(EngineMeta.MetaData.thumbnails[0].url);
+            }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
         }
-        if (!EngineMeta.BestAudioHigh?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
-        instance.addInput(EngineMeta.BestAudioHigh.url);
+
+        // Access the highest quality audio from the new structure
+        if (!EngineMeta.Audio.SingleQuality.Highest?.url) {
+            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
+        }
+        instance.addInput(EngineMeta.Audio.SingleQuality.Highest.url);
+
         const resolutionRegex = /(\d+)p(\d+)?/;
         const resolutionMatch = resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
-        const manifest = EngineMeta.ManifestHigh?.find((i: any) => {
+
+        // Find the video format from AvailableFormats.Video based on resolution and FPS
+        const videoFormat = EngineMeta.AvailableFormats.Video.find(i => {
             const fps = i.fps;
             const height = i.height;
             const vcodec = i.vcodec;
@@ -92,11 +140,17 @@ export default async function AudioVideoCustom({
             let fpsMatches = targetFps === null || fps === targetFps;
             return heightMatches && fpsMatches && vcodec !== "none";
         });
-        if (manifest) {
-            if (!manifest.url) throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
-            instance.addInput(manifest.url.toString());
+
+        if (videoFormat) {
+            if (!videoFormat.url) {
+                throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
+            }
+            instance.addInput(videoFormat.url.toString());
             instance.withOutputFormat("matroska");
-        } else throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use list_formats() maybe?`);
+        } else {
+            throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use Misc.Video.Extract() to see available formats.`);
+        }
+
         const filterMap: Record<string, string[]> = {
             invert: ["negate"],
             flipVertical: ["vflip"],
@@ -106,63 +160,85 @@ export default async function AudioVideoCustom({
             rotate270: ["rotate=3*PI/2"],
             grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
         };
-        if (filter && filterMap[filter]) instance.withVideoFilter(filterMap[filter]);
-        else instance.outputOptions("-c copy");
+
+        if (filter && filterMap[filter]) {
+            instance.withVideoFilter(filterMap[filter]);
+        } else {
+            instance.outputOptions("-c copy");
+        }
+
         let processStartTime: Date;
-        if (showProgress) {
+
+        if (ShowProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                if (processStartTime) {
+                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                }
             });
         }
+
         if (stream) {
             const passthroughStream = new PassThrough();
-            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
-            (passthroughStream as any).filename = filename;
+            const FileNameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
+            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            (passthroughStream as any).FileName = FileName;
+
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
+
             instance.pipe(passthroughStream, { end: true });
+
             instance.on("end", () => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
-                if (showProgress) process.stdout.write("\n");
+                if (ShowProgress) process.stdout.write("\n");
             });
+
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
-                if (showProgress) process.stdout.write("\n");
+                if (ShowProgress) process.stdout.write("\n");
             });
+
             instance.run();
-            return { stream: passthroughStream, filename: filename };
+            return { stream: passthroughStream, FileName: FileName };
         } else {
-            const filenameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.mkv`;
-            const outputPath = path.join(folder, filename);
+            const FileNameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
+            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            const outputPath = path.join(folder, FileName);
+
             instance.output(outputPath);
+
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
-                    if (showProgress) processStartTime = new Date();
+                    if (ShowProgress) processStartTime = new Date();
                 });
+
                 instance.on("progress", progress => {
-                    if (showProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                    if (ShowProgress && processStartTime) {
+                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                    }
                 });
+
                 instance.on("end", () => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
-                    if (showProgress) process.stdout.write("\n");
+                    if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
+
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
-                    if (showProgress) process.stdout.write("\n");
+                    if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
+
                 instance.run();
             });
             return { outputPath: outputPath };

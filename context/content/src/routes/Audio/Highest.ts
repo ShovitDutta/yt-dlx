@@ -4,54 +4,69 @@ import * as path from "path";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import Agent from "../../utils/Agent";
-import progbar from "../../utils/progbar";
-import { locator } from "../../utils/locator";
+import progbar from "../../utils/ProgBar";
+import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
     useTor: z.boolean().optional(),
     stream: z.boolean().optional(),
     verbose: z.boolean().optional(),
-    metadata: z.boolean().optional(),
-    showProgress: z.boolean().optional(),
+    MetaData: z.boolean().optional(),
+    ShowProgress: z.boolean().optional(),
     filter: z
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
+
 type AudioHighestOptions = z.infer<typeof ZodSchema>;
+
 export default async function AudioHighest({
     query,
     output,
     useTor,
     stream,
     filter,
-    metadata,
+    MetaData,
     verbose,
-    showProgress,
-}: AudioHighestOptions): Promise<{ metadata: object } | { outputPath: string } | { stream: Readable; filename: string }> {
+    ShowProgress,
+}: AudioHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ query, output, useTor, stream, filter, metadata, verbose, showProgress });
-        if (metadata && (stream || output || filter || showProgress)) {
-            throw new Error(`${colors.red("@error:")} The 'metadata' parameter cannot be used with 'stream', 'output', 'filter', or 'showProgress'.`);
+        ZodSchema.parse({ query, output, useTor, stream, filter, MetaData, verbose, ShowProgress });
+
+        if (MetaData && (stream || output || filter || ShowProgress)) {
+            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'stream', 'output', 'filter', or 'ShowProgress'.`);
         }
-        if (stream && output) throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        if (stream && output) {
+            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        }
+
         const EngineMeta = await Agent({ query, verbose, useTor });
-        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        if (!EngineMeta.metaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-        if (metadata) {
+
+        if (!EngineMeta) {
+            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        }
+        if (!EngineMeta.MetaData) {
+            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
+        }
+        if (MetaData) {
             return {
-                metadata: {
-                    metaData: EngineMeta.metaData,
-                    AudioHigh: EngineMeta.AudioHigh,
-                    AudioHighDRC: EngineMeta.AudioHighDRC,
-                    BestAudioHigh: EngineMeta.BestAudioHigh,
-                    filename: `yt-dlx_AudioHighest_${filter ? filter + "_" : ""}${EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                MetaData: {
+                    MetaData: EngineMeta.MetaData,
+                    FileName: `yt-dlx_AudioHighest_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    Links: {
+                        DRC_Highest: EngineMeta.Audio.HasDRC.Highest,
+                        Highest: EngineMeta.Audio.SingleQuality.Highest,
+                        BestHighest: EngineMeta.Audio.SingleQuality.Highest,
+                    },
                 },
             };
         }
-        const title = EngineMeta.metaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
+        const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = output ? output : process.cwd();
+
         if (!stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -59,20 +74,38 @@ export default async function AudioHighest({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
+
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
+
         try {
             const paths = await locator();
-            if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+            if (!paths.ffmpeg) {
+                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+            }
+            if (!paths.ffprobe) {
+                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+            }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.metaData.thumbnails?.[0]?.url) instance.addInput(EngineMeta.metaData.thumbnails[0].url);
+            // Access thumbnails correctly from the new structure
+            if (EngineMeta.MetaData.thumbnails?.[0]?.url) {
+                instance.addInput(EngineMeta.MetaData.thumbnails[0].url);
+            }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
-        if (!EngineMeta.AudioHigh?.[0]?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
-        instance.addInput(EngineMeta.AudioHigh[0].url);
+
+        // Use the Highest quality audio from the SingleQuality object
+        const highestQualityAudio = EngineMeta.Audio.SingleQuality.Highest;
+
+        if (!highestQualityAudio?.url) {
+            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
+        }
+
+        instance.addInput(highestQualityAudio.url); // Use the retrieved highest quality audio URL
+
         instance.withOutputFormat("avi");
+
         const filterMap: Record<string, string[]> = {
             speed: ["atempo=2"],
             flanger: ["flanger"],
@@ -90,65 +123,85 @@ export default async function AudioHighest({
             vaporwave: ["aresample=48000,asetrate=48000*0.8"],
             nightcore: ["aresample=48000,asetrate=48000*1.25"],
         };
-        if (filter && filterMap[filter]) instance.withAudioFilter(filterMap[filter]);
-        else instance.outputOptions("-c copy");
+
+        if (filter && filterMap[filter]) {
+            instance.withAudioFilter(filterMap[filter]);
+        } else {
+            instance.outputOptions("-c copy");
+        }
+
         let processStartTime: Date;
-        if (showProgress) {
+
+        if (ShowProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                if (processStartTime) {
+                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                }
             });
         }
+
         if (stream) {
             const passthroughStream = new PassThrough();
-            const filenameBase = `yt-dlx_AudioHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
-            (passthroughStream as any).filename = filename;
+            const FileNameBase = `yt-dlx_AudioHighest_`;
+            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            (passthroughStream as any).FileName = FileName;
+
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
+
             instance.pipe(passthroughStream, { end: true });
+
             instance.on("end", () => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
-                if (showProgress) process.stdout.write("\n");
+                if (ShowProgress) process.stdout.write("\n");
             });
+
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
-                if (showProgress) process.stdout.write("\n");
+                if (ShowProgress) process.stdout.write("\n");
             });
+
             instance.run();
-            return { stream: passthroughStream, filename: filename };
+            return { stream: passthroughStream, FileName: FileName };
         } else {
-            const filenameBase = `yt-dlx_AudioHighest_`;
-            let filename = `${filenameBase}${filter ? filter + "_" : ""}${title}.avi`;
-            const outputPath = path.join(folder, filename);
+            const FileNameBase = `yt-dlx_AudioHighest_`;
+            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            const outputPath = path.join(folder, FileName);
+
             instance.output(outputPath);
+
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
-                    if (showProgress) processStartTime = new Date();
+                    if (ShowProgress) processStartTime = new Date();
                 });
+
                 instance.on("progress", progress => {
-                    if (showProgress && processStartTime) {
+                    if (ShowProgress && processStartTime) {
                         progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                     }
                 });
+
                 instance.on("end", () => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
-                    if (showProgress) process.stdout.write("\n");
+                    if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
+
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
-                    if (showProgress) process.stdout.write("\n");
+                    if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
+
                 instance.run();
             });
             return { outputPath };
