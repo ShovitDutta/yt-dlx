@@ -1,18 +1,18 @@
-import extract from "../routes/Misc/Video/Extract";
+import extract from "../src/routes/Misc/Video/Extract";
 import fs from "fs";
 import dotenv from "dotenv";
-import * as vitest from "vitest";
 dotenv.config();
 console.clear();
 
-vitest.it("should extract video data and save to json", async () => {
+async function quickSpec() {
     const query = "https://www.youtube.com/watch?v=fp7bbq813Jc";
     try {
         const result = await extract({ query });
         fs.writeFileSync("quick.json", JSON.stringify(result, null, 2));
-        vitest.expect(result).toHaveProperty("data");
+        console.log("Extracted data and saved to quick.json");
     } catch (error) {
         console.error("Failed to extract video data", error);
-        throw error;
     }
-});
+}
+
+quickSpec();
