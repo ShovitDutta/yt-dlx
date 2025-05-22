@@ -290,45 +290,107 @@ async function TransformToEnhanced() {
     };
     const cleanedAudioOnlyFormats = RemoveAudioFormatProperty(AudioOnlyFormats);
     const cleanedVideoOnlyFormats = RemoveVideoFormatProperty(VideoOnlyFormats);
-    let highestAudioFormat: CleanedAudioFormat | null = null;
-    let lowestAudioFormat: CleanedAudioFormat | null = null;
-    cleanedAudioOnlyFormats.forEach(format => {
-        const hasHighOrLowNote = format.format_note && (format.format_note.includes("high") || format.format_note.includes("low"));
-        if (hasHighOrLowNote) {
-            if (highestAudioFormat === null || lowestAudioFormat === null) {
-                highestAudioFormat = format;
-                lowestAudioFormat = format;
-                return;
-            }
-            if (parseInt(format.format_id!) > parseInt(highestAudioFormat.format_id!)) highestAudioFormat = format;
-            if (parseInt(format.format_id!) < parseInt(lowestAudioFormat.format_id!)) lowestAudioFormat = format;
-        }
-    });
-    let highestVideoFormat: CleanedVideoFormat | null = null;
-    let lowestVideoFormat: CleanedVideoFormat | null = null;
-    cleanedVideoOnlyFormats.forEach(format => {
-        if (highestVideoFormat === null || lowestVideoFormat === null) {
-            highestVideoFormat = format;
-            lowestVideoFormat = format;
+    const drcAudioFormats = cleanedAudioOnlyFormats.filter(f => f.format_note && f.format_note.toLowerCase().includes("drc"));
+    const nonDrcAudioFormats = cleanedAudioOnlyFormats.filter(f => !f.format_note || !f.format_note.toLowerCase().includes("drc"));
+
+    let highestDrcAudioFormat: CleanedAudioFormat | null = null;
+    let lowestDrcAudioFormat: CleanedAudioFormat | null = null;
+    drcAudioFormats.forEach(format => {
+        if (highestDrcAudioFormat === null || lowestDrcAudioFormat === null) {
+            highestDrcAudioFormat = format;
+            lowestDrcAudioFormat = format;
             return;
         }
-        if (format.vbr !== null && highestVideoFormat.vbr !== null) {
-            if (format.vbr! > highestVideoFormat.vbr!) highestVideoFormat = format;
-        } else if (format.vbr !== null && highestVideoFormat.vbr === null) highestVideoFormat = format;
-        else if (format.height !== null && highestVideoFormat.height !== null) {
-            if (format.height! > highestVideoFormat.height!) highestVideoFormat = format;
-        } else if (format.height !== null && highestVideoFormat.height === null) highestVideoFormat = format;
-        if (format.vbr !== null && lowestVideoFormat.vbr !== null) {
-            if (format.vbr! < lowestVideoFormat.vbr!) lowestVideoFormat = format;
-        } else if (format.vbr !== null && lowestVideoFormat.vbr === null) {
-        } else if (format.height !== null && lowestVideoFormat.height !== null) {
-            if (format.height! < lowestVideoFormat.height!) lowestVideoFormat = format;
-        } else if (format.height !== null && lowestVideoFormat.height === null) {
+        if (parseInt(format.format_id!) > parseInt(highestDrcAudioFormat.format_id!)) highestDrcAudioFormat = format;
+        if (parseInt(format.format_id!) < parseInt(lowestDrcAudioFormat.format_id!)) lowestDrcAudioFormat = format;
+    });
+
+    let highestNonDrcAudioFormat: CleanedAudioFormat | null = null;
+    let lowestNonDrcAudioFormat: CleanedAudioFormat | null = null;
+    nonDrcAudioFormats.forEach(format => {
+        if (highestNonDrcAudioFormat === null || lowestNonDrcAudioFormat === null) {
+            highestNonDrcAudioFormat = format;
+            lowestNonDrcAudioFormat = format;
+            return;
+        }
+        if (parseInt(format.format_id!) > parseInt(highestNonDrcAudioFormat.format_id!)) highestNonDrcAudioFormat = format;
+        if (parseInt(format.format_id!) < parseInt(lowestNonDrcAudioFormat.format_id!)) lowestNonDrcAudioFormat = format;
+    });
+
+    const sdrVideoFormats = cleanedVideoOnlyFormats.filter(f => f.dynamic_range === "SDR");
+    const hdrVideoFormats = cleanedVideoOnlyFormats.filter(f => f.dynamic_range && f.dynamic_range.toLowerCase().includes("hdr"));
+
+    let highestSdrVideoFormat: CleanedVideoFormat | null = null;
+    let lowestSdrVideoFormat: CleanedVideoFormat | null = null;
+    sdrVideoFormats.forEach(format => {
+        if (highestSdrVideoFormat === null || lowestSdrVideoFormat === null) {
+            highestSdrVideoFormat = format;
+            lowestSdrVideoFormat = format;
+            return;
+        }
+        if (format.vbr !== null && highestSdrVideoFormat.vbr !== null) {
+            if (format.vbr! > highestSdrVideoFormat.vbr!) highestSdrVideoFormat = format;
+        } else if (format.vbr !== null && highestSdrVideoFormat.vbr === null) highestSdrVideoFormat = format;
+        else if (format.height !== null && highestSdrVideoFormat.height !== null) {
+            if (format.height! > highestSdrVideoFormat.height!) highestSdrVideoFormat = format;
+        } else if (format.height !== null && highestSdrVideoFormat.height === null) highestSdrVideoFormat = format;
+        if (format.vbr !== null && lowestSdrVideoFormat.vbr !== null) {
+            if (format.vbr! < lowestSdrVideoFormat.vbr!) lowestSdrVideoFormat = format;
+        } else if (format.vbr !== null && lowestSdrVideoFormat.vbr === null) {
+        } else if (format.height !== null && lowestSdrVideoFormat.height !== null) {
+            if (format.height! < lowestSdrVideoFormat.height!) lowestSdrVideoFormat = format;
+        } else if (format.height !== null && lowestSdrVideoFormat.height === null) {
         }
     });
+
+    let highestHdrVideoFormat: CleanedVideoFormat | null = null;
+    let lowestHdrVideoFormat: CleanedVideoFormat | null = null;
+    hdrVideoFormats.forEach(format => {
+        if (highestHdrVideoFormat === null || lowestHdrVideoFormat === null) {
+            highestHdrVideoFormat = format;
+            lowestHdrVideoFormat = format;
+            return;
+        }
+        if (format.vbr !== null && highestHdrVideoFormat.vbr !== null) {
+            if (format.vbr! > highestHdrVideoFormat.vbr!) highestHdrVideoFormat = format;
+        } else if (format.vbr !== null && highestHdrVideoFormat.vbr === null) highestHdrVideoFormat = format;
+        else if (format.height !== null && highestHdrVideoFormat.height !== null) {
+            if (format.height! > highestHdrVideoFormat.height!) highestHdrVideoFormat = format;
+        } else if (format.height !== null && highestHdrVideoFormat.height === null) highestHdrVideoFormat = format;
+        if (format.vbr !== null && lowestHdrVideoFormat.vbr !== null) {
+            if (format.vbr! < lowestHdrVideoFormat.vbr!) lowestHdrVideoFormat = format;
+        } else if (format.vbr !== null && lowestHdrVideoFormat.vbr === null) {
+        } else if (format.height !== null && lowestHdrVideoFormat.height !== null) {
+            if (format.height! < lowestHdrVideoFormat.height!) lowestHdrVideoFormat = format;
+        } else if (format.height !== null && lowestHdrVideoFormat.height === null) {
+        }
+    });
+
     const outputData = {
-        AudioOnly: { Highest: highestAudioFormat, Lowest: lowestAudioFormat, Combined: cleanedAudioOnlyFormats },
-        VideoOnly: { Highest: highestVideoFormat, Lowest: lowestVideoFormat, Combined: cleanedVideoOnlyFormats },
+        AudioOnly: {
+            Standard: {
+                Highest: highestNonDrcAudioFormat,
+                Lowest: lowestNonDrcAudioFormat,
+                Combined: nonDrcAudioFormats,
+            },
+            Dynamic_Range_Compression: {
+                Highest: highestDrcAudioFormat,
+                Lowest: lowestDrcAudioFormat,
+                Combined: drcAudioFormats,
+            },
+        },
+        VideoOnly: {
+            Standard_Dynamic_Range: {
+                Highest: highestSdrVideoFormat,
+                Lowest: lowestSdrVideoFormat,
+                Combined: sdrVideoFormats,
+            },
+            High_Dynamic_Range: {
+                Highest: highestHdrVideoFormat,
+                Lowest: lowestHdrVideoFormat,
+                Combined: hdrVideoFormats,
+            },
+        },
     };
     await fs.writeFile("Enhanced.json", JSON.stringify(outputData, null, 4), "utf8");
 }
