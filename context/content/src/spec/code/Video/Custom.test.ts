@@ -28,7 +28,7 @@ vitest.describe("VideoCustom", () => {
             useTor: false,
             verbose: true,
             filter: "flipHorizontal",
-            showProgress: true,
+            ShowProgress: true,
         });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
@@ -76,7 +76,7 @@ vitest.describe("VideoCustom", () => {
         }
     });
     vitest.it("should handle stream with all options with 720p60", async () => {
-        const result = await VideoCustom({ query, stream: true, useTor: false, verbose: true, filter: "rotate180", showProgress: true, resolution: "720p60" });
+        const result = await VideoCustom({ query, stream: true, useTor: false, verbose: true, filter: "rotate180", ShowProgress: true, resolution: "720p60" });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("FileName");
         if (result && "stream" in result && result.FileName) {

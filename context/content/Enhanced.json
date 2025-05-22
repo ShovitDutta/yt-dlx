@@ -580,5 +580,69 @@
                 }
             ]
         }
+    },
+    "Thumbnails": {
+        "Highest": {
+            "url": "https://i.ytimg.com/vi_webp/s49rbh8xXKI/maxresdefault.webp",
+            "height": 1080,
+            "width": 1920,
+            "resolution": "1920x1080"
+        },
+        "Lowest": {
+            "url": "https://i.ytimg.com/vi/s49rbh8xXKI/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLA_E9ZRixLaPB5IgMgxna_-K41ALA",
+            "height": 94,
+            "width": 168,
+            "resolution": "168x94"
+        },
+        "Combined": [
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLA_E9ZRixLaPB5IgMgxna_-K41ALA",
+                "height": 94,
+                "width": 168,
+                "resolution": "168x94"
+            },
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/hqdefault.jpg?sqp=-oaymwEbCMQBEG5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLD4tywZPfOtcUbQ14ryetEqiptFrw",
+                "height": 110,
+                "width": 196,
+                "resolution": "196x110"
+            },
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/hqdefault.jpg?sqp=-oaymwEcCPYBEIoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBlhCHjcXsYji6J6nLxMSkl-EMQvw",
+                "height": 138,
+                "width": 246,
+                "resolution": "246x138"
+            },
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAJ4dTAgtJ_fwK3FufYZ9SE7zOZxg",
+                "height": 188,
+                "width": 336,
+                "resolution": "336x188"
+            },
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/hqdefault.jpg",
+                "height": 360,
+                "width": 480,
+                "resolution": "480x360"
+            },
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/sddefault.jpg",
+                "height": 480,
+                "width": 640,
+                "resolution": "640x480"
+            },
+            {
+                "url": "https://i.ytimg.com/vi/s49rbh8xXKI/maxresdefault.jpg",
+                "height": 720,
+                "width": 1280,
+                "resolution": "1280x720"
+            },
+            {
+                "url": "https://i.ytimg.com/vi_webp/s49rbh8xXKI/maxresdefault.webp",
+                "height": 1080,
+                "width": 1920,
+                "resolution": "1920x1080"
+            }
+        ]
     }
 }

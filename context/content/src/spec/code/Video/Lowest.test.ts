@@ -21,7 +21,7 @@ vitest.describe("VideoLowest", () => {
         }
     });
     vitest.it("should handle download with all options", async () => {
-        const result = await VideoLowest({ query, output: "output", useTor: false, verbose: true, filter: "invert", showProgress: true });
+        const result = await VideoLowest({ query, output: "output", useTor: false, verbose: true, filter: "invert", ShowProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
@@ -68,7 +68,7 @@ vitest.describe("VideoLowest", () => {
         }
     });
     vitest.it("should handle stream with all options", async () => {
-        const result = await VideoLowest({ query, stream: true, useTor: false, verbose: true, filter: "rotate90", showProgress: true });
+        const result = await VideoLowest({ query, stream: true, useTor: false, verbose: true, filter: "rotate90", ShowProgress: true });
         vitest.expect(result).toHaveProperty("stream");
         vitest.expect(result).toHaveProperty("FileName");
         if (result && "stream" in result && result.FileName) {

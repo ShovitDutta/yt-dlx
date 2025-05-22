@@ -21,7 +21,7 @@ vitest.describe("AudioCustom", () => {
         }
     });
     vitest.it("should handle download with all options with low resolution", async () => {
-        const result = await AudioCustom({ query, resolution: "low", output: "output", useTor: false, verbose: true, filter: "echo", showProgress: true });
+        const result = await AudioCustom({ query, resolution: "low", output: "output", useTor: false, verbose: true, filter: "echo", ShowProgress: true });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);

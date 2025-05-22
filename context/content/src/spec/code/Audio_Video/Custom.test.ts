@@ -27,7 +27,7 @@ vitest.describe("AudioVideoCustom", () => {
             verbose: true,
             filter: "invert",
             output: "output",
-            showProgress: true,
+            ShowProgress: true,
             resolution: "2160p60",
         });
         vitest.expect(result).toHaveProperty("outputPath");
@@ -82,7 +82,7 @@ vitest.describe("AudioVideoCustom", () => {
             stream: true,
             useTor: false,
             verbose: true,
-            showProgress: true,
+            ShowProgress: true,
             resolution: "720p60",
             filter: "rotate270",
         });

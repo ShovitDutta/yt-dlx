@@ -292,7 +292,6 @@ async function TransformToEnhanced() {
     const cleanedVideoOnlyFormats = RemoveVideoFormatProperty(VideoOnlyFormats);
     const drcAudioFormats = cleanedAudioOnlyFormats.filter(f => f.format_note && f.format_note.toLowerCase().includes("drc"));
     const nonDrcAudioFormats = cleanedAudioOnlyFormats.filter(f => !f.format_note || !f.format_note.toLowerCase().includes("drc"));
-
     let highestDrcAudioFormat: CleanedAudioFormat | null = null;
     let lowestDrcAudioFormat: CleanedAudioFormat | null = null;
     drcAudioFormats.forEach(format => {
@@ -304,7 +303,6 @@ async function TransformToEnhanced() {
         if (parseInt(format.format_id!) > parseInt(highestDrcAudioFormat.format_id!)) highestDrcAudioFormat = format;
         if (parseInt(format.format_id!) < parseInt(lowestDrcAudioFormat.format_id!)) lowestDrcAudioFormat = format;
     });
-
     let highestNonDrcAudioFormat: CleanedAudioFormat | null = null;
     let lowestNonDrcAudioFormat: CleanedAudioFormat | null = null;
     nonDrcAudioFormats.forEach(format => {
@@ -316,10 +314,8 @@ async function TransformToEnhanced() {
         if (parseInt(format.format_id!) > parseInt(highestNonDrcAudioFormat.format_id!)) highestNonDrcAudioFormat = format;
         if (parseInt(format.format_id!) < parseInt(lowestNonDrcAudioFormat.format_id!)) lowestNonDrcAudioFormat = format;
     });
-
     const sdrVideoFormats = cleanedVideoOnlyFormats.filter(f => f.dynamic_range === "SDR");
     const hdrVideoFormats = cleanedVideoOnlyFormats.filter(f => f.dynamic_range && f.dynamic_range.toLowerCase().includes("hdr"));
-
     let highestSdrVideoFormat: CleanedVideoFormat | null = null;
     let lowestSdrVideoFormat: CleanedVideoFormat | null = null;
     sdrVideoFormats.forEach(format => {
@@ -342,7 +338,6 @@ async function TransformToEnhanced() {
         } else if (format.height !== null && lowestSdrVideoFormat.height === null) {
         }
     });
-
     let highestHdrVideoFormat: CleanedVideoFormat | null = null;
     let lowestHdrVideoFormat: CleanedVideoFormat | null = null;
     hdrVideoFormats.forEach(format => {
@@ -365,33 +360,92 @@ async function TransformToEnhanced() {
         } else if (format.height !== null && lowestHdrVideoFormat.height === null) {
         }
     });
-
-    const outputData = {
+    const filteredThumbnails = (rawresp.thumbnails || []).filter(thumbnail => thumbnail.resolution);
+    const cleanedThumbnails = filteredThumbnails.map(thumbnail => {
+        const newThumbnail = { ...thumbnail };
+        delete newThumbnail.preference;
+        delete newThumbnail.id;
+        return newThumbnail;
+    });
+    let highestThumbnail: NonNullable<OriginalJson["thumbnails"]>[number] | null = null;
+    let lowestThumbnail: NonNullable<OriginalJson["thumbnails"]>[number] | null = null;
+    cleanedThumbnails.forEach(thumbnail => {
+        if (highestThumbnail === null || lowestThumbnail === null) {
+            highestThumbnail = thumbnail;
+            lowestThumbnail = thumbnail;
+            return;
+        }
+        const currentResolution = (thumbnail.width || 0) * (thumbnail.height || 0);
+        const highestResolution = (highestThumbnail.width || 0) * (highestThumbnail.height || 0);
+        const lowestResolution = (lowestThumbnail.width || 0) * (lowestThumbnail.height || 0);
+        if (currentResolution > highestResolution) highestThumbnail = thumbnail;
+        if (currentResolution < lowestResolution) lowestThumbnail = thumbnail;
+    });
+    const FinalData = {
+        MetaData: {
+            id: rawresp.id,
+            title: rawresp.title,
+            description: rawresp.description,
+            channel_id: rawresp.channel_id,
+            channel_url: rawresp.channel_url,
+            duration: rawresp.duration,
+            view_count: rawresp.view_count,
+            average_rating: rawresp.average_rating,
+            age_limit: rawresp.age_limit,
+            webpage_url: rawresp.webpage_url,
+            categories: rawresp.categories,
+            playable_in_embed: rawresp.playable_in_embed,
+            live_status: rawresp.live_status,
+            media_type: rawresp.media_type,
+            release_timestamp: rawresp.release_timestamp,
+            _format_sort_fields: rawresp._format_sort_fields,
+            automatic_captions: rawresp.automatic_captions,
+            subtitles: rawresp.subtitles,
+            comment_count: rawresp.comment_count,
+            chapters: rawresp.chapters,
+            heatmap: rawresp.heatmap,
+            like_count: rawresp.like_count,
+            channel: rawresp.channel,
+            channel_follower_count: rawresp.channel_follower_count,
+            channel_is_verified: rawresp.channel_is_verified,
+            uploader: rawresp.uploader,
+            uploader_id: rawresp.uploader_id,
+            uploader_url: rawresp.uploader_url,
+            upload_date: rawresp.upload_date,
+            timestamp: rawresp.timestamp,
+            availability: rawresp.availability,
+            original_url: rawresp.original_url,
+            webpage_url_basename: rawresp.webpage_url_basename,
+            webpage_url_domain: rawresp.webpage_url_domain,
+            extractor: rawresp.extractor,
+            extractor_key: rawresp.extractor_key,
+            playlist: rawresp.playlist,
+            playlist_index: rawresp.playlist_index,
+            display_id: rawresp.display_id,
+            fulltitle: rawresp.fulltitle,
+            duration_string: rawresp.duration_string,
+            release_year: rawresp.release_year,
+            is_live: rawresp.is_live,
+            was_live: rawresp.was_live,
+            requested_subtitles: rawresp.requested_subtitles,
+            _has_drm: rawresp._has_drm,
+            epoch: rawresp.epoch,
+            tags: rawresp.tags,
+        },
         AudioOnly: {
-            Standard: {
-                Highest: highestNonDrcAudioFormat,
-                Lowest: lowestNonDrcAudioFormat,
-                Combined: nonDrcAudioFormats,
-            },
-            Dynamic_Range_Compression: {
-                Highest: highestDrcAudioFormat,
-                Lowest: lowestDrcAudioFormat,
-                Combined: drcAudioFormats,
-            },
+            Standard: { Highest: highestNonDrcAudioFormat, Lowest: lowestNonDrcAudioFormat, Combined: nonDrcAudioFormats },
+            Dynamic_Range_Compression: { Highest: highestDrcAudioFormat, Lowest: lowestDrcAudioFormat, Combined: drcAudioFormats },
         },
         VideoOnly: {
-            Standard_Dynamic_Range: {
-                Highest: highestSdrVideoFormat,
-                Lowest: lowestSdrVideoFormat,
-                Combined: sdrVideoFormats,
-            },
-            High_Dynamic_Range: {
-                Highest: highestHdrVideoFormat,
-                Lowest: lowestHdrVideoFormat,
-                Combined: hdrVideoFormats,
-            },
+            Standard_Dynamic_Range: { Highest: highestSdrVideoFormat, Lowest: lowestSdrVideoFormat, Combined: sdrVideoFormats },
+            High_Dynamic_Range: { Highest: highestHdrVideoFormat, Lowest: lowestHdrVideoFormat, Combined: hdrVideoFormats },
+        },
+        Thumbnails: {
+            Highest: highestThumbnail,
+            Lowest: lowestThumbnail,
+            Combined: cleanedThumbnails,
         },
     };
-    await fs.writeFile("Enhanced.json", JSON.stringify(outputData, null, 4), "utf8");
+    await fs.writeFile("Enhanced.json", JSON.stringify(FinalData, null, 4), "utf8");
 }
 TransformToEnhanced();
