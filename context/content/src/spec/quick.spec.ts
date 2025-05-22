@@ -15,7 +15,7 @@ const execPromise = util.promisify(exec);
     console.log("Completed quick test with YouTubeDLX!");
     const paths = await locator();
     const ytDlxPath = paths["yt-dlx"];
-    const { stdout } = await execPromise(`"${ytDlxPath}" --ytprobe --dump-single-json https://www.youtube.com/watch?v=quO40eBkdbs`);
+    const { stdout } = await execPromise(`"${ytDlxPath}" --ytprobe --dump-single-json "https://www.youtube.com/watch?v=quO40eBkdbs"`);
     fs.writeFileSync("YtProbe.json", stdout);
     console.log("ytprobe.json written successfully!");
 })().catch(console.error);
