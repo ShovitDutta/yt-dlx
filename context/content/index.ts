@@ -313,28 +313,56 @@ async function TransformToEnhanced() {
     const cleanedVideoOnlyFormats = RemoveVideoFormatProperty(VideoOnlyFormats);
     const drcAudioFormats = cleanedAudioOnlyFormats.filter(f => f.format_note && f.format_note.toLowerCase().includes("drc"));
     const nonDrcAudioFormats = cleanedAudioOnlyFormats.filter(f => !f.format_note || !f.format_note.toLowerCase().includes("drc"));
-    let highestDrcAudioFormat: CleanedAudioFormat | null = null;
-    let lowestDrcAudioFormat: CleanedAudioFormat | null = null;
-    drcAudioFormats.forEach(format => {
-        if (highestDrcAudioFormat === null || lowestDrcAudioFormat === null) {
-            highestDrcAudioFormat = format;
-            lowestDrcAudioFormat = format;
-            return;
-        }
-        if (parseInt(format.format_id!) > parseInt(highestDrcAudioFormat.format_id!)) highestDrcAudioFormat = format;
-        if (parseInt(format.format_id!) < parseInt(lowestDrcAudioFormat.format_id!)) lowestDrcAudioFormat = format;
-    });
-    let highestNonDrcAudioFormat: CleanedAudioFormat | null = null;
-    let lowestNonDrcAudioFormat: CleanedAudioFormat | null = null;
-    nonDrcAudioFormats.forEach(format => {
-        if (highestNonDrcAudioFormat === null || lowestNonDrcAudioFormat === null) {
-            highestNonDrcAudioFormat = format;
-            lowestNonDrcAudioFormat = format;
-            return;
-        }
-        if (parseInt(format.format_id!) > parseInt(highestNonDrcAudioFormat.format_id!)) highestNonDrcAudioFormat = format;
-        if (parseInt(format.format_id!) < parseInt(lowestNonDrcAudioFormat.format_id!)) lowestNonDrcAudioFormat = format;
-    });
+
+    const groupAudioFormatsByLanguage = (formats: CleanedAudioFormat[]) => {
+        const formatsByLanguage: { [key: string]: CleanedAudioFormat[] } = {};
+        formats.forEach(format => {
+            const languageMatch = format.format_note?.match(/^([^ -]+)/);
+            const language = languageMatch ? languageMatch[1] : "Unknown";
+            if (!formatsByLanguage[language]) {
+                formatsByLanguage[language] = [];
+            }
+            formatsByLanguage[language].push(format);
+        });
+        return formatsByLanguage;
+    };
+
+    const processLanguageGroup = (formats: CleanedAudioFormat[]) => {
+        let highest: CleanedAudioFormat | null = null;
+        let lowest: CleanedAudioFormat | null = null;
+
+        formats.forEach(format => {
+            if (highest === null || lowest === null) {
+                highest = format;
+                lowest = format;
+                return;
+            }
+            if (parseInt(format.format_id!) > parseInt(highest.format_id!)) highest = format;
+            if (parseInt(format.format_id!) < parseInt(lowest.format_id!)) lowest = format;
+        });
+
+        return { Highest: highest, Lowest: lowest, Combined: formats };
+    };
+
+    const nonDrcAudioByLanguage = groupAudioFormatsByLanguage(nonDrcAudioFormats);
+    const drcAudioByLanguage = groupAudioFormatsByLanguage(drcAudioFormats);
+
+    const audioOnlyData: {
+        Standard: { [key: string]: { Highest: CleanedAudioFormat | null; Lowest: CleanedAudioFormat | null; Combined: CleanedAudioFormat[] } };
+        Dynamic_Range_Compression: { [key: string]: { Highest: CleanedAudioFormat | null; Lowest: CleanedAudioFormat | null; Combined: CleanedAudioFormat[] } };
+    } = {
+        Standard: {},
+        Dynamic_Range_Compression: {},
+    };
+
+    for (const language in nonDrcAudioByLanguage) {
+        audioOnlyData.Standard[language] = processLanguageGroup(nonDrcAudioByLanguage[language]);
+    }
+
+    for (const language in drcAudioByLanguage) {
+        audioOnlyData.Dynamic_Range_Compression[language] = processLanguageGroup(drcAudioByLanguage[language]);
+    }
+
     const sdrVideoFormats = cleanedVideoOnlyFormats.filter(f => f.dynamic_range === "SDR");
     const hdrVideoFormats = cleanedVideoOnlyFormats.filter(f => f.dynamic_range && f.dynamic_range.toLowerCase().includes("hdr"));
     let highestSdrVideoFormat: CleanedVideoFormat | null = null;
@@ -448,10 +476,7 @@ async function TransformToEnhanced() {
             last_fetched: rawresp.epoch,
             tags: rawresp.tags,
         },
-        AudioOnly: {
-            Standard: { Highest: highestNonDrcAudioFormat, Lowest: lowestNonDrcAudioFormat, Combined: nonDrcAudioFormats },
-            Dynamic_Range_Compression: { Highest: highestDrcAudioFormat, Lowest: lowestDrcAudioFormat, Combined: drcAudioFormats },
-        },
+        AudioOnly: audioOnlyData,
         VideoOnly: {
             Standard_Dynamic_Range: { Highest: highestSdrVideoFormat, Lowest: lowestSdrVideoFormat, Combined: sdrVideoFormats },
             High_Dynamic_Range: { Highest: highestHdrVideoFormat, Lowest: lowestHdrVideoFormat, Combined: hdrVideoFormats },
