@@ -38,13 +38,25 @@ export interface EngineOutput {
         };
     };
     Manifest: {
-        SingleQuality: {
-            Lowest: ManifestFormat;
-            Highest: ManifestFormat;
+        Audio: {
+            SingleQuality: {
+                Lowest: AudioFormat;
+                Highest: AudioFormat;
+            };
+            MultipleQuality: {
+                Lowest: AudioFormat[];
+                Highest: AudioFormat[];
+            };
         };
-        MultipleQuality: {
-            Lowest: ManifestFormat[];
-            Highest: ManifestFormat[];
+        Video: {
+            SingleQuality: {
+                Lowest: VideoFormat;
+                Highest: VideoFormat;
+            };
+            MultipleQuality: {
+                Lowest: VideoFormat[];
+                Highest: VideoFormat[];
+            };
         };
     };
 }

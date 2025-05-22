@@ -297,18 +297,24 @@ export default async function Engine(options: {
         },
         AvailableFormats: { Audio: AvailableParsedAudioFormats, Video: AvailableParsedVideoFormats, Manifest: AvailableParsedManifestFormats },
         Audio: {
-            HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
             SingleQuality: { Lowest: audioSingleQuality.Lowest!, Highest: audioSingleQuality.Highest! },
             MultipleQuality: { Lowest: audioMultipleQuality.Lowest, Highest: audioMultipleQuality.Highest },
+            HasDRC: audioHasDRC.Lowest || audioHasDRC.Highest ? audioHasDRC : {},
         },
         Video: {
-            HasHDR: videoHasHDR.Lowest || videoHasHDR.Highest ? videoHasHDR : {},
             SingleQuality: { Lowest: videoSingleQuality.Lowest!, Highest: videoSingleQuality.Highest! },
             MultipleQuality: { Lowest: videoMultipleQuality.Lowest, Highest: videoMultipleQuality.Highest },
+            HasHDR: videoHasHDR.Lowest || videoHasHDR.Highest ? videoHasHDR : {},
         },
         Manifest: {
-            SingleQuality: { Lowest: manifestSingleQuality.Lowest!, Highest: manifestSingleQuality.Highest! },
-            MultipleQuality: { Lowest: manifestMultipleQuality.Lowest, Highest: manifestMultipleQuality.Highest },
+            Audio: {
+                SingleQuality: { Lowest: audioSingleQuality.Lowest!, Highest: audioSingleQuality.Highest! },
+                MultipleQuality: { Lowest: audioMultipleQuality.Lowest, Highest: audioMultipleQuality.Highest },
+            },
+            Video: {
+                SingleQuality: { Lowest: videoSingleQuality.Lowest!, Highest: videoSingleQuality.Highest! },
+                MultipleQuality: { Lowest: videoMultipleQuality.Lowest, Highest: videoMultipleQuality.Highest },
+            },
         },
     };
     return payLoad;
