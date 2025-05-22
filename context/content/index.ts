@@ -1,5 +1,4 @@
 import fs from "fs/promises";
-
 interface OriginalJson {
     id?: string;
     title?: string;
@@ -16,6 +15,7 @@ interface OriginalJson {
         quality?: number | string | null;
         has_drm?: boolean;
         vcodec?: string | null;
+        acodec?: string | null;
         source_preference?: number;
         __needs_testing?: boolean;
         audio_ext?: string;
@@ -166,7 +166,7 @@ interface OriginalJson {
         resolution?: string;
         fps?: number;
         dynamic_range?: string;
-        vcodec?: string;
+        vcodec?: string | null;
         vbr?: number;
         aspect_ratio?: number;
         _filename?: string;
@@ -197,22 +197,44 @@ interface OriginalJson {
     _type?: string;
     _version?: { version?: string; current_git_head?: string | null; release_git_head?: string | null; repository?: string };
 }
-
 interface CleanedAudioFormat extends Omit<NonNullable<OriginalJson["formats"]>[number], "format"> {
     __needs_testing?: never;
     http_headers?: never;
     format_index?: never;
     __working?: never;
     abr?: never;
-    resolution: string | null;
+    format_id?: string;
+    format_note?: string | null;
+    url?: string;
+    manifest_url?: string;
+    language?: string | null;
+    protocol?: string;
+    has_drm?: boolean;
+    audio_ext?: string;
+    tbr?: number | null;
 }
 interface CleanedVideoFormat extends Omit<NonNullable<OriginalJson["formats"]>[number], "format"> {
     __needs_testing?: never;
     http_headers?: never;
     format_index?: never;
     __working?: never;
-    vbr?: never;
-    resolution: string | null;
+    format_id?: string;
+    url?: string;
+    manifest_url?: string;
+    tbr?: number | null;
+    ext?: string;
+    fps?: number | null;
+    protocol?: string;
+    quality?: number | string | null;
+    has_drm?: boolean;
+    width?: number | null;
+    height?: number | null;
+    vcodec?: string | null;
+    dynamic_range?: string;
+    video_ext?: string;
+    vbr?: number | null;
+    resolution?: string | null;
+    aspect_ratio?: number | null;
 }
 async function TransformToEnhanced() {
     const rawresp: OriginalJson = JSON.parse(await fs.readFile("original.json", "utf-8"));
@@ -231,11 +253,15 @@ async function TransformToEnhanced() {
         return formatsArray.map(format => {
             if (!format) return format as CleanedVideoFormat;
             const newFormat: Partial<NonNullable<OriginalJson["formats"]>[number]> = { ...format };
+            delete newFormat.source_preference;
             delete newFormat.__needs_testing;
             delete newFormat.http_headers;
             delete newFormat.format_index;
             delete newFormat.__working;
+            delete newFormat.audio_ext;
+            delete newFormat.preference;
             delete newFormat.format;
+            delete newFormat.acodec;
             delete newFormat.abr;
             return newFormat as CleanedVideoFormat;
         });
@@ -245,33 +271,65 @@ async function TransformToEnhanced() {
         return formatsArray.map(format => {
             if (!format) return format as CleanedAudioFormat;
             const newFormat: Partial<NonNullable<OriginalJson["formats"]>[number]> = { ...format };
+            delete newFormat.source_preference;
             delete newFormat.__needs_testing;
             delete newFormat.http_headers;
             delete newFormat.format_index;
+            delete newFormat.aspect_ratio;
+            delete newFormat.resolution;
+            delete newFormat.preference;
             delete newFormat.__working;
+            delete newFormat.video_ext;
+            delete newFormat.quality;
+            delete newFormat.vcodec;
             delete newFormat.format;
+            delete newFormat.ext;
             delete newFormat.vbr;
             return newFormat as CleanedAudioFormat;
         });
     };
     const cleanedAudioOnlyFormats = RemoveAudioFormatProperty(AudioOnlyFormats);
     const cleanedVideoOnlyFormats = RemoveVideoFormatProperty(VideoOnlyFormats);
-    let highestVbr: number | null = null;
-    let lowestVbr: number | null = null;
-    if (cleanedVideoOnlyFormats.length > 0) {
-        const vbrValues = cleanedVideoOnlyFormats.reduce((acc: number[], format) => {
-            if (format.vbr !== null && format.vbr !== undefined) acc.push(format.vbr);
-            return acc;
-        }, []);
-        if (vbrValues.length > 0) {
-            highestVbr = Math.max(...vbrValues);
-            lowestVbr = Math.min(...vbrValues);
+    let highestAudioFormat: CleanedAudioFormat | null = null;
+    let lowestAudioFormat: CleanedAudioFormat | null = null;
+    cleanedAudioOnlyFormats.forEach(format => {
+        const hasHighOrLowNote = format.format_note && (format.format_note.includes("high") || format.format_note.includes("low"));
+        if (hasHighOrLowNote) {
+            if (highestAudioFormat === null || lowestAudioFormat === null) {
+                highestAudioFormat = format;
+                lowestAudioFormat = format;
+                return;
+            }
+            if (parseInt(format.format_id!) > parseInt(highestAudioFormat.format_id!)) highestAudioFormat = format;
+            if (parseInt(format.format_id!) < parseInt(lowestAudioFormat.format_id!)) lowestAudioFormat = format;
         }
-    }
+    });
+    let highestVideoFormat: CleanedVideoFormat | null = null;
+    let lowestVideoFormat: CleanedVideoFormat | null = null;
+    cleanedVideoOnlyFormats.forEach(format => {
+        if (highestVideoFormat === null || lowestVideoFormat === null) {
+            highestVideoFormat = format;
+            lowestVideoFormat = format;
+            return;
+        }
+        if (format.vbr !== null && highestVideoFormat.vbr !== null) {
+            if (format.vbr! > highestVideoFormat.vbr!) highestVideoFormat = format;
+        } else if (format.vbr !== null && highestVideoFormat.vbr === null) highestVideoFormat = format;
+        else if (format.height !== null && highestVideoFormat.height !== null) {
+            if (format.height! > highestVideoFormat.height!) highestVideoFormat = format;
+        } else if (format.height !== null && highestVideoFormat.height === null) highestVideoFormat = format;
+        if (format.vbr !== null && lowestVideoFormat.vbr !== null) {
+            if (format.vbr! < lowestVideoFormat.vbr!) lowestVideoFormat = format;
+        } else if (format.vbr !== null && lowestVideoFormat.vbr === null) {
+        } else if (format.height !== null && lowestVideoFormat.height !== null) {
+            if (format.height! < lowestVideoFormat.height!) lowestVideoFormat = format;
+        } else if (format.height !== null && lowestVideoFormat.height === null) {
+        }
+    });
     const outputData = {
-        AudioOnly: { Total_Items: cleanedAudioOnlyFormats.length, Combined: cleanedAudioOnlyFormats },
-        VideoOnly: { Total_Items: cleanedVideoOnlyFormats.length, Highest_VBR: highestVbr, Lowest_VBR: lowestVbr, Combined: cleanedVideoOnlyFormats },
+        AudioOnly: { Highest: highestAudioFormat, Lowest: lowestAudioFormat, Combined: cleanedAudioOnlyFormats },
+        VideoOnly: { Highest: highestVideoFormat, Lowest: lowestVideoFormat, Combined: cleanedVideoOnlyFormats },
     };
-    await fs.writeFile("Enhanced.json", JSON.stringify(outputData, null, 2), "utf8");
+    await fs.writeFile("Enhanced.json", JSON.stringify(outputData, null, 4), "utf8");
 }
 TransformToEnhanced();
