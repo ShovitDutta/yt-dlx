@@ -189,23 +189,9 @@ export default async function Engine(options: {
         const isDRC = formatNote.includes("DRC");
         const isHDR = formatNote.includes("HDR");
         const isVideo = tube.vcodec !== "none" && tube.vcodec !== undefined && tube.vcodec !== null;
-        const isAudio = tube.acodec !== "none" && tube.acodec !== undefined && tube.acodec !== null;
-        const isManifest = tube.protocol === "m3u8_native";
-        if (isManifest) {
-            const mappedManifest = MapManifest(tube);
-            AvailableParsedManifestFormats.push(mappedManifest);
-            if (mappedManifest.tbr !== undefined) {
-                if (!manifestSingleQuality.Lowest || (manifestSingleQuality.Lowest && (mappedManifest.tbr ?? 0) < (manifestSingleQuality.Lowest.tbr ?? 0))) {
-                    manifestSingleQuality.Lowest = mappedManifest;
-                }
-                if (!manifestSingleQuality.Highest || (manifestSingleQuality.Highest && (mappedManifest.tbr ?? 0) > (manifestSingleQuality.Highest.tbr ?? 0))) {
-                    manifestSingleQuality.Highest = mappedManifest;
-                }
-                manifestMultipleQuality.Lowest.push(mappedManifest);
-                manifestMultipleQuality.Highest.push(mappedManifest);
-            }
-        } else if (isAudio) {
-            const mappedAudio = MapAudioFormat(tube);
+        const isAudio = tube.audio_ext !== undefined && tube.audio_ext !== null && tube.audio_ext !== "none";
+        if (isAudio) {
+            const mappedAudio: AudioFormat = MapAudioFormat(tube);
             AvailableParsedAudioFormats.push(mappedAudio);
             if (isDRC) {
                 if (!audioHasDRC.Lowest || (mappedAudio.filesize !== undefined && audioHasDRC.Lowest[0]?.filesize !== undefined && mappedAudio.filesize < audioHasDRC.Lowest[0].filesize)) {
@@ -214,23 +200,20 @@ export default async function Engine(options: {
                 if (!audioHasDRC.Highest || (mappedAudio.filesize !== undefined && audioHasDRC.Highest[0]?.filesize !== undefined && mappedAudio.filesize > audioHasDRC.Highest[0].filesize)) {
                     audioHasDRC.Highest = [mappedAudio];
                 }
-            } else {
-                if (
-                    !audioSingleQuality.Lowest ||
-                    (mappedAudio.filesize !== undefined && audioSingleQuality.Lowest.filesize !== undefined && mappedAudio.filesize < audioSingleQuality.Lowest.filesize)
-                ) {
-                    audioSingleQuality.Lowest = mappedAudio;
-                }
-                if (
-                    !audioSingleQuality.Highest ||
-                    (mappedAudio.filesize !== undefined && audioSingleQuality.Highest.filesize !== undefined && mappedAudio.filesize > audioSingleQuality.Highest.filesize)
-                ) {
-                    audioSingleQuality.Highest = mappedAudio;
-                }
-                audioMultipleQuality.Lowest.push(mappedAudio);
-                audioMultipleQuality.Highest.push(mappedAudio);
             }
-        } else if (isVideo) {
+            if (!audioSingleQuality.Lowest || (mappedAudio.filesize !== undefined && audioSingleQuality.Lowest.filesize !== undefined && mappedAudio.filesize < audioSingleQuality.Lowest.filesize)) {
+                audioSingleQuality.Lowest = mappedAudio;
+            }
+            if (
+                !audioSingleQuality.Highest ||
+                (mappedAudio.filesize !== undefined && audioSingleQuality.Highest.filesize !== undefined && mappedAudio.filesize > audioSingleQuality.Highest.filesize)
+            ) {
+                audioSingleQuality.Highest = mappedAudio;
+            }
+            audioMultipleQuality.Lowest.push(mappedAudio);
+            audioMultipleQuality.Highest.push(mappedAudio);
+        }
+        if (isVideo) {
             const mappedVideo = MapVideoFormat(tube);
             AvailableParsedVideoFormats.push(mappedVideo);
             if (isHDR) {
@@ -255,6 +238,20 @@ export default async function Engine(options: {
                 }
                 videoMultipleQuality.Lowest.push(mappedVideo);
                 videoMultipleQuality.Highest.push(mappedVideo);
+            }
+        }
+        if (tube.protocol === "m3u8_native") {
+            const mappedManifest = MapManifest(tube);
+            AvailableParsedManifestFormats.push(mappedManifest);
+            if (mappedManifest.tbr !== undefined) {
+                if (!manifestSingleQuality.Lowest || (manifestSingleQuality.Lowest && (mappedManifest.tbr ?? 0) < (manifestSingleQuality.Lowest.tbr ?? 0))) {
+                    manifestSingleQuality.Lowest = mappedManifest;
+                }
+                if (!manifestSingleQuality.Highest || (manifestSingleQuality.Highest && (mappedManifest.tbr ?? 0) > (manifestSingleQuality.Highest.tbr ?? 0))) {
+                    manifestSingleQuality.Highest = mappedManifest;
+                }
+                manifestMultipleQuality.Lowest.push(mappedManifest);
+                manifestMultipleQuality.Highest.push(mappedManifest);
             }
         }
     });

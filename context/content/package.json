@@ -80,7 +80,7 @@
         "package": "pkg . --output yt-dlx-standalone",
         "prepublishOnly": "rimraf package && yarn build",
         "postinstall": "node postdeps.mjs && shx chmod -R +x .",
-        "test:quick": "yarn build && node package/cjs/src/spec/quick.spec.js",
+        "quick": "yarn build && node package/cjs/src/spec/quick.spec.js",
         "build": "rimraf package/cjs package/esm package/types && tsc -p ./src/config/cjs.json && tsc -p ./src/config/esm.json && tsc -p ./src/config/types.json"
     }
 }
