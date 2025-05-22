@@ -96,7 +96,7 @@ export default async function VideoHighest({
         }
 
         // Get the highest quality manifest/video format
-        const highestVideoManifest = EngineMeta.Manifest.SingleQuality.Highest;
+        const highestVideoManifest = EngineMeta.Manifest.Video.SingleQuality.Highest;
         if (!highestVideoManifest || !highestVideoManifest.url) {
             throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
         }

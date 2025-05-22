@@ -15,7 +15,14 @@ async function relatedVideos({ videoId }: { videoId: string }): Promise<RelatedV
         const youtube = new Client();
         const videoData: any = await youtube.getVideo(videoId);
         if (!videoData?.related?.items) return [];
-        return videoData.related.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, uploadDate: item.uploadDate, thumbnails: item.thumbnails?.[0] || null }));
+        return videoData.related.items.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            isLive: item.isLive,
+            duration: item.duration,
+            uploadDate: item.uploadDate,
+            thumbnails: item.thumbnails?.[0] || null,
+        }));
     } catch (error: any) {
         throw new Error(error.message);
     }

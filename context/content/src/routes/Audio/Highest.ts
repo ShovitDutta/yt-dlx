@@ -7,7 +7,6 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
-
 const ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -20,9 +19,7 @@ const ZodSchema = z.object({
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
-
 type AudioHighestOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioHighest({
     query,
     output,
@@ -35,16 +32,13 @@ export default async function AudioHighest({
 }: AudioHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ query, output, useTor, stream, filter, MetaData, verbose, ShowProgress });
-
         if (MetaData && (stream || output || filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'stream', 'output', 'filter', or 'ShowProgress'.`);
         }
         if (stream && output) {
             throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         }
-
         const EngineMeta = await Agent({ query, verbose, useTor });
-
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         }
@@ -56,17 +50,12 @@ export default async function AudioHighest({
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioHighest_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                    Links: {
-                        DRC_Highest: EngineMeta.Audio.HasDRC.Highest,
-                        Highest: EngineMeta.Audio.SingleQuality.Highest,
-                        BestHighest: EngineMeta.Audio.SingleQuality.Highest,
-                    },
+                    Links: { DRC_Highest: EngineMeta.Audio.HasDRC.Highest, Highest: EngineMeta.Audio.SingleQuality.Highest, BestHighest: EngineMeta.Audio.SingleQuality.Highest },
                 },
             };
         }
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = output ? output : process.cwd();
-
         if (!stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -74,38 +63,17 @@ export default async function AudioHighest({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
-        try {
-            const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
-            instance.setFfmpegPath(paths.ffmpeg);
-            instance.setFfprobePath(paths.ffprobe);
-            // Access thumbnails correctly from the new structure
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
-            }
-        } catch (locatorError: any) {
-            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
-        }
-
-        // Use the Highest quality audio from the SingleQuality object
+        const paths = await locator();
+        if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+        if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+        instance.setFfmpegPath(paths.ffmpeg);
+        instance.setFfprobePath(paths.ffprobe);
+        if (EngineMeta.MetaData.thumbnails.Highest) instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
         const highestQualityAudio = EngineMeta.Audio.SingleQuality.Highest;
-
-        if (!highestQualityAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
-        }
-
-        instance.addInput(highestQualityAudio.url); // Use the retrieved highest quality audio URL
-
+        if (!highestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
+        instance.addInput(highestQualityAudio.url);
         instance.withOutputFormat("avi");
-
         const filterMap: Record<string, string[]> = {
             speed: ["atempo=2"],
             flanger: ["flanger"],
@@ -123,15 +91,12 @@ export default async function AudioHighest({
             vaporwave: ["aresample=48000,asetrate=48000*0.8"],
             nightcore: ["aresample=48000,asetrate=48000*1.25"],
         };
-
         if (filter && filterMap[filter]) {
             instance.withAudioFilter(filterMap[filter]);
         } else {
             instance.outputOptions("-c copy");
         }
-
         let processStartTime: Date;
-
         if (ShowProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
@@ -142,24 +107,19 @@ export default async function AudioHighest({
                 }
             });
         }
-
         if (stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioHighest_`;
             let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
             (passthroughStream as any).FileName = FileName;
-
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
             });
-
             instance.pipe(passthroughStream, { end: true });
-
             instance.on("end", () => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
@@ -167,41 +127,34 @@ export default async function AudioHighest({
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.run();
             return { stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioHighest_`;
             let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, FileName);
-
             instance.output(outputPath);
-
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
-
                 instance.on("progress", progress => {
                     if (ShowProgress && processStartTime) {
                         progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                     }
                 });
-
                 instance.on("end", () => {
                     if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
-
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
-
                 instance.run();
             });
             return { outputPath };

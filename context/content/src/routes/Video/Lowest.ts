@@ -95,7 +95,7 @@ export default async function VideoLowest({
         }
 
         // Get the lowest quality manifest/video format
-        const lowestVideoManifest = EngineMeta.Manifest.SingleQuality.Lowest;
+        const lowestVideoManifest = EngineMeta.Manifest.Video.SingleQuality.Lowest;
         if (!lowestVideoManifest || !lowestVideoManifest.url) {
             throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
         }
