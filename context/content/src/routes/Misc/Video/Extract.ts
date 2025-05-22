@@ -69,12 +69,28 @@ interface PayloadType {
         Manifest: ManifestFormat[];
     };
     Audio: {
+        SingleQuality: {
+            Lowest: AudioFormat;
+            Highest: AudioFormat;
+        };
+        MultipleQuality: {
+            Lowest: AudioFormat[];
+            Highest: AudioFormat[];
+        };
         HasDRC: {
             Lowest?: AudioFormat[];
             Highest?: AudioFormat[];
         };
     };
     Video: {
+        SingleQuality: {
+            Lowest: VideoFormat;
+            Highest: VideoFormat;
+        };
+        MultipleQuality: {
+            Lowest: VideoFormat[];
+            Highest: VideoFormat[];
+        };
         HasHDR: {
             Lowest?: VideoFormat[];
             Highest?: VideoFormat[];
@@ -242,19 +258,23 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             },
             AvailableFormats: { Audio: metaBody.AvailableFormats.Audio, Video: metaBody.AvailableFormats.Video, Manifest: metaBody.AvailableFormats.Manifest },
             Audio: {
+                SingleQuality: { Lowest: metaBody.Audio.SingleQuality.Lowest, Highest: metaBody.Audio.SingleQuality.Highest },
+                MultipleQuality: { Lowest: metaBody.Audio.MultipleQuality.Lowest, Highest: metaBody.Audio.MultipleQuality.Highest },
                 HasDRC: { Lowest: metaBody.Audio.HasDRC.Lowest, Highest: metaBody.Audio.HasDRC.Highest },
             },
             Video: {
+                SingleQuality: { Lowest: metaBody.Video.SingleQuality.Lowest, Highest: metaBody.Video.SingleQuality.Highest },
+                MultipleQuality: { Lowest: metaBody.Video.MultipleQuality.Lowest, Highest: metaBody.Video.MultipleQuality.Highest },
                 HasHDR: { Lowest: metaBody.Video.HasHDR.Lowest, Highest: metaBody.Video.HasHDR.Highest },
             },
             Manifest: {
                 Audio: {
-                    SingleQuality: { Lowest: metaBody.Audio.SingleQuality.Lowest, Highest: metaBody.Audio.SingleQuality.Highest },
-                    MultipleQuality: { Lowest: metaBody.AvailableFormats.Audio, Highest: metaBody.AvailableFormats.Audio },
+                    SingleQuality: { Lowest: metaBody.Manifest.Audio.SingleQuality.Lowest, Highest: metaBody.Manifest.Audio.SingleQuality.Highest },
+                    MultipleQuality: { Lowest: metaBody.Manifest.Audio.MultipleQuality.Lowest, Highest: metaBody.Manifest.Audio.MultipleQuality.Highest },
                 },
                 Video: {
-                    SingleQuality: { Lowest: metaBody.Video.SingleQuality.Lowest, Highest: metaBody.Video.SingleQuality.Highest },
-                    MultipleQuality: { Lowest: metaBody.AvailableFormats.Video, Highest: metaBody.AvailableFormats.Video },
+                    SingleQuality: { Lowest: metaBody.Manifest.Video.SingleQuality.Lowest, Highest: metaBody.Manifest.Video.SingleQuality.Highest },
+                    MultipleQuality: { Lowest: metaBody.Manifest.Video.MultipleQuality.Lowest, Highest: metaBody.Manifest.Video.MultipleQuality.Highest },
                 },
             },
             comments,
