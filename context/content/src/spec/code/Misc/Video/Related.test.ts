@@ -1,7 +1,7 @@
 import relatedVideosFn from "../../../../routes/Misc/Video/Related";
 import * as vitest from "vitest";
 vitest.describe("relatedVideosFn", () => {
-    const videoIdWithRelated = "dQw4w9WgXcQ";
+    const videoIdWithRelated = "https://www.youtube.com/watch?v=quO40eBkdbs";
     const videoIdWithNoRelated = "nonexistentvideoid123abc";
     vitest.it("should handle basic related videos fetch", async () => {
         try {

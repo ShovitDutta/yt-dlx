@@ -1,7 +1,7 @@
 import extract from "../../../../routes/Misc/Video/Extract";
 import * as vitest from "vitest";
 vitest.describe("extract", () => {
-    const validQuery = "test video";
+    const validQuery = "https://www.youtube.com/watch?v=quO40eBkdbs";
     const queryThatShouldFail = "a query that should return no results 12345abcde";
     vitest.it("should handle basic video extract", async () => {
         const result = await extract({ query: validQuery });

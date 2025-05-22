@@ -1,7 +1,7 @@
 import videoTranscript from "../../../../routes/Misc/Video/Transcript";
 import * as vitest from "vitest";
 vitest.describe("videoTranscript", () => {
-    const videoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const videoLink = "https://www.youtube.com/watch?v=quO40eBkdbs";
     vitest.it("should handle basic transcript fetch", async () => {
         try {
             const result = await videoTranscript({ videoLink });
@@ -17,7 +17,7 @@ vitest.describe("videoTranscript", () => {
         }
     });
     vitest.it("should handle transcript fetch with verbose logging", async () => {
-         try {
+        try {
             const result = await videoTranscript({ videoLink, verbose: true });
             vitest.expect(Array.isArray(result)).toBe(true);
             if (result && result.length > 0) {
