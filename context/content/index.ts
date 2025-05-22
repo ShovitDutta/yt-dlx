@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+
 interface OriginalJson {
     id?: string;
     title?: string;
@@ -57,11 +58,31 @@ interface OriginalJson {
     media_type?: string | null;
     release_timestamp?: number | null;
     _format_sort_fields?: string[];
-    automatic_captions?: {};
-    subtitles?: {};
+    automatic_captions?: {
+        [languageCode: string]: { ext: string; url: string; name: string }[];
+    };
+    subtitles?: {
+        [languageCode: string]: {
+            ext: string;
+            url: string;
+            name: string;
+        }[];
+    };
     comment_count?: number;
-    chapters?: null;
-    heatmap?: null;
+    chapters?: {
+        chapters: {
+            start_time: number;
+            end_time: number;
+            title: string;
+        }[];
+    };
+    heatmap?: {
+        heatmap: {
+            start_time: number;
+            end_time: number;
+            value: number;
+        }[];
+    };
     like_count?: number;
     channel?: string;
     channel_follower_count?: number;
@@ -383,7 +404,8 @@ async function TransformToEnhanced() {
     });
     const FinalData = {
         MetaData: {
-            id: rawresp.id,
+            videoId: rawresp.id,
+            videoLink: rawresp.webpage_url,
             title: rawresp.title,
             description: rawresp.description,
             channel_id: rawresp.channel_id,
@@ -392,18 +414,12 @@ async function TransformToEnhanced() {
             view_count: rawresp.view_count,
             average_rating: rawresp.average_rating,
             age_limit: rawresp.age_limit,
-            webpage_url: rawresp.webpage_url,
             categories: rawresp.categories,
             playable_in_embed: rawresp.playable_in_embed,
             live_status: rawresp.live_status,
             media_type: rawresp.media_type,
             release_timestamp: rawresp.release_timestamp,
             _format_sort_fields: rawresp._format_sort_fields,
-            automatic_captions: rawresp.automatic_captions,
-            subtitles: rawresp.subtitles,
-            comment_count: rawresp.comment_count,
-            chapters: rawresp.chapters,
-            heatmap: rawresp.heatmap,
             like_count: rawresp.like_count,
             channel: rawresp.channel,
             channel_follower_count: rawresp.channel_follower_count,
@@ -429,7 +445,7 @@ async function TransformToEnhanced() {
             was_live: rawresp.was_live,
             requested_subtitles: rawresp.requested_subtitles,
             _has_drm: rawresp._has_drm,
-            epoch: rawresp.epoch,
+            last_fetched: rawresp.epoch,
             tags: rawresp.tags,
         },
         AudioOnly: {
@@ -445,6 +461,10 @@ async function TransformToEnhanced() {
             Lowest: lowestThumbnail,
             Combined: cleanedThumbnails,
         },
+        Heatmap: rawresp.heatmap || [],
+        Chapters: rawresp.chapters || [],
+        Subtitle: rawresp.subtitles || [],
+        Captions: rawresp.automatic_captions || [],
     };
     await fs.writeFile("Enhanced.json", JSON.stringify(FinalData, null, 4), "utf8");
 }
