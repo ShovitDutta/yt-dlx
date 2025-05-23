@@ -7,6 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+import { EngineOutput, CleanedAudioFormat } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
     query: z.string().min(2),
@@ -45,7 +46,7 @@ export default async function AudioCustom({
             throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -61,18 +62,8 @@ export default async function AudioCustom({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                     Links: {
-                        Highest: {
-                            DRC_Highest: EngineMeta.Audio.HasDRC.Highest,
-                            Highest: EngineMeta.Audio.SingleQuality.Highest,
-                            BestHighest: EngineMeta.Audio.SingleQuality.Highest,
-                        },
-                        Lowest: {
-                            Links: {
-                                DRC_Lowest: EngineMeta.Audio.HasDRC.Lowest,
-                                Lowest: EngineMeta.Audio.SingleQuality.Lowest,
-                                BestLowest: EngineMeta.Audio.SingleQuality.Lowest,
-                            },
-                        },
+                        Standard: EngineMeta.AudioOnly.Standard,
+                        Dynamic_Range_Compression: EngineMeta.AudioOnly.Dynamic_Range_Compression,
                     },
                 },
             };
@@ -100,8 +91,8 @@ export default async function AudioCustom({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
+            if (EngineMeta.Thumbnails.Highest?.url) {
+                instance.addInput(EngineMeta.Thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
@@ -109,9 +100,20 @@ export default async function AudioCustom({
 
         // Find the custom audio format based on resolution
         // Note: The 'resolution' enum values ("high", "medium", "low", "ultralow")
-        // might need to map to specific 'format_note' or 'abr' values in your AudioFormat.
-        // I'm assuming 'resolution' as provided maps to some string within 'format' or 'format_note'.
-        const AudioMeta = EngineMeta.AvailableFormats.Audio.find(i => i.format_note?.toLowerCase().includes(resolution) || i.format?.toLowerCase().includes(resolution));
+        // might need to map to specific 'format_note' or 'tbr' values in your CleanedAudioFormat.
+        // I'm assuming 'resolution' as provided maps to some string within 'format_note'.
+        let AudioMeta: CleanedAudioFormat | undefined;
+        for (const language in EngineMeta.AudioOnly.Standard) {
+            AudioMeta = EngineMeta.AudioOnly.Standard[language].Combined.find(i => i.format_note?.toLowerCase().includes(resolution));
+            if (AudioMeta) break;
+        }
+        if (!AudioMeta) {
+             for (const language in EngineMeta.AudioOnly.Dynamic_Range_Compression) {
+                AudioMeta = EngineMeta.AudioOnly.Dynamic_Range_Compression[language].Combined.find(i => i.format_note?.toLowerCase().includes(resolution));
+                if (AudioMeta) break;
+            }
+        }
+
 
         if (!AudioMeta) {
             throw new Error(`${colors.red("@error:")} No Audio data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Extract()' command to see available formats.`);

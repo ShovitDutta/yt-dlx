@@ -7,6 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+import { EngineOutput, CleanedVideoFormat } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
     query: z.string().min(2),
@@ -43,7 +44,7 @@ export default async function VideoCustom({
             throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -59,16 +60,8 @@ export default async function VideoCustom({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_VideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
-                        Highest: {
-                            HDR_Highest: EngineMeta.Video.HasHDR.Highest,
-                            Highest: EngineMeta.Video.SingleQuality.Highest,
-                            BestHighest: EngineMeta.Video.SingleQuality.Highest,
-                        },
-                        Lowest: {
-                            HDR_Lowest: EngineMeta.Video.HasHDR.Lowest,
-                            Lowest: EngineMeta.Video.SingleQuality.Lowest,
-                            BestLowest: EngineMeta.Video.SingleQuality.Lowest,
-                        },
+                        Standard: EngineMeta.VideoOnly.Standard_Dynamic_Range,
+                        High_Dynamic_Range: EngineMeta.VideoOnly.High_Dynamic_Range,
                     },
                 },
             };
@@ -97,8 +90,8 @@ export default async function VideoCustom({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
+            if (EngineMeta.Thumbnails.Highest?.url) {
+                instance.addInput(EngineMeta.Thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
@@ -109,18 +102,35 @@ export default async function VideoCustom({
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
 
-        // Find the specific video format based on resolution
-        const videoFormat = EngineMeta.AvailableFormats.Video.find(i => {
-            const height = i.height;
-            const fps = i.fps;
-            const vcodec = i.vcodec;
+        // Find the specific video format based on resolution in Standard and HDR categories
+        let videoFormat: CleanedVideoFormat | undefined;
 
-            let heightMatches = height === targetHeight;
-            let fpsMatches = targetFps === null || fps === targetFps;
+        if (EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined) {
+            videoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined.find(i => {
+                const height = i.height;
+                const fps = i.fps;
+                const vcodec = i.vcodec;
 
-            // Ensure it's a video stream (vcodec not "none") and matches resolution/fps
-            return heightMatches && fpsMatches && vcodec !== "none";
-        });
+                let heightMatches = height === targetHeight;
+                let fpsMatches = targetFps === null || fps === targetFps;
+
+                return heightMatches && fpsMatches && vcodec !== "none";
+            });
+        }
+
+        if (!videoFormat && EngineMeta.VideoOnly.High_Dynamic_Range.Combined) {
+             videoFormat = EngineMeta.VideoOnly.High_Dynamic_Range.Combined.find(i => {
+                const height = i.height;
+                const fps = i.fps;
+                const vcodec = i.vcodec;
+
+                let heightMatches = height === targetHeight;
+                let fpsMatches = targetFps === null || fps === targetFps;
+
+                return heightMatches && fpsMatches && vcodec !== "none";
+            });
+        }
+
 
         if (!videoFormat) {
             throw new Error(`${colors.red("@error:")} No Video data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Extract()' command to see available formats.`);
@@ -129,8 +139,8 @@ export default async function VideoCustom({
             throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}`);
         }
 
-        instance.addInput(videoFormat.url.toString()); // Use the found video format URL
-        instance.withOutputFormat("matroska"); // Output format is MP4
+        instance.addInput(videoFormat.url.toString());
+        instance.withOutputFormat("matroska");
 
         const filterMap: Record<string, string[]> = {
             grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],

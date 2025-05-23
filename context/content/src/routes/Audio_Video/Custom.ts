@@ -7,6 +7,8 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+import { EngineOutput, CleanedVideoFormat } from "../../interfaces/EngineOutput";
+
 var ZodSchema = z.object({
     query: z.string().min(2),
     output: z.string().optional(),
@@ -45,7 +47,7 @@ export default async function AudioVideoCustom({
             throw new Error(`${colors.red("@error:")} The 'ShowProgress' parameter cannot be used when 'MetaData' is true.`);
         }
 
-        const EngineMeta = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -62,28 +64,12 @@ export default async function AudioVideoCustom({
                     FileName: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
                         Audio: {
-                            Highest: {
-                                DRC_Highest: EngineMeta.Audio.HasDRC.Highest,
-                                Highest: EngineMeta.Audio.SingleQuality.Highest,
-                                BestHighest: EngineMeta.Audio.SingleQuality.Highest,
-                            },
-                            Lowest: {
-                                DRC_Lowest: EngineMeta.Audio.HasDRC.Lowest,
-                                Lowest: EngineMeta.Audio.SingleQuality.Lowest,
-                                BestLowest: EngineMeta.Audio.SingleQuality.Lowest,
-                            },
+                            Standard: EngineMeta.AudioOnly.Standard,
+                            Dynamic_Range_Compression: EngineMeta.AudioOnly.Dynamic_Range_Compression,
                         },
                         Video: {
-                            Highest: {
-                                HDR_Highest: EngineMeta.Video.HasHDR.Highest,
-                                Highest: EngineMeta.Video.SingleQuality.Highest,
-                                BestHighest: EngineMeta.Video.SingleQuality.Highest,
-                            },
-                            Lowest: {
-                                HDR_Lowest: EngineMeta.Video.HasHDR.Lowest,
-                                Lowest: EngineMeta.Video.SingleQuality.Lowest,
-                                BestLowest: EngineMeta.Video.SingleQuality.Lowest,
-                            },
+                            Standard: EngineMeta.VideoOnly.Standard_Dynamic_Range,
+                            High_Dynamic_Range: EngineMeta.VideoOnly.High_Dynamic_Range,
                         },
                     },
                 },
@@ -113,43 +99,64 @@ export default async function AudioVideoCustom({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
+            if (EngineMeta.Thumbnails.Highest?.url) {
+                instance.addInput(EngineMeta.Thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
         }
 
-        // Access the highest quality audio from the new structure
-        if (!EngineMeta.Audio.SingleQuality.Highest?.url) {
+        // Access the highest quality audio from the Standard category
+        const highestAudio = EngineMeta.AudioOnly.Standard.Unknown?.Highest;
+        if (!highestAudio?.url) {
             throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
         }
-        instance.addInput(EngineMeta.Audio.SingleQuality.Highest.url);
+        instance.addInput(highestAudio.url);
 
         const resolutionRegex = /(\d+)p(\d+)?/;
         const resolutionMatch = resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
 
-        // Find the video format from AvailableFormats.Video based on resolution and FPS
-        const videoFormat = EngineMeta.AvailableFormats.Video.find(i => {
-            const fps = i.fps;
-            const height = i.height;
-            const vcodec = i.vcodec;
-            let heightMatches = height === targetHeight;
-            let fpsMatches = targetFps === null || fps === targetFps;
-            return heightMatches && fpsMatches && vcodec !== "none";
-        });
+        // Find the specific video format based on resolution in Standard and HDR categories
+        let videoFormat: CleanedVideoFormat | undefined;
 
-        if (videoFormat) {
-            if (!videoFormat.url) {
-                throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
-            }
-            instance.addInput(videoFormat.url.toString());
-            instance.withOutputFormat("matroska");
-        } else {
+        if (EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined) {
+            videoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined.find(i => {
+                const height = i.height;
+                const fps = i.fps;
+                const vcodec = i.vcodec;
+
+                let heightMatches = height === targetHeight;
+                let fpsMatches = targetFps === null || fps === targetFps;
+
+                return heightMatches && fpsMatches && vcodec !== "none";
+            });
+        }
+
+        if (!videoFormat && EngineMeta.VideoOnly.High_Dynamic_Range.Combined) {
+             videoFormat = EngineMeta.VideoOnly.High_Dynamic_Range.Combined.find(i => {
+                const height = i.height;
+                const fps = i.fps;
+                const vcodec = i.vcodec;
+
+                let heightMatches = height === targetHeight;
+                let fpsMatches = targetFps === null || fps === targetFps;
+
+                return heightMatches && fpsMatches && vcodec !== "none";
+            });
+        }
+
+
+        if (!videoFormat) {
             throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use Misc.Video.Extract() to see available formats.`);
         }
+        if (!videoFormat.url) {
+            throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
+        }
+
+        instance.addInput(videoFormat.url.toString());
+        instance.withOutputFormat("matroska");
 
         const filterMap: Record<string, string[]> = {
             invert: ["negate"],

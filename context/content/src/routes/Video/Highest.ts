@@ -7,6 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+import { EngineOutput } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
     query: z.string().min(2),
@@ -41,7 +42,7 @@ export default async function VideoHighest({
             throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -57,9 +58,8 @@ export default async function VideoHighest({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_VideoHighest_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
-                        HDR_Highest: EngineMeta.Video.HasHDR.Highest,
-                        Highest: EngineMeta.Video.SingleQuality.Highest,
-                        BestHighest: EngineMeta.Video.SingleQuality.Highest,
+                        Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest,
+                        HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest,
                     },
                 },
             };
@@ -88,19 +88,19 @@ export default async function VideoHighest({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
+            if (EngineMeta.Thumbnails.Highest?.url) {
+                instance.addInput(EngineMeta.Thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
 
-        // Get the highest quality manifest/video format
-        const highestVideoManifest = EngineMeta.Manifest.Video.SingleQuality.Highest;
-        if (!highestVideoManifest || !highestVideoManifest.url) {
+        // Get the highest quality video format from the Standard Dynamic Range category
+        const highestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest;
+        if (!highestVideo || !highestVideo.url) {
             throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
         }
-        instance.addInput(highestVideoManifest.url);
+        instance.addInput(highestVideo.url);
 
         instance.withOutputFormat("matroska");
 

@@ -5,122 +5,59 @@ import { Client } from "youtubei";
 import Tuber from "../../../utils/Agent";
 import { Innertube, UniversalCache } from "youtubei.js";
 import type { CommentType } from "../../../interfaces/CommentType";
-import type { AudioFormat } from "../../../interfaces/AudioFormat";
-import type { VideoFormat } from "../../../interfaces/VideoFormat";
-import type { ManifestFormat } from "../../../interfaces/ManifestFormat";
+import { EngineOutput } from "../../../interfaces/EngineOutput";
+
 const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
+
 interface CaptionSegment {
     utf8: string;
     tOffsetMs?: number;
     acAsrConf: number;
 }
+
 interface VideoTranscriptType {
     text: string;
     start: number;
     duration: number;
     segments: CaptionSegment[];
 }
+
 interface UploadAgo {
     years: number;
     months: number;
     days: number;
     formatted: string;
 }
+
 interface VideoDuration {
     hours: number;
     minutes: number;
     seconds: number;
     formatted: string;
 }
-interface VideoInfo {
-    id: string;
-    original_url?: string;
-    webpage_url?: string;
-    title?: string;
-    view_count?: number;
-    like_count?: number;
-    uploader?: string;
-    uploader_id?: string;
-    uploader_url?: string;
-    thumbnail?: string;
-    categories?: string[];
-    duration: number;
-    age_limit?: number;
-    live_status?: string;
-    description?: string;
-    upload_date?: string;
-    comment_count?: number;
-    channel_id?: string;
-    channel_name?: string;
-    channel_url?: string;
-    channel_follower_count?: number;
-    view_count_formatted: string;
-    like_count_formatted: string;
-    upload_ago: number;
-    upload_ago_formatted: UploadAgo;
-    comment_count_formatted: string;
-    channel_follower_count_formatted: string;
-}
+
 interface PayloadType {
-    MetaData: VideoInfo;
-    AvailableFormats: {
-        Audio: AudioFormat[];
-        Video: VideoFormat[];
-        Manifest: ManifestFormat[];
+    MetaData: EngineOutput["MetaData"] & {
+        upload_ago: number;
+        upload_ago_formatted: UploadAgo;
+        view_count_formatted: string;
+        like_count_formatted: string;
+        comment_count_formatted: string;
+        channel_follower_count_formatted: string;
+        videoLink?: string; // Add videoLink as it's in the new MetaData
+        videoId?: string; // Add videoId as it's in the new MetaData
     };
-    Audio: {
-        SingleQuality: {
-            Lowest: AudioFormat;
-            Highest: AudioFormat;
-        };
-        MultipleQuality: {
-            Lowest: AudioFormat[];
-            Highest: AudioFormat[];
-        };
-        HasDRC: {
-            Lowest?: AudioFormat[];
-            Highest?: AudioFormat[];
-        };
-    };
-    Video: {
-        SingleQuality: {
-            Lowest: VideoFormat;
-            Highest: VideoFormat;
-        };
-        MultipleQuality: {
-            Lowest: VideoFormat[];
-            Highest: VideoFormat[];
-        };
-        HasHDR: {
-            Lowest?: VideoFormat[];
-            Highest?: VideoFormat[];
-        };
-    };
-    Manifest: {
-        Audio: {
-            SingleQuality: {
-                Lowest: AudioFormat;
-                Highest: AudioFormat;
-            };
-            MultipleQuality: {
-                Lowest: AudioFormat[];
-                Highest: AudioFormat[];
-            };
-        };
-        Video: {
-            SingleQuality: {
-                Lowest: VideoFormat;
-                Highest: VideoFormat;
-            };
-            MultipleQuality: {
-                Lowest: VideoFormat[];
-                Highest: VideoFormat[];
-            };
-        };
-    };
+    AudioOnly: EngineOutput["AudioOnly"];
+    VideoOnly: EngineOutput["VideoOnly"];
+    Thumbnails: EngineOutput["Thumbnails"];
+    Heatmap: EngineOutput["Heatmap"];
+    Chapters: EngineOutput["Chapters"];
+    Subtitle: EngineOutput["Subtitle"];
+    Captions: EngineOutput["Captions"];
     comments: CommentType[] | null;
     transcript: VideoTranscriptType[] | null;
 }
+
 function calculateUploadAgo(days: number): UploadAgo {
     const years = Math.floor(days / 365);
     const months = Math.floor((days % 365) / 30);
@@ -128,6 +65,7 @@ function calculateUploadAgo(days: number): UploadAgo {
     const formattedString = `${years > 0 ? years + " years, " : ""}${months > 0 ? months + " months, " : ""}${remainingDays} days`;
     return { years, months, days: remainingDays, formatted: formattedString };
 }
+
 function calculateVideoDuration(seconds: number): VideoDuration {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -135,6 +73,7 @@ function calculateVideoDuration(seconds: number): VideoDuration {
     const formattedString = `${hours > 0 ? hours + " hours, " : ""}${minutes > 0 ? minutes + " minutes, " : ""}${remainingSeconds} seconds`;
     return { hours, minutes, seconds: remainingSeconds, formatted: formattedString };
 }
+
 function formatCount(count: number): string {
     const abbreviations = ["K", "M", "B", "T"];
     for (let i = abbreviations.length - 1; i >= 0; i--) {
@@ -146,6 +85,7 @@ function formatCount(count: number): string {
     }
     return `${count}`;
 }
+
 async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promise<CommentType[] | null> {
     try {
         if (verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${videoId}`);
@@ -187,6 +127,7 @@ async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promis
         return null;
     }
 }
+
 async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
         if (verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${videoId}`);
@@ -209,19 +150,23 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
         return null;
     }
 }
+
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
     let verbose = false;
     try {
         const parsedOptions = ZodSchema.parse(options);
         const { query, useTor, verbose: parsedVerbose } = parsedOptions;
         verbose = parsedVerbose ?? false;
-        const metaBody = await Tuber({ query, verbose, useTor });
+
+        const metaBody: EngineOutput | null = await Tuber({ query, verbose, useTor });
+
         if (!metaBody) {
             throw new Error(`${colors.red("@error:")} Unable to get response!`);
         }
         if (!metaBody.MetaData) {
             throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
         }
+
         let uploadDate: Date | undefined;
         try {
             if (metaBody.MetaData.upload_date) {
@@ -230,19 +175,27 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         } catch (error) {
             throw new Error(`${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
         }
+
         const currentDate = new Date();
         const daysAgo = uploadDate ? Math.floor((currentDate.getTime() - uploadDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
         const prettyDate = uploadDate?.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) || "N/A";
         const uploadAgoObject = calculateUploadAgo(daysAgo);
+
         const videoTimeInSeconds = metaBody.MetaData.duration;
-        const videoDuration = calculateVideoDuration(videoTimeInSeconds);
+        const videoDuration = calculateVideoDuration(videoTimeInSeconds ?? 0); // Handle potential undefined duration
+
         const viewCountFormatted = metaBody.MetaData.view_count !== undefined ? formatCount(metaBody.MetaData.view_count) : "N/A";
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
-        const commentCountFormatted = metaBody.MetaData.comment_count !== undefined ? formatCount(metaBody.MetaData.comment_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
-        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.id, verbose ?? false);
-        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.id, verbose ?? false);
+
+        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", verbose ?? false); // Use videoId from new structure
+        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", verbose ?? false); // Use videoId from new structure
+
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
+
+        // Calculate commentCountFormatted based on the fetched comments array length
+        const commentCountFormatted = comments !== null ? formatCount(comments.length) : "N/A";
+
         const payload: PayloadType = {
             MetaData: {
                 ...metaBody.MetaData,
@@ -255,31 +208,19 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 comment_count_formatted: commentCountFormatted,
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
                 channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
+                // videoLink and videoId are already included by spreading metaBody.MetaData
             },
-            AvailableFormats: { Audio: metaBody.AvailableFormats.Audio, Video: metaBody.AvailableFormats.Video, Manifest: metaBody.AvailableFormats.Manifest },
-            Audio: {
-                SingleQuality: { Lowest: metaBody.Audio.SingleQuality.Lowest, Highest: metaBody.Audio.SingleQuality.Highest },
-                MultipleQuality: { Lowest: metaBody.Audio.MultipleQuality.Lowest, Highest: metaBody.Audio.MultipleQuality.Highest },
-                HasDRC: { Lowest: metaBody.Audio.HasDRC.Lowest, Highest: metaBody.Audio.HasDRC.Highest },
-            },
-            Video: {
-                SingleQuality: { Lowest: metaBody.Video.SingleQuality.Lowest, Highest: metaBody.Video.SingleQuality.Highest },
-                MultipleQuality: { Lowest: metaBody.Video.MultipleQuality.Lowest, Highest: metaBody.Video.MultipleQuality.Highest },
-                HasHDR: { Lowest: metaBody.Video.HasHDR.Lowest, Highest: metaBody.Video.HasHDR.Highest },
-            },
-            Manifest: {
-                Audio: {
-                    SingleQuality: { Lowest: metaBody.Manifest.Audio.SingleQuality.Lowest, Highest: metaBody.Manifest.Audio.SingleQuality.Highest },
-                    MultipleQuality: { Lowest: metaBody.Manifest.Audio.MultipleQuality.Lowest, Highest: metaBody.Manifest.Audio.MultipleQuality.Highest },
-                },
-                Video: {
-                    SingleQuality: { Lowest: metaBody.Manifest.Video.SingleQuality.Lowest, Highest: metaBody.Manifest.Video.SingleQuality.Highest },
-                    MultipleQuality: { Lowest: metaBody.Manifest.Video.MultipleQuality.Lowest, Highest: metaBody.Manifest.Video.MultipleQuality.Highest },
-                },
-            },
+            AudioOnly: metaBody.AudioOnly,
+            VideoOnly: metaBody.VideoOnly,
+            Thumbnails: metaBody.Thumbnails,
+            Heatmap: metaBody.Heatmap,
+            Chapters: metaBody.Chapters,
+            Subtitle: metaBody.Subtitle,
+            Captions: metaBody.Captions,
             comments,
             transcript,
         };
+
         return payload;
     } catch (error: any) {
         if (error instanceof ZodError) {

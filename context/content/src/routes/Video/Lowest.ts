@@ -7,6 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+import { EngineOutput } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
     query: z.string().min(2),
@@ -41,7 +42,7 @@ export default async function VideoLowest({
             throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -57,9 +58,8 @@ export default async function VideoLowest({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_VideoLowest_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
-                        HDR_Lowest: EngineMeta.Video.HasHDR.Lowest,
-                        Lowest: EngineMeta.Video.SingleQuality.Lowest,
-                        BestLowest: EngineMeta.Video.SingleQuality.Lowest,
+                        Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest,
+                        HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Lowest,
                     },
                 },
             };
@@ -87,19 +87,19 @@ export default async function VideoLowest({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
+            if (EngineMeta.Thumbnails.Highest?.url) {
+                instance.addInput(EngineMeta.Thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
 
-        // Get the lowest quality manifest/video format
-        const lowestVideoManifest = EngineMeta.Manifest.Video.SingleQuality.Lowest;
-        if (!lowestVideoManifest || !lowestVideoManifest.url) {
+        // Get the lowest quality video format from the Standard Dynamic Range category
+        const lowestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest;
+        if (!lowestVideo || !lowestVideo.url) {
             throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
         }
-        instance.addInput(lowestVideoManifest.url);
+        instance.addInput(lowestVideo.url);
 
         instance.withOutputFormat("matroska");
 

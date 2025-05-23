@@ -7,6 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
+import { EngineOutput } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
     query: z.string().min(2),
@@ -43,7 +44,7 @@ export default async function AudioLowest({
             throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -58,15 +59,14 @@ export default async function AudioLowest({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioLowest_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                     Links: {
-                        DRC_Lowest: EngineMeta.Audio.HasDRC.Lowest,
-                        Lowest: EngineMeta.Audio.SingleQuality.Lowest,
-                        BestLowest: EngineMeta.Audio.SingleQuality.Lowest,
+                        Standard_Lowest: EngineMeta.AudioOnly.Standard.Unknown?.Lowest,
+                        DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression.Unknown?.Lowest,
                     },
                 },
             };
         }
 
-        const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"; // Corrected
+        const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = output ? output : process.cwd();
 
         if (!stream && !fs.existsSync(folder)) {
@@ -89,21 +89,21 @@ export default async function AudioLowest({
             }
             instance.setFfmpegPath(paths.ffmpeg);
             instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.MetaData.thumbnails.Highest) {
-                instance.addInput(EngineMeta.MetaData.thumbnails.Highest.url);
+            if (EngineMeta.Thumbnails.Highest?.url) {
+                instance.addInput(EngineMeta.Thumbnails.Highest.url);
             }
         } catch (locatorError: any) {
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
 
-        // Use the Lowest quality audio from the SingleQuality object
-        const lowestQualityAudio = EngineMeta.Audio.SingleQuality.Lowest;
+        // Use the Lowest quality audio from the Standard category
+        const lowestQualityAudio = EngineMeta.AudioOnly.Standard.Unknown?.Lowest;
 
         if (!lowestQualityAudio?.url) {
             throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found.`);
         }
 
-        instance.addInput(lowestQualityAudio.url); // Use the retrieved lowest quality audio URL
+        instance.addInput(lowestQualityAudio.url!);
 
         instance.withOutputFormat("avi");
 
@@ -148,7 +148,7 @@ export default async function AudioLowest({
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioLowest_`;
             let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
-            (passthroughStream as any).FileName = FileName; // This is a common way to attach FileName to a PassThrough stream in older examples
+            (passthroughStream as any).FileName = FileName;
 
             instance.on("start", command => {
                 if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
