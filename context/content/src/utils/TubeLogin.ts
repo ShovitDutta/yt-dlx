@@ -23,8 +23,8 @@ export default async function TubeLogin(cookiesFilePathOrString: string): Promis
         console.log(colors.green("@info:") + "Connected to YouTube...");
         return Tube;
     } catch (err) {
-        console.error(colors.red("@error:"), "Failed to authenticate. The cookies appear to be corrupt or invalid.");
-        console.error(colors.red("@error:"), "Try using valid YouTube cookies.");
+        console.error(colors.red("@error:") + "Failed to authenticate. The cookies appear to be corrupt or invalid.");
+        console.error(colors.red("@error:") + "Try using valid YouTube cookies.");
         process.exit(1);
     }
 }
