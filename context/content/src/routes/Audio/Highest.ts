@@ -37,32 +37,29 @@ export default async function AudioHighest({
     Language,
 }: AudioHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language }); // Changed to Title Case
+        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
         if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
-        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor }); // Changed to Title Case
+        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (MetaData) {
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`, // Changed Filter
+                    FileName: `yt-dlx_AudioHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                     Links: {
-                        Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Highest, // Use Language parameter
-                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Highest, // Use Language parameter
+                        Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Highest,
+                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Highest,
                     },
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
-        const folder = Output ? Output : process.cwd(); // Changed Output
-
+        const folder = Output ? Output : process.cwd();
         if (!Stream && !fs.existsSync(folder)) {
-            // Changed Stream
             try {
                 fs.mkdirSync(folder, { recursive: true });
             } catch (mkdirError: any) {
