@@ -70,30 +70,22 @@ export default async function AudioVideoHighest({
                 throw new Error(`${colors.red("@error:")} Failed to create output directory: ${mkdirError.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
         const paths = await locator();
-        if (!paths.ffmpeg) {
-            throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-        }
-        if (!paths.ffprobe) {
-            throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-        }
+        if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+
+        if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
-        if (EngineMeta.Thumbnails.Highest?.url) {
-            instance.addInput(EngineMeta.Thumbnails.Highest.url);
-        }
+        if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
-        // Get the highest quality video format from the Standard Dynamic Range category
         const highestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest;
         if (!highestVideo?.url) {
             throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
         }
         instance.addInput(highestVideo.url);
 
-        // Get the highest quality audio format from the Standard category for the specified language
         const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest;
         // Use audioLanguage parameter
         if (!highestAudio?.url) {
