@@ -73,7 +73,6 @@ export default async function AudioCustom({
             }
         }
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
         const paths = await locator();
         if (!paths.ffmpeg) {
             throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
