@@ -75,8 +75,6 @@ export default async function AudioHighest({
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
-        /
         const highestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Highest;
         if (!highestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found for language: ${Language || "Unknown"}.`);
 
