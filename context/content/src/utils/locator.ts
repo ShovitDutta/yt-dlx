@@ -25,14 +25,14 @@ export async function locator() {
             const execPath = await getBinaryPath(execName);
             if (execPath) results[execName] = execPath;
             else {
-                console.log(colors.yellow("@warning:") + execName + " not found in package binary directory.");
-                if (execName === "yt-dlx") console.error(colors.red("@error:") + "please run 'yarn/npm/bun/pnpm install/add yt-dlx'");
+                console.log(colors.yellow("@warning: ") + execName + " not found in package binary directory.");
+                if (execName === "yt-dlx") console.error(colors.red("@error: ") + "please run 'yarn/npm/bun/pnpm install/add yt-dlx'");
                 results[execName] = "";
             }
         }
         return results;
     } catch (error) {
-        console.error(colors.red("@error:") + "Error in locator function: " + error);
+        console.error(colors.red("@error: ") + "Error in locator function: " + error);
         return {};
     }
 }

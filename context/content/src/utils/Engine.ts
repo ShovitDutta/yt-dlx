@@ -12,24 +12,24 @@ export const getLocatedPaths = async (): Promise<Record<string, string>> => {
 };
 const startTor = async (ytDlxPath: string, Verbose = false): Promise<ChildProcessWithoutNullStreams> => {
     return new Promise(async (resolve, reject) => {
-        if (Verbose) console.log(colors.green("@info:"), `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
+        if (Verbose) console.log(colors.green("@info:") + "Attempting to spawn Tor using yt-dlx at: " + ytDlxPath);
         const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as unknown as ChildProcessWithoutNullStreams;
         const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
         const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
         rlStdout.on("line", line => {
-            if (Verbose) console.log(colors.green("@info:"), line);
+            if (Verbose) console.log(colors.green("@info:") + line);
             if (line.includes("Bootstrapped 100% (done): Done")) {
-                if (Verbose) console.log(colors.green("@info:"), "Tor is 100% bootstrapped!");
+                if (Verbose) console.log(colors.green("@info:") + "Tor is 100% bootstrapped!");
                 rlStdout.removeAllListeners("line");
                 rlStderr.removeAllListeners("line");
                 resolve(torProcess);
             }
         });
         rlStderr.on("line", line => {
-            if (Verbose) console.error(colors.red("@error:"), line);
+            if (Verbose) console.error(colors.red("@error:") + line);
         });
         torProcess.on("error", err => {
-            console.error(colors.red("@error:"), "Tor process error:", err);
+            console.error(colors.red("@error:") + "Tor process error: " + err);
             reject(err);
         });
         torProcess.on("close", code => {
