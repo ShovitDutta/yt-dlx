@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedAudioFormat, CleanedVideoFormat } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
