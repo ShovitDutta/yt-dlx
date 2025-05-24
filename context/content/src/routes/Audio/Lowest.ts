@@ -170,6 +170,5 @@ export default async function AudioLowest({
         }
     } finally {
         if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
-        // Changed Verbose
     }
 }
