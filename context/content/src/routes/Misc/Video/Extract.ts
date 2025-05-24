@@ -78,7 +78,7 @@ function formatCount(count: number): string {
 }
 async function fetchCommentsByVideoId(VideoId: string, Verbose: boolean): Promise<CommentType[] | null> {
     try {
-        if (Verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${VideoId}`);
+        if (Verbose) console.log(colors.green("@info:") + "Workspaceing comments for video ID: " + VideoId);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
@@ -107,10 +107,10 @@ async function fetchCommentsByVideoId(VideoId: string, Verbose: boolean): Promis
             })
             .filter((item): item is CommentType => item !== null);
         if (comments.length === 0) {
-            if (Verbose) console.log(colors.red("@error:"), "No comments found for the video");
+            if (Verbose) console.log(colors.red("@error:") + "No comments found for the video");
             return null;
         }
-        if (Verbose) console.log(colors.green("@info:"), "Video comments fetched!");
+        if (Verbose) console.log(colors.green("@info:") + "Video comments fetched!");
         return comments;
     } catch (error: any) {
         if (Verbose) console.error(colors.red("@error: ") + error.message);
@@ -119,11 +119,11 @@ async function fetchCommentsByVideoId(VideoId: string, Verbose: boolean): Promis
 }
 async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
-        if (Verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${VideoId}`);
+        if (Verbose) console.log(colors.green("@info:") + "Working on transcript for video ID: " + VideoId);
         const youtube = new Client();
         const captions = await youtube.getVideoTranscript(VideoId);
         if (!captions) {
-            if (Verbose) console.log(colors.red("@error:"), "No transcript found for the video");
+            if (Verbose) console.log(colors.red("@error:") + "No transcript found for the video");
             return null;
         }
         const transcript = captions.map(caption => ({
@@ -132,7 +132,7 @@ async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<
             duration: caption.duration,
             segments: caption.segments.map(segment => ({ utf8: segment.utf8, tOffsetMs: segment.tOffsetMs, acAsrConf: segment.acAsrConf })),
         }));
-        if (Verbose) console.log(colors.green("@info:"), "Video transcript fetched!");
+        if (Verbose) console.log(colors.green("@info:") + "Video transcript fetched!");
         return transcript;
     } catch (error: any) {
         if (Verbose) console.error(colors.red("@error: ") + error.message);
