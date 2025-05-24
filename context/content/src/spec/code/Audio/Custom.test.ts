@@ -5,7 +5,7 @@ import * as vitest from "vitest";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 
 vitest.describe("AudioCustom", () => {
-    const Query = "https://www.youtube.com/watch?v=s49rbh8xXKI";
+    const Query = "https://www.youtube.com/watch?v=30LWjhZzg50";
     vitest.it("should handle basic download", async () => {
         const result = await AudioCustom({ Query });
         vitest.expect(result).toHaveProperty("outputPath");
