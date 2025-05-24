@@ -112,7 +112,7 @@ export default async function Engine(options: {
     }, retryConfig);
     if (torProcess) {
         torProcess.kill();
-        if (Verbose) console.log(colors.green("@info:"), `Tor process terminated on ${process.platform === "win32" ? "Windows" : "Linux"}`);
+        if (Verbose) console.log(colors.green("@info:") + "Tor process terminated on " + (process.platform === "win32" ? "Windows" : "Linux"));
     }
     const rawresp: OriginalJson = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
     const AllFormats = rawresp.formats || [];
