@@ -9,52 +9,52 @@ vitest.describe("VideoCustom", () => {
 
     vitest.it("should handle basic download", async () => {
         const result = await VideoCustom({ Query });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with custom VideoFormatId", async () => {
         // Note: Replace "some_format_id" with a valid video format ID for the test query
         const result = await VideoCustom({ Query, VideoFormatId: "137" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with custom VideoResolution", async () => {
         // Note: Replace "1080p" with a suitable resolution for the test query
         const result = await VideoCustom({ Query, VideoResolution: "1080p" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
-     vitest.it("should handle download with custom VideoFPS", async () => {
+    vitest.it("should handle download with custom VideoFPS", async () => {
         // Note: Replace 60 with a suitable FPS for the test query
         const result = await VideoCustom({ Query, VideoFPS: 60 });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with Output and Filter", async () => {
         const result = await VideoCustom({ Query, Output: "Output", Filter: "grayscale" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with all options", async () => {
         const result = await VideoCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "rotate90", ShowProgress: true, VideoResolution: "720p" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
@@ -81,26 +81,26 @@ vitest.describe("VideoCustom", () => {
         vitest.expect(result).toHaveProperty("FileName");
         if (result && "Stream" in result && result.FileName) {
             vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
-             const outputStream = createWriteStream(result.FileName);
-             (result as { Stream: Readable }).Stream?.pipe(outputStream);
-             await new Promise(resolve => {
-                 (result as { Stream: Readable }).Stream?.on("end", resolve);
-             });
+            const outputStream = createWriteStream(result.FileName);
+            (result as { Stream: Readable }).Stream?.pipe(outputStream);
+            await new Promise(resolve => {
+                (result as { Stream: Readable }).Stream?.on("end", resolve);
+            });
         }
     });
 
     vitest.it("should handle Stream with custom VideoResolution and Filter", async () => {
-         // Note: Replace "720p" with a suitable resolution for the test query
+        // Note: Replace "720p" with a suitable resolution for the test query
         const result = await VideoCustom({ Query, Stream: true, VideoResolution: "720p", Filter: "flipHorizontal" });
         vitest.expect(result).toHaveProperty("Stream");
         vitest.expect(result).toHaveProperty("FileName");
         if (result && "Stream" in result && result.FileName) {
             vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
-             const outputStream = createWriteStream(result.FileName);
-             (result as { Stream: Readable }).Stream?.pipe(outputStream);
-             await new Promise(resolve => {
-                 (result as { Stream: Readable }).Stream?.on("end", resolve);
-             });
+            const outputStream = createWriteStream(result.FileName);
+            (result as { Stream: Readable }).Stream?.pipe(outputStream);
+            await new Promise(resolve => {
+                (result as { Stream: Readable }).Stream?.on("end", resolve);
+            });
         }
     });
 
