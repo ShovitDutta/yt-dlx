@@ -47,25 +47,14 @@ export default async function AudioVideoCustom({
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioLanguage || AudioFormatId || AudioBitrate || VideoFormatId || VideoResolution || VideoFPS)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
-        if (Stream && Output) {
-            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
-        }
-        if (AudioFormatId && AudioBitrate) {
+        if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
+        if (AudioFormatId && AudioBitrate)
             throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one audio custom parameter.`);
-        }
-        if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS)) {
+        if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS))
             throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
-        }
-
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
-
-        if (!EngineMeta) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
-        if (!EngineMeta.MetaData) {
-            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-        }
-
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (MetaData) {
             return {
                 MetaData: {
