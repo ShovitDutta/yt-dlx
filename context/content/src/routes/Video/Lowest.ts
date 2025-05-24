@@ -80,11 +80,9 @@ export default async function VideoLowest({
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
-        // Get the lowest quality video format from the Standard Dynamic Range category
         const lowestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest;
-        if (!lowestVideo || !lowestVideo.url) {
-            throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
-        }
+        if (!lowestVideo || !lowestVideo.url) throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
+
         instance.addInput(lowestVideo.url);
 
         instance.withOutputFormat("matroska");
