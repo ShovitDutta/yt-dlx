@@ -2,10 +2,10 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 const ZodSchema = z.object({
-    query: z.string().min(2),
+    Query: z.string().min(2),
     minViews: z.number().optional(),
     maxViews: z.number().optional(),
-    verbose: z.boolean().optional(),
+    Verbose: z.boolean().optional(),
     orderBy: z.enum(["relevance", "viewCount", "rating", "date"]).optional(),
 });
 type SearchVideosOptions = z.infer<typeof ZodSchema>;
@@ -21,11 +21,11 @@ interface VideoSearchResult {
     description?: string;
     channelname?: string;
 }
-export default async function searchVideos({ query, minViews, maxViews, orderBy, verbose }: SearchVideosOptions): Promise<VideoSearchResult[]> {
+export default async function searchVideos({ Query, minViews, maxViews, orderBy, Verbose }: SearchVideosOptions): Promise<VideoSearchResult[]> {
     try {
-        ZodSchema.parse({ query, minViews, maxViews, orderBy, verbose });
+        ZodSchema.parse({ Query, minViews, maxViews, orderBy, Verbose });
         const youtube = new Client();
-        const searchResults = await youtube.search(query, { type: "video" });
+        const searchResults = await youtube.search(Query, { type: "video" });
         let videos: VideoSearchResult[] = searchResults.items.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -60,6 +60,6 @@ export default async function searchVideos({ query, minViews, maxViews, orderBy,
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

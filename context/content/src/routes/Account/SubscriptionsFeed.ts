@@ -3,7 +3,7 @@ import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/SanitizeContentItem";
-const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
+const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional() });
 type subscriptions_feedOptions = z.infer<typeof ZodSchema>;
 interface Content {
     type: string;
@@ -19,14 +19,14 @@ interface Content {
     viewCount: string;
     shortViewCount: string;
 }
-export default async function subscriptions_feed({ cookies, verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
+export default async function subscriptions_feed({ Cookies, Verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
-        ZodSchema.parse({ cookies, verbose });
-        if (verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
-        if (!cookies) {
+        ZodSchema.parse({ Cookies, Verbose });
+        if (Verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
+        if (!Cookies) {
             throw new Error(`${colors.red("@error:")} Cookies not provided!`);
         }
-        const client: TubeType = await TubeLogin(cookies);
+        const client: TubeType = await TubeLogin(Cookies);
         if (!client) {
             throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         }
@@ -68,6 +68,6 @@ export default async function subscriptions_feed({ cookies, verbose = false }: s
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

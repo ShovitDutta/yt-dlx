@@ -2,17 +2,17 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
-const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional() });
+const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional() });
 type UnseenNotificationsOptions = z.infer<typeof ZodSchema>;
 export default async function unseen_notifications(options: UnseenNotificationsOptions): Promise<TubeResponse<{ count: number }>> {
-    let verbose = false;
+    let Verbose = false;
     try {
         ZodSchema.parse(options);
-        const { verbose: parsedVerbose, cookies } = options;
-        verbose = parsedVerbose ?? false;
-        if (verbose) console.log(colors.green("@info:"), "Fetching unseen notifications...");
-        if (!cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
-        const client: TubeType = await TubeLogin(cookies);
+        const { Verbose: parsedVerbose, Cookies } = options;
+        Verbose = parsedVerbose ?? false;
+        if (Verbose) console.log(colors.green("@info:"), "Fetching unseen notifications...");
+        if (!Cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
+        const client: TubeType = await TubeLogin(Cookies);
         if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         const count = await client.getUnseenNotificationsCount();
         if (count === undefined) throw new Error(`${colors.red("@error:")} Failed to fetch unseen notifications count.`);
@@ -32,6 +32,6 @@ export default async function unseen_notifications(options: UnseenNotificationsO
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

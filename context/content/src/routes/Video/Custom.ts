@@ -10,41 +10,41 @@ import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedVideoFormat } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
-    query: z.string().min(2),
-    output: z.string().optional(),
-    useTor: z.boolean().optional(),
-    stream: z.boolean().optional(),
-    verbose: z.boolean().optional(),
+    Query: z.string().min(2),
+    Output: z.string().optional(),
+    UseTor: z.boolean().optional(),
+    Stream: z.boolean().optional(),
+    Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-    resolution: z.string().regex(/^\d+p(\d+)?$/), // e.g., "1080p", "720p30"
+    Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
+    Resolution: z.string().regex(/^\d+p(\d+)?$/), // e.g., "1080p", "720p30"
 });
 
 type VideoCustomOptions = z.infer<typeof ZodSchema>;
 
 export default async function VideoCustom({
-    query,
-    output,
-    useTor,
-    stream,
-    filter,
+    Query,
+    Output,
+    UseTor,
+    Stream,
+    Filter,
     MetaData,
-    verbose,
-    resolution,
+    Verbose,
+    Resolution,
     ShowProgress,
-}: VideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { stream: Readable; FileName: string }> {
+}: VideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ query, output, useTor, stream, filter, MetaData, verbose, resolution, ShowProgress });
+        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, Resolution, ShowProgress });
 
-        if (MetaData && (stream || output || filter || ShowProgress)) {
-            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'stream', 'output', 'filter', or 'ShowProgress'.`);
+        if (MetaData && (Stream || Output || Filter || ShowProgress)) {
+            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'Output', 'Filter', or 'ShowProgress'.`);
         }
-        if (stream && output) {
-            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        if (Stream && Output) {
+            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
         }
 
-        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ Query, Verbose, UseTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -58,7 +58,7 @@ export default async function VideoCustom({
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_VideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                    FileName: `yt-dlx_VideoCustom_${Resolution}_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
                         Standard: EngineMeta.VideoOnly.Standard_Dynamic_Range,
                         High_Dynamic_Range: EngineMeta.VideoOnly.High_Dynamic_Range,
@@ -68,13 +68,13 @@ export default async function VideoCustom({
         }
 
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
-        const folder = output ? output : process.cwd();
+        const folder = Output ? Output : process.cwd();
 
-        if (!stream && !fs.existsSync(folder)) {
+        if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
             } catch (mkdirError: any) {
-                throw new Error(`${colors.red("@error:")} Failed to create output directory: ${mkdirError.message}`);
+                throw new Error(`${colors.red("@error:")} Failed to create Output directory: ${mkdirError.message}`);
             }
         }
 
@@ -98,11 +98,11 @@ export default async function VideoCustom({
         }
 
         const resolutionRegex = /(\d+)p(\d+)?/;
-        const resolutionMatch = resolution.match(resolutionRegex);
+        const resolutionMatch = Resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
 
-        // Find the specific video format based on resolution in Standard and HDR categories
+        // Find the specific video format based on Resolution in Standard and HDR categories
         let videoFormat: CleanedVideoFormat | undefined;
 
         if (EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined) {
@@ -119,7 +119,7 @@ export default async function VideoCustom({
         }
 
         if (!videoFormat && EngineMeta.VideoOnly.High_Dynamic_Range.Combined) {
-             videoFormat = EngineMeta.VideoOnly.High_Dynamic_Range.Combined.find(i => {
+            videoFormat = EngineMeta.VideoOnly.High_Dynamic_Range.Combined.find(i => {
                 const height = i.height;
                 const fps = i.fps;
                 const vcodec = i.vcodec;
@@ -131,12 +131,11 @@ export default async function VideoCustom({
             });
         }
 
-
         if (!videoFormat) {
-            throw new Error(`${colors.red("@error:")} No Video data found for the specified resolution: ${resolution}. Please use the 'Misc.Video.Extract()' command to see available formats.`);
+            throw new Error(`${colors.red("@error:")} No Video data found for the specified Resolution: ${Resolution}. Please use the 'Misc.Video.Extract()' command to see available formats.`);
         }
         if (!videoFormat.url) {
-            throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}`);
+            throw new Error(`${colors.red("@error:")} Video URL not found for Resolution: ${Resolution}`);
         }
 
         instance.addInput(videoFormat.url.toString());
@@ -152,8 +151,8 @@ export default async function VideoCustom({
             flipVertical: ["vflip"],
         };
 
-        if (filter && filterMap[filter]) {
-            instance.withVideoFilter(filterMap[filter]);
+        if (Filter && filterMap[Filter]) {
+            instance.withVideoFilter(filterMap[Filter]);
         } else {
             instance.outputOptions("-c copy");
         }
@@ -171,25 +170,25 @@ export default async function VideoCustom({
             });
         }
 
-        if (stream) {
+        if (Stream) {
             const passthroughStream = new PassThrough();
-            const FileNameBase = `yt-dlx_VideoCustom_${resolution}_`;
-            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            const FileNameBase = `yt-dlx_VideoCustom_${Resolution}_`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
 
             instance.on("start", command => {
-                if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
             });
 
             instance.pipe(passthroughStream, { end: true });
 
             instance.on("end", () => {
-                if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
 
             instance.on("error", (error, stdout, stderr) => {
-                const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
+                const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
@@ -197,17 +196,17 @@ export default async function VideoCustom({
             });
 
             instance.run();
-            return { stream: passthroughStream, FileName: FileName };
+            return { Stream: passthroughStream, FileName: FileName };
         } else {
-            const FileNameBase = `yt-dlx_VideoCustom_${resolution}_`;
-            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            const FileNameBase = `yt-dlx_VideoCustom_${Resolution}_`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const outputPath = path.join(folder, FileName);
 
             instance.output(outputPath);
 
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
 
@@ -218,7 +217,7 @@ export default async function VideoCustom({
                 });
 
                 instance.on("end", () => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
@@ -248,6 +247,6 @@ export default async function VideoCustom({
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

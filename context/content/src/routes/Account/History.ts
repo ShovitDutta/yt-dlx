@@ -3,7 +3,7 @@ import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/SanitizeContentItem";
-const ZodSchema = z.object({ cookies: z.string(), verbose: z.boolean().optional(), sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
+const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional(), Sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 type WatchHistoryOptions = z.infer<typeof ZodSchema>;
 interface Short {
     title: string;
@@ -20,10 +20,10 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
     let verbose = false;
     try {
         ZodSchema.parse(options);
-        const { verbose: parsedVerbose = false, cookies, sort } = options;
+        const { Verbose: parsedVerbose = false, Cookies, Sort } = options;
         verbose = parsedVerbose;
-        if (!cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
-        const client: TubeType = await TubeLogin(cookies);
+        if (!Cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
+        const client: TubeType = await TubeLogin(Cookies);
         if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         const history = await client.getHistory();
         if (!history) throw new Error(`${colors.red("@error:")} Failed to fetch watch history.`);
@@ -40,7 +40,7 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
                 }
             });
         });
-        switch (sort) {
+        switch (Sort) {
             case "oldest":
                 if (result.data?.Shorts && result.data.Shorts.length > 0) result.data.Shorts.splice(0, result.data.Shorts.length - 1);
                 if (result.data?.Videos && result.data.Videos.length > 0) result.data.Videos.splice(0, result.data.Videos.length - 1);

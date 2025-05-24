@@ -10,14 +10,15 @@ import { Readable, PassThrough } from "stream";
 import { EngineOutput } from "../../interfaces/EngineOutput";
 
 const ZodSchema = z.object({
-    query: z.string().min(2),
-    output: z.string().optional(),
-    useTor: z.boolean().optional(),
-    stream: z.boolean().optional(),
-    verbose: z.boolean().optional(),
+    Query: z.string().min(2),
+    Output: z.string().optional(),
+    UseTor: z.boolean().optional(),
+    Stream: z.boolean().optional(),
+    Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    filter: z
+    Language: z.string().optional(), // Changed to Title Case
+    Filter: z // Changed to Title Case
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
@@ -25,26 +26,27 @@ const ZodSchema = z.object({
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
 
 export default async function AudioLowest({
-    query,
-    output,
-    useTor,
-    stream,
-    filter,
+    Query,
+    Output,
+    UseTor,
+    Stream,
+    Filter,
     MetaData,
-    verbose,
+    Verbose,
     ShowProgress,
-}: AudioLowestOptions): Promise<{ MetaData: object } | { outputPath: string } | { stream: Readable; FileName: string }> {
+    Language, // Changed to Title Case
+}: AudioLowestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ query, output, useTor, stream, filter, MetaData, verbose, ShowProgress });
+        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language }); // Changed to Title Case
 
-        if (MetaData && (stream || output || filter || ShowProgress)) {
-            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'stream', 'output', 'filter', or 'ShowProgress'.`);
+        if (MetaData && (Stream || Output || Filter || ShowProgress)) {
+            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
-        if (stream && output) {
-            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        if (Stream && Output) {
+            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor }); // Changed to Title Case
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -57,19 +59,20 @@ export default async function AudioLowest({
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioLowest_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`, // Changed Filter
                     Links: {
-                        Standard_Lowest: EngineMeta.AudioOnly.Standard.Unknown?.Lowest,
-                        DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression.Unknown?.Lowest,
+                        Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest, // Use Language parameter
+                        DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest, // Use Language parameter
                     },
                 },
             };
         }
 
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
-        const folder = output ? output : process.cwd();
+        const folder = Output ? Output : process.cwd(); // Changed Output
 
-        if (!stream && !fs.existsSync(folder)) {
+        if (!Stream && !fs.existsSync(folder)) {
+            // Changed Stream
             try {
                 fs.mkdirSync(folder, { recursive: true });
             } catch (mkdirError: any) {
@@ -96,11 +99,11 @@ export default async function AudioLowest({
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
         }
 
-        // Use the Lowest quality audio from the Standard category
-        const lowestQualityAudio = EngineMeta.AudioOnly.Standard.Unknown?.Lowest;
+        // Use the Lowest quality audio from the Standard category for the specified language
+        const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest; // Use Language parameter
 
         if (!lowestQualityAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found.`);
+            throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Unknown"}.`); // Updated error message
         }
 
         instance.addInput(lowestQualityAudio.url!);
@@ -125,8 +128,9 @@ export default async function AudioLowest({
             nightcore: ["aresample=48000,asetrate=48000*1.25"],
         };
 
-        if (filter && filterMap[filter]) {
-            instance.withAudioFilter(filterMap[filter]);
+        if (Filter && filterMap[Filter]) {
+            // Changed Filter
+            instance.withAudioFilter(filterMap[Filter]); // Changed Filter
         } else {
             instance.outputOptions("-c copy");
         }
@@ -144,25 +148,26 @@ export default async function AudioLowest({
             });
         }
 
-        if (stream) {
+        if (Stream) {
+            // Changed Stream
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioLowest_`;
-            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`; // Changed Filter
             (passthroughStream as any).FileName = FileName;
 
             instance.on("start", command => {
-                if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command); // Changed Verbose
             });
 
             instance.pipe(passthroughStream, { end: true });
 
             instance.on("end", () => {
-                if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished."); // Changed Verbose
                 if (ShowProgress) process.stdout.write("\n");
             });
 
             instance.on("error", (error, stdout, stderr) => {
-                const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
+                const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
@@ -170,17 +175,17 @@ export default async function AudioLowest({
             });
 
             instance.run();
-            return { stream: passthroughStream, FileName: FileName };
+            return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioLowest_`;
-            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.avi`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`; // Changed Filter
             const outputPath = path.join(folder, FileName);
 
             instance.output(outputPath);
 
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command); // Changed Verbose
                     if (ShowProgress) processStartTime = new Date();
                 });
 
@@ -191,7 +196,7 @@ export default async function AudioLowest({
                 });
 
                 instance.on("end", () => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished."); // Changed Verbose
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
@@ -221,6 +226,6 @@ export default async function AudioLowest({
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx."); // Changed Verbose
     }
 }

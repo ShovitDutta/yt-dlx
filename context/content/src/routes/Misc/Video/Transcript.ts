@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import YouTubeID from "../../../utils/YouTubeId";
-const ZodSchema = z.object({ videoLink: z.string().min(2), verbose: z.boolean().optional() });
+const ZodSchema = z.object({ VideoLink: z.string().min(2), Verbose: z.boolean().optional() });
 export interface CaptionSegment {
     utf8: string;
     tOffsetMs?: number;
@@ -14,10 +14,10 @@ export interface VideoTranscriptType {
     duration: number;
     segments: CaptionSegment[];
 }
-async function getVideoTranscript({ videoId }: { videoId: string }): Promise<VideoTranscriptType[]> {
+async function getVideoTranscript({ VIdeoID }: { VIdeoID: string }): Promise<VideoTranscriptType[]> {
     try {
         const youtube = new Client();
-        const captions = await youtube.getVideoTranscript(videoId);
+        const captions = await youtube.getVideoTranscript(VIdeoID);
         if (!captions) return [];
         return captions.map(caption => ({
             text: caption.text,
@@ -30,12 +30,12 @@ async function getVideoTranscript({ videoId }: { videoId: string }): Promise<Vid
     }
 }
 type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
-export default async function videoTranscript({ videoLink, verbose }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
+export default async function videoTranscript({ VideoLink, Verbose }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
     try {
-        ZodSchema.parse({ videoLink, verbose });
-        const vId = await YouTubeID(videoLink);
+        ZodSchema.parse({ VideoLink, Verbose });
+        const vId = await YouTubeID(VideoLink);
         if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link`);
-        const transcriptData: VideoTranscriptType[] = await getVideoTranscript({ videoId: vId });
+        const transcriptData: VideoTranscriptType[] = await getVideoTranscript({ VIdeoID: vId });
         if (!transcriptData || transcriptData.length === 0) throw new Error(`${colors.red("@error:")} Unable to get transcript for this video!`);
         return transcriptData;
     } catch (error: any) {
@@ -52,6 +52,6 @@ export default async function videoTranscript({ videoLink, verbose }: VideoTrans
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

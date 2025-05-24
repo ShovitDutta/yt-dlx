@@ -1,12 +1,12 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client, Channel } from "youtubei";
-const ZodSchema = z.object({ channelLink: z.string().min(2), verbose: z.boolean().optional() });
-export default async function channel_data({ channelLink, verbose }: z.infer<typeof ZodSchema>): Promise<{ data: Channel }> {
+const ZodSchema = z.object({ ChannelLink: z.string().min(2), Verbose: z.boolean().optional() });
+export default async function channel_data({ ChannelLink, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: Channel }> {
     try {
-        ZodSchema.parse({ channelLink, verbose });
+        ZodSchema.parse({ ChannelLink, Verbose });
         const youtube = new Client();
-        const channelData: Channel | undefined = await youtube.getChannel(channelLink);
+        const channelData: Channel | undefined = await youtube.getChannel(ChannelLink);
         if (!channelData) throw new Error(`${colors.red("@error: ")} Unable to fetch channel data for the provided link.`);
         return { data: channelData };
     } catch (error: any) {
@@ -23,6 +23,6 @@ export default async function channel_data({ channelLink, verbose }: z.infer<typ
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

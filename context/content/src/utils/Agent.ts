@@ -52,15 +52,15 @@ export interface searchVideosType {
     description: string;
     thumbnails: string[];
 }
-export default async function Agent({ query, useTor = false, verbose = false }: { query: string; useTor?: boolean; verbose?: boolean }): Promise<EngineOutput | null> {
+export default async function Agent({ Query, UseTor = false, Verbose = false }: { Query: string; UseTor?: boolean; Verbose?: boolean }): Promise<EngineOutput | null> {
     let url: string;
     const youtube = new Client();
-    const videoId: string | undefined = await YouTubeID(query);
-    if (verbose && useTor) console.log(colors.green("@info:"), "Using Tor for request anonymization");
+    const videoId: string | undefined = await YouTubeID(Query);
+    if (Verbose && UseTor) console.log(colors.green("@info:"), "Using Tor for request anonymization");
     if (!videoId) {
         try {
-            const searchResults = await youtube.search(query, { type: "video" });
-            if (searchResults.items.length === 0) throw new Error(`${colors.red("@error: ")} Unable to find a video for query: ${query}`);
+            const searchResults = await youtube.search(Query, { type: "video" });
+            if (searchResults.items.length === 0) throw new Error(`${colors.red("@error: ")} Unable to find a video for Query: ${Query}`);
             const video = searchResults.items[0];
             console.log(colors.green("@info:"), "preparing payload for", video.title);
             url = `https://www.youtube.com/watch?v=${video.id}`;
@@ -73,5 +73,5 @@ export default async function Agent({ query, useTor = false, verbose = false }: 
         console.log(colors.green("@info:"), "preparing payload for", TubeBody.title);
         url = `https://www.youtube.com/watch?v=${TubeBody.id}`;
     }
-    return await Engine({ query: url, useTor, verbose });
+    return await Engine({ Query: url, UseTor, Verbose });
 }

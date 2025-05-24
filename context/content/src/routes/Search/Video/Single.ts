@@ -2,7 +2,7 @@ import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import YouTubeID from "../../../utils/YouTubeId";
-const ZodSchema = z.object({ videoLink: z.string().min(2), verbose: z.boolean().optional() });
+const ZodSchema = z.object({ VideoLink: z.string().min(2), Verbose: z.boolean().optional() });
 export interface SingleVideoType {
     id: string;
     title: string;
@@ -17,10 +17,10 @@ export interface SingleVideoType {
     tags: string;
     likeCount: number;
 }
-async function singleVideo({ videoId }: { videoId: string }): Promise<SingleVideoType> {
+async function singleVideo({ VIdeoID }: { VIdeoID: string }): Promise<SingleVideoType> {
     try {
         const youtube = new Client();
-        const singleVideoData: any = await youtube.getVideo(videoId);
+        const singleVideoData: any = await youtube.getVideo(VIdeoID);
         if (!singleVideoData) {
             throw new Error(`${colors.red("@error:")} Unable to fetch video data.`);
         }
@@ -43,12 +43,12 @@ async function singleVideo({ videoId }: { videoId: string }): Promise<SingleVide
     }
 }
 type VideoDataOptions = z.infer<typeof ZodSchema>;
-export default async function videoData({ videoLink, verbose }: VideoDataOptions): Promise<SingleVideoType> {
+export default async function videoData({ VideoLink, Verbose }: VideoDataOptions): Promise<SingleVideoType> {
     try {
-        ZodSchema.parse({ videoLink, verbose });
-        const vId = await YouTubeID(videoLink);
+        ZodSchema.parse({ VideoLink, Verbose });
+        const vId = await YouTubeID(VideoLink);
         if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
-        const metaData = await singleVideo({ videoId: vId });
+        const metaData = await singleVideo({ VIdeoID: vId });
         return metaData;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -64,6 +64,6 @@ export default async function videoData({ videoLink, verbose }: VideoDataOptions
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

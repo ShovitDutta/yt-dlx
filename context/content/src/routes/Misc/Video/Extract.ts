@@ -7,7 +7,7 @@ import { Innertube, UniversalCache } from "youtubei.js";
 import type { CommentType } from "../../../interfaces/CommentType";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 
-const ZodSchema = z.object({ query: z.string().min(2), useTor: z.boolean().optional(), verbose: z.boolean().optional() });
+const ZodSchema = z.object({ Query: z.string().min(2), UseTor: z.boolean().optional(), Verbose: z.boolean().optional() });
 
 interface CaptionSegment {
     utf8: string;
@@ -44,8 +44,8 @@ interface PayloadType {
         like_count_formatted: string;
         comment_count_formatted: string;
         channel_follower_count_formatted: string;
-        videoLink?: string; // Add videoLink as it's in the new MetaData
-        videoId?: string; // Add videoId as it's in the new MetaData
+        VideoLink?: string; // Add VideoLink as it's in the new MetaData
+        videoId?: string; // Add VIdeoID as it's in the new MetaData
     };
     AudioOnly: EngineOutput["AudioOnly"];
     VideoOnly: EngineOutput["VideoOnly"];
@@ -86,14 +86,14 @@ function formatCount(count: number): string {
     return `${count}`;
 }
 
-async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promise<CommentType[] | null> {
+async function fetchCommentsByVideoId(VIdeoID: string, Verbose: boolean): Promise<CommentType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${videoId}`);
+        if (Verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${VIdeoID}`);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
         });
-        const response = await youtubeInnertube.getComments(videoId);
+        const response = await youtubeInnertube.getComments(VIdeoID);
         const comments: CommentType[] = response.contents
             .map(thread => {
                 const comment = thread?.comment;
@@ -117,24 +117,24 @@ async function fetchCommentsByVideoId(videoId: string, verbose: boolean): Promis
             })
             .filter((item): item is CommentType => item !== null);
         if (comments.length === 0) {
-            if (verbose) console.log(colors.red("@error:"), "No comments found for the video");
+            if (Verbose) console.log(colors.red("@error:"), "No comments found for the video");
             return null;
         }
-        if (verbose) console.log(colors.green("@info:"), "Video comments fetched!");
+        if (Verbose) console.log(colors.green("@info:"), "Video comments fetched!");
         return comments;
     } catch (error: any) {
-        if (verbose) console.error(colors.red("@error: ") + error.message);
+        if (Verbose) console.error(colors.red("@error: ") + error.message);
         return null;
     }
 }
 
-async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<VideoTranscriptType[] | null> {
+async function fetchVideoTranscript(VIdeoID: string, Verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${videoId}`);
+        if (Verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${VIdeoID}`);
         const youtube = new Client();
-        const captions = await youtube.getVideoTranscript(videoId);
+        const captions = await youtube.getVideoTranscript(VIdeoID);
         if (!captions) {
-            if (verbose) console.log(colors.red("@error:"), "No transcript found for the video");
+            if (Verbose) console.log(colors.red("@error:"), "No transcript found for the video");
             return null;
         }
         const transcript = captions.map(caption => ({
@@ -143,22 +143,22 @@ async function fetchVideoTranscript(videoId: string, verbose: boolean): Promise<
             duration: caption.duration,
             segments: caption.segments.map(segment => ({ utf8: segment.utf8, tOffsetMs: segment.tOffsetMs, acAsrConf: segment.acAsrConf })),
         }));
-        if (verbose) console.log(colors.green("@info:"), "Video transcript fetched!");
+        if (Verbose) console.log(colors.green("@info:"), "Video transcript fetched!");
         return transcript;
     } catch (error: any) {
-        if (verbose) console.error(colors.red("@error: ") + error.message);
+        if (Verbose) console.error(colors.red("@error: ") + error.message);
         return null;
     }
 }
 
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
-    let verbose = false;
+    let Verbose = false;
     try {
         const parsedOptions = ZodSchema.parse(options);
-        const { query, useTor, verbose: parsedVerbose } = parsedOptions;
-        verbose = parsedVerbose ?? false;
+        const { Query, UseTor, Verbose: parsedVerbose } = parsedOptions;
+        Verbose = parsedVerbose ?? false;
 
-        const metaBody: EngineOutput | null = await Tuber({ query, verbose, useTor });
+        const metaBody: EngineOutput | null = await Tuber({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
         if (!metaBody) {
             throw new Error(`${colors.red("@error:")} Unable to get response!`);
@@ -188,8 +188,8 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
 
-        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", verbose ?? false); // Use videoId from new structure
-        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", verbose ?? false); // Use videoId from new structure
+        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VIdeoID from new structure
+        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VIdeoID from new structure
 
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
 
@@ -208,7 +208,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 comment_count_formatted: commentCountFormatted,
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
                 channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
-                // videoLink and videoId are already included by spreading metaBody.MetaData
+                // VideoLink and VIdeoID are already included by spreading metaBody.MetaData
             },
             AudioOnly: metaBody.AudioOnly,
             VideoOnly: metaBody.VideoOnly,
@@ -236,6 +236,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

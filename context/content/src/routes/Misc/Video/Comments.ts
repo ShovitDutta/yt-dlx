@@ -4,25 +4,25 @@ import { z, ZodError } from "zod";
 import { Client } from "youtubei";
 import { Innertube, UniversalCache } from "youtubei.js";
 import { CommentType } from "../../../interfaces/CommentType";
-const ZodSchema = z.object({ query: z.string().min(2), verbose: z.boolean().optional() });
+const ZodSchema = z.object({ Query: z.string().min(2), Verbose: z.boolean().optional() });
 type VideoCommentsOptions = z.infer<typeof ZodSchema>;
-async function fetchVideoComments({ query, verbose }: VideoCommentsOptions): Promise<CommentType[]> {
+async function fetchVideoComments({ Query, Verbose }: VideoCommentsOptions): Promise<CommentType[]> {
     try {
-        if (verbose) console.log(colors.green("@info:"), `Searching for videos with query: ${query}`);
+        if (Verbose) console.log(colors.green("@info:"), `Searching for videos with Query: ${Query}`);
         const youtubeClient = new Client();
-        const searchResults = await youtubeClient.search(query, { type: "video" });
+        const searchResults = await youtubeClient.search(Query, { type: "video" });
         const video = searchResults.items[0];
         if (!video || !video.id) {
-            if (verbose) console.log(colors.red("@error:"), "No videos found for the given query");
-            throw new Error("No videos found for the given query");
+            if (Verbose) console.log(colors.red("@error:"), "No videos found for the given Query");
+            throw new Error("No videos found for the given Query");
         }
-        const videoId = video.id;
-        if (verbose) console.log(colors.green("@info:"), `Fetching comments for video ID: ${videoId}`);
+        const VIdeoID = video.id;
+        if (Verbose) console.log(colors.green("@info:"), `Fetching comments for video ID: ${VIdeoID}`);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
         });
-        const response = await youtubeInnertube.getComments(videoId);
+        const response = await youtubeInnertube.getComments(VIdeoID);
         const comments: CommentType[] = response.contents
             .map(thread => {
                 const comment = thread?.comment;
@@ -46,19 +46,19 @@ async function fetchVideoComments({ query, verbose }: VideoCommentsOptions): Pro
             })
             .filter((item): item is CommentType => item !== null);
         if (comments.length === 0) {
-            if (verbose) console.log(colors.red("@error:"), "No comments found for the video");
+            if (Verbose) console.log(colors.red("@error:"), "No comments found for the video");
             throw new Error("No comments found for the video");
         }
-        if (verbose) console.log(colors.green("@info:"), "Video comments fetched!");
+        if (Verbose) console.log(colors.green("@info:"), "Video comments fetched!");
         return comments;
     } catch (error: any) {
         throw new Error(error.message);
     }
 }
-export default async function videoComments({ query, verbose }: VideoCommentsOptions): Promise<CommentType[]> {
+export default async function videoComments({ Query, Verbose }: VideoCommentsOptions): Promise<CommentType[]> {
     try {
-        ZodSchema.parse({ query, verbose });
-        const comments = await fetchVideoComments({ query, verbose });
+        ZodSchema.parse({ Query, Verbose });
+        const comments = await fetchVideoComments({ Query, Verbose });
         return comments;
     } catch (error: any) {
         if (error instanceof ZodError) {
@@ -74,6 +74,6 @@ export default async function videoComments({ query, verbose }: VideoCommentsOpt
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }

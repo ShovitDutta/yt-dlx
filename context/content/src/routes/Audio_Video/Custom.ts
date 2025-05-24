@@ -10,44 +10,46 @@ import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedVideoFormat } from "../../interfaces/EngineOutput";
 
 var ZodSchema = z.object({
-    query: z.string().min(2),
-    output: z.string().optional(),
-    useTor: z.boolean().optional(),
-    stream: z.boolean().optional(),
-    verbose: z.boolean().optional(),
+    Query: z.string().min(2),
+    Output: z.string().optional(),
+    UseTor: z.boolean().optional(),
+    Stream: z.boolean().optional(),
+    Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
-    filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-    resolution: z.string().regex(/^\d+p(\d+)?$/),
+    Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
+    Resolution: z.string().regex(/^\d+p(\d+)?$/),
     ShowProgress: z.boolean().optional(),
+    AudioLanguage: z.string().optional(), // Added audioLanguage parameter
 });
 
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
 
 export default async function AudioVideoCustom({
-    query,
-    stream,
-    output,
-    useTor,
-    filter,
+    Query,
+    Stream,
+    Output,
+    UseTor,
+    Filter,
     MetaData,
-    verbose,
-    resolution,
+    Verbose,
+    Resolution,
     ShowProgress,
-}: AudioVideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { stream: Readable; FileName: string }> {
+    AudioLanguage, // Added audioLanguage parameter
+}: AudioVideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ query, stream, output, useTor, filter, MetaData, verbose, resolution, ShowProgress });
+        ZodSchema.parse({ Query, Stream, Output, UseTor, Filter, MetaData, Verbose, Resolution, ShowProgress, AudioLanguage }); // Added audioLanguage to parse
 
-        if (MetaData && (stream || output || filter || ShowProgress)) {
-            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'stream', 'output', 'filter', or 'ShowProgress'.`);
+        if (MetaData && (Stream || Output || Filter || ShowProgress)) {
+            throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
-        if (stream && output) {
-            throw new Error(`${colors.red("@error:")} The 'stream' parameter cannot be used with 'output'.`);
+        if (Stream && Output) {
+            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
         }
         if (MetaData && ShowProgress) {
             throw new Error(`${colors.red("@error:")} The 'ShowProgress' parameter cannot be used when 'MetaData' is true.`);
         }
 
-        const EngineMeta: EngineOutput | null = await Agent({ query, verbose, useTor });
+        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -61,7 +63,7 @@ export default async function AudioVideoCustom({
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioVideoCustom_${resolution}_${filter ? filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                    FileName: `yt-dlx_AudioVideoCustom_${Resolution}_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
                         Audio: {
                             Standard: EngineMeta.AudioOnly.Standard,
@@ -77,9 +79,9 @@ export default async function AudioVideoCustom({
         }
 
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
-        const folder = output ? output : process.cwd();
+        const folder = Output ? Output : process.cwd();
 
-        if (!stream && !fs.existsSync(folder)) {
+        if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
             } catch (mkdirError: any) {
@@ -106,19 +108,19 @@ export default async function AudioVideoCustom({
             throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError?.message}`);
         }
 
-        // Access the highest quality audio from the Standard category
-        const highestAudio = EngineMeta.AudioOnly.Standard.Unknown?.Highest;
+        // Access the highest quality audio from the Standard category for the specified language
+        const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest; // Use audioLanguage parameter
         if (!highestAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found.`);
+            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found for language: ${AudioLanguage || "Unknown"}.`); // Updated error message
         }
         instance.addInput(highestAudio.url);
 
         const resolutionRegex = /(\d+)p(\d+)?/;
-        const resolutionMatch = resolution.match(resolutionRegex);
+        const resolutionMatch = Resolution.match(resolutionRegex);
         const targetHeight = resolutionMatch ? parseInt(resolutionMatch[1], 10) : null;
         const targetFps = resolutionMatch && resolutionMatch[2] ? parseInt(resolutionMatch[2], 10) : null;
 
-        // Find the specific video format based on resolution in Standard and HDR categories
+        // Find the specific video format based on Resolution in Standard and HDR categories
         let videoFormat: CleanedVideoFormat | undefined;
 
         if (EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined) {
@@ -135,7 +137,7 @@ export default async function AudioVideoCustom({
         }
 
         if (!videoFormat && EngineMeta.VideoOnly.High_Dynamic_Range.Combined) {
-             videoFormat = EngineMeta.VideoOnly.High_Dynamic_Range.Combined.find(i => {
+            videoFormat = EngineMeta.VideoOnly.High_Dynamic_Range.Combined.find(i => {
                 const height = i.height;
                 const fps = i.fps;
                 const vcodec = i.vcodec;
@@ -147,12 +149,11 @@ export default async function AudioVideoCustom({
             });
         }
 
-
         if (!videoFormat) {
-            throw new Error(`${colors.red("@error:")} No video data found for resolution: ${resolution}. Use Misc.Video.Extract() to see available formats.`);
+            throw new Error(`${colors.red("@error:")} No video data found for Resolution: ${Resolution}. Use Misc.Video.Extract() to see available formats.`);
         }
         if (!videoFormat.url) {
-            throw new Error(`${colors.red("@error:")} Video URL not found for resolution: ${resolution}.`);
+            throw new Error(`${colors.red("@error:")} Video URL not found for Resolution: ${Resolution}.`);
         }
 
         instance.addInput(videoFormat.url.toString());
@@ -168,8 +169,8 @@ export default async function AudioVideoCustom({
             grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
         };
 
-        if (filter && filterMap[filter]) {
-            instance.withVideoFilter(filterMap[filter]);
+        if (Filter && filterMap[Filter]) {
+            instance.withVideoFilter(filterMap[Filter]);
         } else {
             instance.outputOptions("-c copy");
         }
@@ -187,25 +188,25 @@ export default async function AudioVideoCustom({
             });
         }
 
-        if (stream) {
+        if (Stream) {
             const passthroughStream = new PassThrough();
-            const FileNameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            const FileNameBase = `yt-dlx_AudioVideoCustom_${Resolution}_`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
 
             instance.on("start", command => {
-                if (verbose) console.log(colors.green("@info:"), "FFmpeg stream started:", command);
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
             });
 
             instance.pipe(passthroughStream, { end: true });
 
             instance.on("end", () => {
-                if (verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
 
             instance.on("error", (error, stdout, stderr) => {
-                const errorMessage = `${colors.red("@error:")} FFmpeg stream error: ${error?.message}`;
+                const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
@@ -213,17 +214,17 @@ export default async function AudioVideoCustom({
             });
 
             instance.run();
-            return { stream: passthroughStream, FileName: FileName };
+            return { Stream: passthroughStream, FileName: FileName };
         } else {
-            const FileNameBase = `yt-dlx_AudioVideoCustom_${resolution}_`;
-            let FileName = `${FileNameBase}${filter ? filter + "_" : ""}${title}.mkv`;
+            const FileNameBase = `yt-dlx_AudioVideoCustom_${Resolution}_`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const outputPath = path.join(folder, FileName);
 
             instance.output(outputPath);
 
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
 
@@ -234,7 +235,7 @@ export default async function AudioVideoCustom({
                 });
 
                 instance.on("end", () => {
-                    if (verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
@@ -264,6 +265,6 @@ export default async function AudioVideoCustom({
             throw new Error(unexpectedError);
         }
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
