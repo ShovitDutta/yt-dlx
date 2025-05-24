@@ -5,7 +5,7 @@ import * as vitest from "vitest";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 
 vitest.describe("AudioVideoLowest", () => {
-    const Query = "https://www.youtube.com/watch?v=s49rbh8xXKI";
+    const Query = "https://www.youtube.com/watch?v=30LWjhZzg50";
     vitest.it("should handle basic download", async () => {
         const result = await AudioVideoLowest({ Query });
         vitest.expect(result).toHaveProperty("outputPath");
