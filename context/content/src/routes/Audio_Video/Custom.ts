@@ -16,16 +16,14 @@ const ZodSchema = z.object({
     Stream: z.boolean().optional(),
     Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
+    VideoFPS: z.number().optional(),
     ShowProgress: z.boolean().optional(),
     AudioLanguage: z.string().optional(),
-    Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-
-    // Custom audio and video quality parameters
     AudioFormatId: z.string().optional(),
     AudioBitrate: z.number().optional(),
     VideoFormatId: z.string().optional(),
     VideoResolution: z.string().optional(),
-    VideoFPS: z.number().optional(),
+    Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
