@@ -142,18 +142,15 @@ export default async function AudioLowest({
                 });
                 instance.on("end", () => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
-                    // Changed Verbose
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
-
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
-
                 instance.run();
             });
             return { outputPath };
