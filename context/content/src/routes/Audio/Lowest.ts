@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -22,9 +21,7 @@ const ZodSchema = z.object({
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
-
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioLowest({
     Query,
     Output,
@@ -50,10 +47,7 @@ export default async function AudioLowest({
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                    Links: {
-                        Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest,
-                        DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest,
-                    },
+                    Links: { Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest, DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest },
                 },
             };
         }
