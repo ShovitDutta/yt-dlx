@@ -43,35 +43,23 @@ export default async function AudioLowest({
         }
         if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
-        if (!EngineMeta) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
-        if (!EngineMeta.MetaData) {
-            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-        }
-
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (MetaData) {
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                    // Changed Filter
                     Links: {
                         Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest,
-                        // Use Language parameter
                         DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest,
-                        // Use Language parameter
                     },
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = Output ? Output : process.cwd();
-        // Changed Output
-
         if (!Stream && !fs.existsSync(folder)) {
-            // Changed Stream
             try {
                 fs.mkdirSync(folder, { recursive: true });
             } catch (mkdirError: any) {
