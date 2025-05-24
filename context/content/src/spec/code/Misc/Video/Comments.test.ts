@@ -1,7 +1,7 @@
 import videoComments from "../../../../routes/Misc/Video/Comments";
 import * as vitest from "vitest";
 vitest.describe("videoComments", () => {
-    const validQuery = "https://www.youtube.com/watch?v=quO40eBkdbs";
+    const validQuery = "https://www.youtube.com/watch?v=s49rbh8xXKI";
     const queryWithNoVideos = "very unlikely video search 1a2b3c4d5e";
     const queryForVideoWithNoComments = "a video known to have no comments";
     vitest.it("should handle basic comments fetch", async () => {
