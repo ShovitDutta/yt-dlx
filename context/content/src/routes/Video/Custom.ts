@@ -51,12 +51,9 @@ export default async function VideoCustom({
 
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
-        if (!EngineMeta) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
-        if (!EngineMeta.MetaData) {
-            throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-        }
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+
+        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
 
         if (MetaData) {
             return {
