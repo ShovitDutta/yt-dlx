@@ -105,9 +105,7 @@ export default async function AudioHighest({
                 if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
-
         if (Stream) {
-            // Changed Stream
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioHighest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`; // Changed Filter
