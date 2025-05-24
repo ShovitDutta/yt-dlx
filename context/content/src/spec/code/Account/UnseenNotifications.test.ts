@@ -22,9 +22,9 @@ vitest.describe("unseen_notifications", () => {
             vitest.expect(result.data.count).toBeGreaterThanOrEqual(0);
         }
     });
-    vitest.it("should handle unseen notifications fetch with verbose logging", async () => {
+    vitest.it("should handle unseen notifications fetch with Verbose logging", async () => {
         if (!Cookies) {
-            console.warn("Skipping verbose fetch test due to missing YouTubeDLX_COOKIES.");
+            console.warn("Skipping Verbose fetch test due to missing YouTubeDLX_COOKIES.");
             return;
         }
         const result = await unseen_notifications({ Cookies: mockCookies, Verbose: true });

@@ -20,9 +20,9 @@ vitest.describe("subscriptions_feed", () => {
         vitest.expect(Array.isArray(result.data?.contents)).toBe(true);
         if (result.data) vitest.expect(result.data.contents.length).toBeGreaterThanOrEqual(0);
     });
-    vitest.it("should handle subscriptions feed fetch with verbose logging", async () => {
+    vitest.it("should handle subscriptions feed fetch with Verbose logging", async () => {
         if (!Cookies) {
-            console.warn("Skipping verbose fetch test due to missing YouTubeDLX_COOKIES.");
+            console.warn("Skipping Verbose fetch test due to missing YouTubeDLX_COOKIES.");
             return;
         }
         const result = await subscriptions_feed({ Cookies: mockCookies, Verbose: true });
