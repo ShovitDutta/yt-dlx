@@ -44,8 +44,10 @@ interface PayloadType {
         like_count_formatted: string;
         comment_count_formatted: string;
         channel_follower_count_formatted: string;
-        VideoLink?: string; // Add VideoLink as it's in the new MetaData
-        videoId?: string; // Add VideoId as it's in the new MetaData
+        VideoLink?: string;
+        // Add VideoLink as it's in the new MetaData
+        videoId?: string;
+        // Add VideoId as it's in the new MetaData
     };
     AudioOnly: EngineOutput["AudioOnly"];
     VideoOnly: EngineOutput["VideoOnly"];
@@ -182,14 +184,17 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const uploadAgoObject = calculateUploadAgo(daysAgo);
 
         const videoTimeInSeconds = metaBody.MetaData.duration;
-        const videoDuration = calculateVideoDuration(videoTimeInSeconds ?? 0); // Handle potential undefined duration
+        const videoDuration = calculateVideoDuration(videoTimeInSeconds ?? 0);
+        // Handle potential undefined duration
 
         const viewCountFormatted = metaBody.MetaData.view_count !== undefined ? formatCount(metaBody.MetaData.view_count) : "N/A";
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
 
-        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VideoId from new structure
-        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VideoId from new structure
+        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false);
+        // Use VideoId from new structure
+        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false);
+        // Use VideoId from new structure
 
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
 
@@ -208,6 +213,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 comment_count_formatted: commentCountFormatted,
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
                 channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
+
                 // VideoLink and VideoId are already included by spreading metaBody.MetaData
             },
             AudioOnly: metaBody.AudioOnly,
