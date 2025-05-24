@@ -1,7 +1,7 @@
 import videoTranscript from "../../../../routes/Misc/Video/Transcript";
 import * as vitest from "vitest";
 vitest.describe("videoTranscript", () => {
-    const VideoLink = "https://www.youtube.com/watch?v=quO40eBkdbs";
+    const VideoLink = "https://www.youtube.com/watch?v=s49rbh8xXKI";
     vitest.it("should handle basic transcript fetch", async () => {
         try {
             const result = await videoTranscript({ VideoLink });
