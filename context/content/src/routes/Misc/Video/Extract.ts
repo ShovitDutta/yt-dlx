@@ -178,20 +178,16 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
 
         const videoTimeInSeconds = metaBody.MetaData.duration;
         const videoDuration = calculateVideoDuration(videoTimeInSeconds ?? 0);
-        // Handle potential undefined duration
 
         const viewCountFormatted = metaBody.MetaData.view_count !== undefined ? formatCount(metaBody.MetaData.view_count) : "N/A";
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
 
         const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false);
-        // Use VideoId from new structure
         const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false);
-        // Use VideoId from new structure
 
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
 
-        // Calculate commentCountFormatted based on the fetched comments array length
         const commentCountFormatted = comments !== null ? formatCount(comments.length) : "N/A";
 
         const payload: PayloadType = {
@@ -207,7 +203,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
                 channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
 
-                // VideoLink and VideoId are already included by spreading metaBody.MetaData
             },
             AudioOnly: metaBody.AudioOnly,
             VideoOnly: metaBody.VideoOnly,
