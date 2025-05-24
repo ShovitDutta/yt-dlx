@@ -16,7 +16,7 @@ vitest.describe("channel_data", () => {
                 vitest.expect(typeof result.data.name).toBe("string");
             }
         } catch (error) {
-            console.warn(`Channel data fetch failed for ID "${validChannelId}". This test requires a real, existing channel ID.`, error);
+            console.warn("Channel data fetch failed for ID \"" + validChannelId + "\". This test requires a real, existing channel ID. " + error);
             throw error;
         }
     });
@@ -30,7 +30,7 @@ vitest.describe("channel_data", () => {
                 vitest.expect(typeof result.data.name).toBe("string");
             }
         } catch (error) {
-            console.warn(`Channel data fetch failed for link "${validChannelLink}". This test requires a real, existing channel link.`, error);
+            console.warn("Channel data fetch failed for link \"" + validChannelLink + "\". This test requires a real, existing channel link. " + error);
             throw error;
         }
     });
