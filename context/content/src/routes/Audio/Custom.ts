@@ -89,21 +89,17 @@ export default async function AudioCustom({
 
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
 
-        try {
-            const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
-            instance.setFfmpegPath(paths.ffmpeg);
-            instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.Thumbnails.Highest?.url) {
-                instance.addInput(EngineMeta.Thumbnails.Highest.url);
-            }
-        } catch (locatorError: any) {
-            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
+        const paths = await locator();
+        if (!paths.ffmpeg) {
+            throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+        }
+        if (!paths.ffprobe) {
+            throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+        }
+        instance.setFfmpegPath(paths.ffmpeg);
+        instance.setFfprobePath(paths.ffprobe);
+        if (EngineMeta.Thumbnails.Highest?.url) {
+            instance.addInput(EngineMeta.Thumbnails.Highest.url);
         }
 
         let selectedAudioFormat: CleanedAudioFormat | undefined;

@@ -54,13 +54,12 @@ export default async function AudioVideoCustom({
         if (Stream && Output) {
             throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
         }
-         if ((AudioFormatId && AudioBitrate)) {
-             throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one audio custom parameter.`);
+        if (AudioFormatId && AudioBitrate) {
+            throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one audio custom parameter.`);
         }
         if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS)) {
-             throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
+            throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
         }
-
 
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
@@ -77,10 +76,10 @@ export default async function AudioVideoCustom({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioVideoCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
-                         Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined,
-                         AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined,
-                         VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined,
-                         VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined,
+                        Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined,
+                        AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined,
+                        VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined,
+                        VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined,
                     },
                 },
             };
@@ -99,21 +98,17 @@ export default async function AudioVideoCustom({
 
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
 
-        try {
-            const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
-            instance.setFfmpegPath(paths.ffmpeg);
-            instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.Thumbnails.Highest?.url) {
-                instance.addInput(EngineMeta.Thumbnails.Highest.url);
-            }
-        } catch (locatorError: any) {
-            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
+        const paths = await locator();
+        if (!paths.ffmpeg) {
+            throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+        }
+        if (!paths.ffprobe) {
+            throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+        }
+        instance.setFfmpegPath(paths.ffmpeg);
+        instance.setFfprobePath(paths.ffprobe);
+        if (EngineMeta.Thumbnails.Highest?.url) {
+            instance.addInput(EngineMeta.Thumbnails.Highest.url);
         }
 
         let selectedAudioFormat: CleanedAudioFormat | undefined;
@@ -142,15 +137,12 @@ export default async function AudioVideoCustom({
         } else {
             // Default to highest quality audio
             selectedAudioFormat = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest || availableAudioFormats.find(format => format.url !== undefined);
-             if (!selectedAudioFormat || !selectedAudioFormat.url) {
-                 throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
-             }
+            if (!selectedAudioFormat || !selectedAudioFormat.url) {
+                throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
+            }
         }
 
-        const availableVideoFormats = [
-            ...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []),
-            ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || []),
-        ];
+        const availableVideoFormats = [...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []), ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || [])];
 
         if (VideoFormatId) {
             selectedVideoFormat = availableVideoFormats.find(format => format.format_id === VideoFormatId);
@@ -159,28 +151,26 @@ export default async function AudioVideoCustom({
             }
         } else if (VideoResolution) {
             selectedVideoFormat = availableVideoFormats.find(format => format.resolution === VideoResolution);
-             if (!selectedVideoFormat) {
-                 throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
-             }
+            if (!selectedVideoFormat) {
+                throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
+            }
         } else if (VideoFPS) {
-             selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
-             if (!selectedVideoFormat) {
-                 throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
-             }
-        }
-        else {
+            selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
+            if (!selectedVideoFormat) {
+                throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
+            }
+        } else {
             // Default to highest quality video
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
-             if (!selectedVideoFormat || !selectedVideoFormat.url) {
-                 throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
-             }
+            if (!selectedVideoFormat || !selectedVideoFormat.url) {
+                throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
+            }
         }
-
 
         if (!selectedAudioFormat?.url) {
             throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
         }
-         if (!selectedVideoFormat?.url) {
+        if (!selectedVideoFormat?.url) {
             throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
         }
 

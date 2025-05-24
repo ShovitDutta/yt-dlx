@@ -2,18 +2,22 @@
     "files.exclude": {
         "**/ios": true,
         "**/.hg": true,
-        "**/out": true,
+        "**/out": false,
         "**/venv": true,
         "**/.svn": true,
         "**/.git": true,
         "**/.expo": true,
         "**/.next": true,
-        "**/dist": true,
+        "**/dist": false,
         "**/.venv": true,
-        "**/build": true,
+        "**/build": false,
         "**/android": true,
-        "**/Thumbs.db": true,
+        "**/bun.lock": true,
         "**/.DS_Store": true,
-        "**/node_modules": true
+        "**/Thumbs.db": true,
+        "**/yarn.lock": true,
+        "**/pnpm.lock": true,
+        "**/node_modules": true,
+        "**/package-json.lock": true
     }
 }

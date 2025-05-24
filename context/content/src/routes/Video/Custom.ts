@@ -49,9 +49,8 @@ export default async function VideoCustom({
             throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
         }
         if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS)) {
-             throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
+            throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
         }
-
 
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
@@ -68,8 +67,8 @@ export default async function VideoCustom({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_VideoCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
-                         VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined,
-                         VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined,
+                        VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined,
+                        VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined,
                     },
                 },
             };
@@ -88,29 +87,22 @@ export default async function VideoCustom({
 
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
 
-        try {
-            const paths = await locator();
-            if (!paths.ffmpeg) {
-                throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-            }
-            if (!paths.ffprobe) {
-                throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-            }
-            instance.setFfmpegPath(paths.ffmpeg);
-            instance.setFfprobePath(paths.ffprobe);
-            if (EngineMeta.Thumbnails.Highest?.url) {
-                instance.addInput(EngineMeta.Thumbnails.Highest.url);
-            }
-        } catch (locatorError: any) {
-            throw new Error(`${colors.red("@error:")} Failed to locate ffmpeg or ffprobe: ${locatorError.message}`);
+        const paths = await locator();
+        if (!paths.ffmpeg) {
+            throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+        }
+        if (!paths.ffprobe) {
+            throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+        }
+        instance.setFfmpegPath(paths.ffmpeg);
+        instance.setFfprobePath(paths.ffprobe);
+        if (EngineMeta.Thumbnails.Highest?.url) {
+            instance.addInput(EngineMeta.Thumbnails.Highest.url);
         }
 
         let selectedVideoFormat: CleanedVideoFormat | undefined;
 
-        const availableVideoFormats = [
-            ...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []),
-            ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || []),
-        ];
+        const availableVideoFormats = [...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []), ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || [])];
 
         if (VideoFormatId) {
             selectedVideoFormat = availableVideoFormats.find(format => format.format_id === VideoFormatId);
@@ -119,23 +111,21 @@ export default async function VideoCustom({
             }
         } else if (VideoResolution) {
             selectedVideoFormat = availableVideoFormats.find(format => format.resolution === VideoResolution);
-             if (!selectedVideoFormat) {
-                 throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
-             }
+            if (!selectedVideoFormat) {
+                throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
+            }
         } else if (VideoFPS) {
-             selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
-             if (!selectedVideoFormat) {
-                 throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
-             }
-        }
-        else {
+            selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
+            if (!selectedVideoFormat) {
+                throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
+            }
+        } else {
             // Default to highest quality if no custom options are provided
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
-             if (!selectedVideoFormat || !selectedVideoFormat.url) {
-                 throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
-             }
+            if (!selectedVideoFormat || !selectedVideoFormat.url) {
+                throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
+            }
         }
-
 
         if (!selectedVideoFormat?.url) {
             throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
