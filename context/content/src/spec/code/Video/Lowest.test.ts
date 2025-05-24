@@ -9,9 +9,7 @@ vitest.describe("VideoLowest", () => {
     vitest.it("should handle basic download", async () => {
         const result = await VideoLowest({ Query });
         vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
-        }
+        if ("outputPath" in result) vitest.expect(result.outputPath).toMatch(/\.mkv$/);
     });
     vitest.it("should handle download with Output and Filter", async () => {
         const result = await VideoLowest({ Query, Output: "Output", Filter: "grayscale" });
