@@ -1,31 +1,123 @@
-import { describe, it, expect } from "vitest";
 import AudioVideoCustom from "../../../routes/Audio_Video/Custom";
+import { createWriteStream } from "fs";
+import { Readable } from "stream";
+import * as vitest from "vitest";
+import { EngineOutput } from "../../../interfaces/EngineOutput";
 
-describe("AudioVideoCustom", () => {
-    it("should be a function", () => {
-        expect(AudioVideoCustom).toBeInstanceOf(Function);
+vitest.describe("AudioVideoCustom", () => {
+    const Query = "https://www.youtube.com/watch?v=quO40eBkdbs"; // Replace with a suitable test query
+
+    vitest.it("should handle basic download", async () => {
+        const result = await AudioVideoCustom({ Query });
+        vitest.expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        }
     });
 
-    // Add basic test cases here.
-    // Note: Full functional tests requiring network requests and ffmpeg execution
-    // might need a more complex setup and are not included in this basic file creation.
-
-    it("should not throw an error with minimal required parameters", async () => {
-        // This test assumes 'Query' is the only strictly required parameter by the Zod schema.
-        // Adjust based on the actual schema if necessary.
-        const options = { Query: "test query" };
-        await expect(AudioVideoCustom(options)).resolves.not.toThrow();
+    vitest.it("should handle download with custom AudioFormatId and VideoFormatId", async () => {
+        // Note: Replace with valid format IDs for the test query
+        const result = await AudioVideoCustom({ Query, AudioFormatId: "251", VideoFormatId: "137" });
+        vitest.expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        }
     });
 
-    it("should not throw an error with custom AudioFormatId and VideoFormatId", async () => {
-         const options = { Query: "test query", AudioFormatId: "some_audio_id", VideoFormatId: "some_video_id" };
-         await expect(AudioVideoCustom(options)).resolves.not.toThrow();
+    vitest.it("should handle download with custom AudioBitrate and VideoResolution", async () => {
+        // Note: Replace with suitable bitrate and resolution for the test query
+        const result = await AudioVideoCustom({ Query, AudioBitrate: 128, VideoResolution: "720p" });
+        vitest.expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        }
     });
 
-     it("should not throw an error with custom AudioBitrate and VideoResolution", async () => {
-         const options = { Query: "test query", AudioBitrate: 128, VideoResolution: "720p" };
-         await expect(AudioVideoCustom(options)).resolves.not.toThrow();
+     vitest.it("should handle download with custom VideoFPS and AudioLanguage", async () => {
+        // Note: Replace with suitable FPS and language for the test query
+        const result = await AudioVideoCustom({ Query, VideoFPS: 60, AudioLanguage: "English" });
+        vitest.expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        }
     });
 
-    // Add more test cases for other parameters and combinations as needed.
+
+    vitest.it("should handle download with Output and Filter", async () => {
+        const result = await AudioVideoCustom({ Query, Output: "Output", Filter: "grayscale" });
+        vitest.expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        }
+    });
+
+    vitest.it("should handle download with all options", async () => {
+        const result = await AudioVideoCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "rotate90", ShowProgress: true, AudioBitrate: 64, VideoResolution: "480p" });
+        vitest.expect(result).toHaveProperty("outputPath");
+        if ("outputPath" in result) {
+            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        }
+    });
+
+    vitest.it("should fetch metadata only", async () => {
+        const result = await AudioVideoCustom({ Query, MetaData: true });
+        vitest.expect(result).toHaveProperty("MetaData");
+        if (result && "MetaData" in result) {
+            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
+            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+        }
+    });
+
+    vitest.it("should fetch metadata with Tor and Verbose", async () => {
+        const result = await AudioVideoCustom({ Query, MetaData: true, UseTor: false, Verbose: true });
+        vitest.expect(result).toHaveProperty("MetaData");
+        if (result && "MetaData" in result) {
+            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+        }
+    });
+
+    vitest.it("should handle basic Stream", async () => {
+        const result = await AudioVideoCustom({ Query, Stream: true });
+        vitest.expect(result).toHaveProperty("Stream");
+        vitest.expect(result).toHaveProperty("FileName");
+        if (result && "Stream" in result && result.FileName) {
+            vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
+             const outputStream = createWriteStream(result.FileName);
+             (result as { Stream: Readable }).Stream?.pipe(outputStream);
+             await new Promise(resolve => {
+                 (result as { Stream: Readable }).Stream?.on("end", resolve);
+             });
+        }
+    });
+
+    vitest.it("should handle Stream with custom AudioFormatId, VideoResolution, and Filter", async () => {
+         // Note: Replace with valid format ID and resolution for the test query
+        const result = await AudioVideoCustom({ Query, Stream: true, AudioFormatId: "251", VideoResolution: "720p", Filter: "flipHorizontal" });
+        vitest.expect(result).toHaveProperty("Stream");
+        vitest.expect(result).toHaveProperty("FileName");
+        if (result && "Stream" in result && result.FileName) {
+            vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
+             const outputStream = createWriteStream(result.FileName);
+             (result as { Stream: Readable }).Stream?.pipe(outputStream);
+             await new Promise(resolve => {
+                 (result as { Stream: Readable }).Stream?.on("end", resolve);
+             });
+        }
+    });
+
+    vitest.it("should handle Stream with all options", async () => {
+        const result = await AudioVideoCustom({ Query, Stream: true, UseTor: false, Verbose: true, Filter: "flipVertical", ShowProgress: true, AudioBitrate: 64, VideoFPS: 30 });
+        vitest.expect(result).toHaveProperty("Stream");
+        vitest.expect(result).toHaveProperty("FileName");
+        if (result && "Stream" in result) {
+            vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
+        }
+        if ("FileName" in result) {
+            const outputStream = createWriteStream(result.FileName);
+            (result as { Stream: Readable }).Stream?.pipe(outputStream);
+            await new Promise(resolve => {
+                (result as { Stream: Readable })?.Stream?.on("end", resolve);
+            });
+        }
+    });
 });
