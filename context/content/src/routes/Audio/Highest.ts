@@ -111,13 +111,13 @@ export default async function AudioHighest({
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
             (passthroughStream as any).FileName = FileName;
             instance.on("start", command => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command); // Changed Verbose
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
             });
 
             instance.pipe(passthroughStream, { end: true });
 
             instance.on("end", () => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished."); // Changed Verbose
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
 
