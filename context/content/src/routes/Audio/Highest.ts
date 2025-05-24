@@ -129,12 +129,12 @@ export default async function AudioHighest({
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioHighest_`;
-            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`; // Changed Filter
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
             const outputPath = path.join(folder, FileName);
             instance.output(outputPath);
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command); // Changed Verbose
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
 
