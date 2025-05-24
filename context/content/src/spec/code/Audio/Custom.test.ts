@@ -15,8 +15,7 @@ vitest.describe("AudioCustom", () => {
     });
 
     vitest.it("should handle download with custom AudioFormatId", async () => {
-        // Note: Replace "some_format_id" with a valid audio format ID for the test query
-        const result = await AudioCustom({ Query, AudioFormatId: "251" });
+        const result = await AudioCustom({ Query, AudioFormatId: "234" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
@@ -24,8 +23,7 @@ vitest.describe("AudioCustom", () => {
     });
 
     vitest.it("should handle download with custom AudioBitrate", async () => {
-        // Note: Replace 128 with a suitable bitrate for the test query
-        const result = await AudioCustom({ Query, AudioBitrate: 128 });
+        const result = await AudioCustom({ Query, AudioBitrate: 195 });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
@@ -41,7 +39,7 @@ vitest.describe("AudioCustom", () => {
     });
 
     vitest.it("should handle download with all options", async () => {
-        const result = await AudioCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "vaporwave", ShowProgress: true, AudioBitrate: 64 });
+        const result = await AudioCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "vaporwave", ShowProgress: true, AudioBitrate: 195 });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.avi$/);
