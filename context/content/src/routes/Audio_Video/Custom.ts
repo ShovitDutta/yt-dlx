@@ -25,9 +25,7 @@ const ZodSchema = z.object({
     VideoResolution: z.string().optional(),
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
-
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioVideoCustom({
     Query,
     Output,
