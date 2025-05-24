@@ -51,8 +51,9 @@ export default async function AudioVideoCustom({
         if (AudioFormatId && AudioBitrate) {
             throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one audio custom parameter.`);
         }
-        if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS))
+        if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS)) {
             throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
+        }
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
@@ -70,10 +71,8 @@ export default async function AudioVideoCustom({
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = Output ? Output : process.cwd();
-
         if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -81,16 +80,12 @@ export default async function AudioVideoCustom({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
         const paths = await locator();
-        if (!paths.ffmpeg) {
-            throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-        }
-        if (!paths.ffprobe) {
-            throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-        }
+        if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+
+        if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) {
