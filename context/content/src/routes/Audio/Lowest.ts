@@ -66,9 +66,7 @@ export default async function AudioLowest({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
         const paths = await locator();
         if (!paths.ffmpeg) {
             throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
