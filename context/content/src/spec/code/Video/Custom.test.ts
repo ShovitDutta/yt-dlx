@@ -5,7 +5,7 @@ import * as vitest from "vitest";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 
 vitest.describe("VideoCustom", () => {
-    const Query = "https://www.youtube.com/watch?v=quO40eBkdbs"; // Replace with a suitable test query
+    const Query = "https://www.youtube.com/watch?v=s49rbh8xXKI"; // Replace with a suitable test query
 
     vitest.it("should handle basic download", async () => {
         const result = await VideoCustom({ Query });
