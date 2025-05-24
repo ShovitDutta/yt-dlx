@@ -17,8 +17,10 @@ const ZodSchema = z.object({
     Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    Language: z.string().optional(), // Changed to Title Case
-    Filter: z // Changed to Title Case
+    Language: z.string().optional(),
+    // Changed to Title Case
+    Filter: z
+        // Changed to Title Case
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
@@ -34,10 +36,12 @@ export default async function AudioLowest({
     MetaData,
     Verbose,
     ShowProgress,
-    Language, // Changed to Title Case
-}: AudioLowestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+    Language,
+}: // Changed to Title Case
+AudioLowestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language }); // Changed to Title Case
+        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
+        // Changed to Title Case
 
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
@@ -46,7 +50,8 @@ export default async function AudioLowest({
             throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
         }
 
-        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor }); // Changed to Title Case
+        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
+        // Changed to Title Case
 
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
@@ -59,17 +64,21 @@ export default async function AudioLowest({
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`, // Changed Filter
+                    FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                    // Changed Filter
                     Links: {
-                        Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest, // Use Language parameter
-                        DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest, // Use Language parameter
+                        Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest,
+                        // Use Language parameter
+                        DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest,
+                        // Use Language parameter
                     },
                 },
             };
         }
 
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
-        const folder = Output ? Output : process.cwd(); // Changed Output
+        const folder = Output ? Output : process.cwd();
+        // Changed Output
 
         if (!Stream && !fs.existsSync(folder)) {
             // Changed Stream
@@ -96,10 +105,12 @@ export default async function AudioLowest({
         }
 
         // Use the Lowest quality audio from the Standard category for the specified language
-        const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest; // Use Language parameter
+        const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest;
+        // Use Language parameter
 
         if (!lowestQualityAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Unknown"}.`); // Updated error message
+            throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Unknown"}.`);
+            // Updated error message
         }
 
         instance.addInput(lowestQualityAudio.url!);
@@ -126,7 +137,8 @@ export default async function AudioLowest({
 
         if (Filter && filterMap[Filter]) {
             // Changed Filter
-            instance.withAudioFilter(filterMap[Filter]); // Changed Filter
+            instance.withAudioFilter(filterMap[Filter]);
+            // Changed Filter
         } else {
             instance.outputOptions("-c copy");
         }
@@ -148,17 +160,20 @@ export default async function AudioLowest({
             // Changed Stream
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioLowest_`;
-            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`; // Changed Filter
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
+            // Changed Filter
             (passthroughStream as any).FileName = FileName;
 
             instance.on("start", command => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command); // Changed Verbose
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
+                // Changed Verbose
             });
 
             instance.pipe(passthroughStream, { end: true });
 
             instance.on("end", () => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished."); // Changed Verbose
+                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                // Changed Verbose
                 if (ShowProgress) process.stdout.write("\n");
             });
 
@@ -174,14 +189,16 @@ export default async function AudioLowest({
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioLowest_`;
-            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`; // Changed Filter
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
+            // Changed Filter
             const outputPath = path.join(folder, FileName);
 
             instance.output(outputPath);
 
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command); // Changed Verbose
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                    // Changed Verbose
                     if (ShowProgress) processStartTime = new Date();
                 });
 
@@ -192,7 +209,8 @@ export default async function AudioLowest({
                 });
 
                 instance.on("end", () => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished."); // Changed Verbose
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                    // Changed Verbose
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
@@ -222,6 +240,7 @@ export default async function AudioLowest({
             throw new Error(unexpectedError);
         }
     } finally {
-        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx."); // Changed Verbose
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        // Changed Verbose
     }
 }
