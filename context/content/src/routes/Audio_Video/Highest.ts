@@ -81,9 +81,8 @@ export default async function AudioVideoHighest({
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
         const highestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest;
-        if (!highestVideo?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
-        }
+        if (!highestVideo?.url) throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
+
         instance.addInput(highestVideo.url);
 
         const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest;
