@@ -140,7 +140,6 @@ export default async function AudioLowest({
                 instance.on("progress", progress => {
                     if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
-
                 instance.on("end", () => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     // Changed Verbose
