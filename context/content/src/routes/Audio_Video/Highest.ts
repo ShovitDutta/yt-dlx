@@ -86,11 +86,8 @@ export default async function AudioVideoHighest({
         instance.addInput(highestVideo.url);
 
         const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest;
-        // Use audioLanguage parameter
-        if (!highestAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
-            // Updated error message
-        }
+        if (!highestAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
+
         instance.addInput(highestAudio.url);
 
         instance.withOutputFormat("matroska");
