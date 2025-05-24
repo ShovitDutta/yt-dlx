@@ -23,7 +23,7 @@ vitest.describe("playlist_data", () => {
                 }
             }
         } catch (error) {
-            console.warn(`Basic playlist data fetch failed for ${validPlaylistLink}. This might require a real playlist link.`, error);
+            console.warn("Basic playlist data fetch failed for " + validPlaylistLink + ". This might require a real playlist link. " + error);
             throw error;
         }
     });
