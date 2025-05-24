@@ -8,41 +8,41 @@ vitest.describe("AudioCustom", () => {
     const Query = "https://www.youtube.com/watch?v=30LWjhZzg50";
     vitest.it("should handle basic download", async () => {
         const result = await AudioCustom({ Query });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.avi$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
         }
     });
 
     vitest.it("should handle download with custom AudioFormatId", async () => {
         const result = await AudioCustom({ Query, AudioFormatId: "234" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.avi$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
         }
     });
 
     vitest.it("should handle download with custom AudioBitrate", async () => {
         const result = await AudioCustom({ Query, AudioBitrate: 195 });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.avi$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
         }
     });
 
     vitest.it("should handle download with Output and Filter", async () => {
         const result = await AudioCustom({ Query, Output: "Output", Filter: "bassboost" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.avi$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
         }
     });
 
     vitest.it("should handle download with all options", async () => {
         const result = await AudioCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "vaporwave", ShowProgress: true, AudioBitrate: 195 });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.avi$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
         }
     });
 
