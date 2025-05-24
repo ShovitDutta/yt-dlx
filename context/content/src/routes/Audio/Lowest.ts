@@ -105,28 +105,19 @@ export default async function AudioLowest({
                 if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
-
         if (Stream) {
-            // Changed Stream
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
-            // Changed Filter
             (passthroughStream as any).FileName = FileName;
-
             instance.on("start", command => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
-                // Changed Verbose
             });
-
             instance.pipe(passthroughStream, { end: true });
-
             instance.on("end", () => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
-                // Changed Verbose
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
@@ -134,28 +125,20 @@ export default async function AudioLowest({
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.run();
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
-            // Changed Filter
             const outputPath = path.join(folder, FileName);
-
             instance.output(outputPath);
-
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
-                    // Changed Verbose
                     if (ShowProgress) processStartTime = new Date();
                 });
-
                 instance.on("progress", progress => {
-                    if (ShowProgress && processStartTime) {
-                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                    }
+                    if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
 
                 instance.on("end", () => {
