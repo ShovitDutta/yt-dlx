@@ -9,7 +9,7 @@ export default async function YouTubeID(videoLink: string): Promise<string | und
                     const videoId = urlParams.get("v");
                     return videoId || undefined;
                 } catch (error) {
-                    console.error("Error parsing URL:", error);
+                    console.error("Error parsing URL: " + error);
                     return undefined;
                 }
             } else return match[1];
