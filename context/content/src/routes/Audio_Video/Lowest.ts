@@ -55,9 +55,7 @@ export default async function AudioVideoLowest({
                     Links: {
                         Audio: {
                             Standard_Lowest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest,
-                            // Use audioLanguage parameter
                             DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Lowest,
-                            // Use audioLanguage parameter
                         },
                         Video: {
                             Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest,
