@@ -104,11 +104,8 @@ export default async function AudioCustom({
             if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
         }
         if (!selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
-
         instance.addInput(selectedAudioFormat.url!);
-
         instance.withOutputFormat("avi");
-
         const filterMap: Record<string, string[]> = {
             speed: ["atempo=2"],
             flanger: ["flanger"],
