@@ -23,17 +23,11 @@ export default async function subscriptions_feed({ Cookies, Verbose = false }: s
     try {
         ZodSchema.parse({ Cookies, Verbose });
         if (Verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
-        if (!Cookies) {
-            throw new Error(`${colors.red("@error:")} Cookies not provided!`);
-        }
+        if (!Cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
         const client: TubeType = await TubeLogin(Cookies);
-        if (!client) {
-            throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
-        }
+        if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
         const feed = await client.getSubscriptionsFeed();
-        if (!feed) {
-            throw new Error(`${colors.red("@error:")} Failed to fetch subscriptions feed.`);
-        }
+        if (!feed) throw new Error(`${colors.red("@error:")} Failed to fetch subscriptions feed.`);
         const contents =
             (feed as any).contents?.map((item: any) => {
                 const sanitized = sanitizeContentItem(item);
