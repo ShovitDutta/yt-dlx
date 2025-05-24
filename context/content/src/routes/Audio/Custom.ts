@@ -96,21 +96,14 @@ export default async function AudioCustom({
                 if (prev === undefined || prev.tbr === undefined || prev.tbr === null) return curr;
                 return Math.abs(curr.tbr - AudioBitrate) < Math.abs(prev.tbr - AudioBitrate) ? curr : prev;
             }, undefined);
-
             if (!selectedAudioFormat || selectedAudioFormat.tbr === undefined || selectedAudioFormat.tbr === null) {
                 throw new Error(`${colors.red("@error:")} No audio format found with a valid bitrate close to ${AudioBitrate} for language '${AudioLanguage || "Unknown"}'.`);
             }
         } else {
-            // Default to highest quality if no custom options are provided
             selectedAudioFormat = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest || availableAudioFormats.find(format => format.url !== undefined);
-            if (!selectedAudioFormat || !selectedAudioFormat.url) {
-                throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
-            }
+            if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
         }
-
-        if (!selectedAudioFormat.url) {
-            throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
-        }
+        if (!selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
 
         instance.addInput(selectedAudioFormat.url!);
 
