@@ -94,11 +94,8 @@ export default async function AudioVideoLowest({
         instance.addInput(lowestVideo.url);
 
         const lowestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest;
-        // Use audioLanguage parameter
-        if (!lowestAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Lowest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
-            // Updated error message
-        }
+        if (!lowestAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
+
         instance.addInput(lowestAudio.url);
 
         instance.withOutputFormat("matroska");
