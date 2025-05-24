@@ -18,8 +18,6 @@ const ZodSchema = z.object({
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
-
-    // Custom video quality parameters
     VideoFormatId: z.string().optional(),
     VideoResolution: z.string().optional(),
     VideoFPS: z.number().optional(),
