@@ -139,9 +139,7 @@ export default async function AudioVideoCustom({
         };
         if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
         else instance.outputOptions("-c copy");
-
         let processStartTime: Date;
-
         if (ShowProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
