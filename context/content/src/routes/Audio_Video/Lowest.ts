@@ -86,9 +86,7 @@ export default async function AudioVideoLowest({
 
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
-        if (EngineMeta.Thumbnails.Highest?.url) {
-            instance.addInput(EngineMeta.Thumbnails.Highest.url);
-        }
+        if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
         // Get the lowest quality video format from the Standard Dynamic Range category
         const lowestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest;
