@@ -109,9 +109,7 @@ export default async function AudioVideoCustom({
             selectedAudioFormat = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest || availableAudioFormats.find(format => format.url !== undefined);
             if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
         }
-
         const availableVideoFormats = [...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []), ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || [])];
-
         if (VideoFormatId) {
             selectedVideoFormat = availableVideoFormats.find(format => format.format_id === VideoFormatId);
             if (!selectedVideoFormat) {
