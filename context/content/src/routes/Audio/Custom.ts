@@ -21,7 +21,6 @@ const ZodSchema = z.object({
     Filter: z
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
-    // Custom audio quality parameters
     AudioFormatId: z.string().optional(),
     AudioBitrate: z.number().optional(),
 });
@@ -47,12 +46,9 @@ export default async function AudioCustom({
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioFormatId || AudioBitrate)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
-        if (Stream && Output) {
-            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
-        }
-        if (AudioFormatId && AudioBitrate) {
-            throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one.`);
-        }
+        if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
+
+        if (AudioFormatId && AudioBitrate) throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one.`);
 
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
