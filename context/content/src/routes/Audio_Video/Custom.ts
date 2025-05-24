@@ -40,7 +40,7 @@ export default async function AudioVideoCustom({
     VideoFormatId,
     VideoResolution,
     VideoFPS,
-}: AudioVideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioVideoCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate, VideoFormatId, VideoResolution, VideoFPS });
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioLanguage || AudioFormatId || AudioBitrate || VideoFormatId || VideoResolution || VideoFPS)) {
@@ -172,8 +172,8 @@ export default async function AudioVideoCustom({
         } else {
             const FileNameBase = `yt-dlx_AudioVideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
-            const outputPath = path.join(folder, FileName);
-            instance.output(outputPath);
+            const OutputPath = path.join(folder, FileName);
+            instance.output(OutputPath);
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
@@ -197,7 +197,7 @@ export default async function AudioVideoCustom({
                 });
                 instance.run();
             });
-            return { outputPath };
+            return { OutputPath };
         }
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
