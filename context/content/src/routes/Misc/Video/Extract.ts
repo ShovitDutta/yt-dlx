@@ -45,7 +45,7 @@ interface PayloadType {
         comment_count_formatted: string;
         channel_follower_count_formatted: string;
         VideoLink?: string; // Add VideoLink as it's in the new MetaData
-        videoId?: string; // Add VIdeoID as it's in the new MetaData
+        videoId?: string; // Add VideoId as it's in the new MetaData
     };
     AudioOnly: EngineOutput["AudioOnly"];
     VideoOnly: EngineOutput["VideoOnly"];
@@ -86,14 +86,14 @@ function formatCount(count: number): string {
     return `${count}`;
 }
 
-async function fetchCommentsByVideoId(VIdeoID: string, Verbose: boolean): Promise<CommentType[] | null> {
+async function fetchCommentsByVideoId(VideoId: string, Verbose: boolean): Promise<CommentType[] | null> {
     try {
-        if (Verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${VIdeoID}`);
+        if (Verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${VideoId}`);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
         });
-        const response = await youtubeInnertube.getComments(VIdeoID);
+        const response = await youtubeInnertube.getComments(VideoId);
         const comments: CommentType[] = response.contents
             .map(thread => {
                 const comment = thread?.comment;
@@ -128,11 +128,11 @@ async function fetchCommentsByVideoId(VIdeoID: string, Verbose: boolean): Promis
     }
 }
 
-async function fetchVideoTranscript(VIdeoID: string, Verbose: boolean): Promise<VideoTranscriptType[] | null> {
+async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
-        if (Verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${VIdeoID}`);
+        if (Verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${VideoId}`);
         const youtube = new Client();
-        const captions = await youtube.getVideoTranscript(VIdeoID);
+        const captions = await youtube.getVideoTranscript(VideoId);
         if (!captions) {
             if (Verbose) console.log(colors.red("@error:"), "No transcript found for the video");
             return null;
@@ -188,8 +188,8 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
 
-        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VIdeoID from new structure
-        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VIdeoID from new structure
+        const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VideoId from new structure
+        const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false); // Use VideoId from new structure
 
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
 
@@ -208,7 +208,7 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 comment_count_formatted: commentCountFormatted,
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
                 channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
-                // VideoLink and VIdeoID are already included by spreading metaBody.MetaData
+                // VideoLink and VideoId are already included by spreading metaBody.MetaData
             },
             AudioOnly: metaBody.AudioOnly,
             VideoOnly: metaBody.VideoOnly,

@@ -8,7 +8,7 @@ vitest.describe("videoData", () => {
     const nonexistentVideoLink = "https://www.youtube.com/watch?v=nonexistentvideoid123";
     vitest.it("should handle basic video data fetch with standard link", async () => {
         try {
-            const result = await videoData({ videoLink: validVideoLink });
+            const result = await videoData({ VideoLink: validVideoLink });
             vitest.expect(result).toHaveProperty("id");
             if (result) {
                 vitest.expect(typeof result.id).toBe("string");
@@ -30,9 +30,9 @@ vitest.describe("videoData", () => {
     });
     vitest.it("should handle video data fetch with shortened link", async () => {
         try {
-            const result = await videoData({ videoLink: shortenedVideoLink });
+            const result = await videoData({ VideoLink: shortenedVideoLink });
             vitest.expect(result).toHaveProperty("id");
-             if (result) {
+            if (result) {
                 vitest.expect(typeof result.id).toBe("string");
                 vitest.expect(result).toHaveProperty("title");
                 vitest.expect(typeof result.title).toBe("string");
@@ -46,9 +46,9 @@ vitest.describe("videoData", () => {
     });
     vitest.it("should handle video data fetch with raw video ID", async () => {
         try {
-            const result = await videoData({ videoLink: rawVideoId });
+            const result = await videoData({ VideoLink: rawVideoId });
             vitest.expect(result).toHaveProperty("id");
-             if (result) {
+            if (result) {
                 vitest.expect(typeof result.id).toBe("string");
                 vitest.expect(result).toHaveProperty("title");
                 vitest.expect(typeof result.title).toBe("string");

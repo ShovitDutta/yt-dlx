@@ -14,10 +14,10 @@ export interface VideoTranscriptType {
     duration: number;
     segments: CaptionSegment[];
 }
-async function getVideoTranscript({ VIdeoID }: { VIdeoID: string }): Promise<VideoTranscriptType[]> {
+async function getVideoTranscript({ VideoId }: { VideoId: string }): Promise<VideoTranscriptType[]> {
     try {
         const youtube = new Client();
-        const captions = await youtube.getVideoTranscript(VIdeoID);
+        const captions = await youtube.getVideoTranscript(VideoId);
         if (!captions) return [];
         return captions.map(caption => ({
             text: caption.text,
@@ -35,7 +35,7 @@ export default async function videoTranscript({ VideoLink, Verbose }: VideoTrans
         ZodSchema.parse({ VideoLink, Verbose });
         const vId = await YouTubeID(VideoLink);
         if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link`);
-        const transcriptData: VideoTranscriptType[] = await getVideoTranscript({ VIdeoID: vId });
+        const transcriptData: VideoTranscriptType[] = await getVideoTranscript({ VideoId: vId });
         if (!transcriptData || transcriptData.length === 0) throw new Error(`${colors.red("@error:")} Unable to get transcript for this video!`);
         return transcriptData;
     } catch (error: any) {

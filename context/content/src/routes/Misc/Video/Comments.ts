@@ -16,13 +16,13 @@ async function fetchVideoComments({ Query, Verbose }: VideoCommentsOptions): Pro
             if (Verbose) console.log(colors.red("@error:"), "No videos found for the given Query");
             throw new Error("No videos found for the given Query");
         }
-        const VIdeoID = video.id;
-        if (Verbose) console.log(colors.green("@info:"), `Fetching comments for video ID: ${VIdeoID}`);
+        const VideoId = video.id;
+        if (Verbose) console.log(colors.green("@info:"), `Fetching comments for video ID: ${VideoId}`);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
         });
-        const response = await youtubeInnertube.getComments(VIdeoID);
+        const response = await youtubeInnertube.getComments(VideoId);
         const comments: CommentType[] = response.contents
             .map(thread => {
                 const comment = thread?.comment;

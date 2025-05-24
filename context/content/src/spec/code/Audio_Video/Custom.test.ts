@@ -5,16 +5,16 @@ import * as vitest from "vitest";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 
 vitest.describe("AudioVideoCustom", () => {
-    const query = "https://www.youtube.com/watch?v=quO40eBkdbs";
+    const Query = "https://www.youtube.com/watch?v=quO40eBkdbs";
     vitest.it("should handle basic download with 144p", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "144p" });
+        const result = await AudioVideoCustom({ Query, Resolution: "144p" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
         }
     });
-    vitest.it("should handle download with output and filter with 720p60", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "720p60", output: "output", filter: "grayscale" });
+    vitest.it("should handle download with Output and Filter with 720p60", async () => {
+        const result = await AudioVideoCustom({ Query, Resolution: "720p60", Output: "Output", Filter: "grayscale" });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
             vitest.expect(result.outputPath).toMatch(/\.mkv$/);
@@ -22,13 +22,13 @@ vitest.describe("AudioVideoCustom", () => {
     });
     vitest.it("should handle download with all options with 2160p60", async () => {
         const result = await AudioVideoCustom({
-            query,
-            useTor: false,
-            verbose: true,
-            filter: "invert",
-            output: "output",
+            Query,
+            UseTor: false,
+            Verbose: true,
+            Filter: "invert",
+            Output: "Output",
             ShowProgress: true,
-            resolution: "2160p60",
+            Resolution: "2160p60",
         });
         vitest.expect(result).toHaveProperty("outputPath");
         if ("outputPath" in result) {
@@ -36,64 +36,64 @@ vitest.describe("AudioVideoCustom", () => {
         }
     });
     vitest.it("should fetch metadata only with 144p", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "144p", MetaData: true });
+        const result = await AudioVideoCustom({ Query, Resolution: "144p", MetaData: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
             vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
             vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
         }
     });
-    vitest.it("should fetch metadata with Tor and verbose with 720p60", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "720p60", MetaData: true, useTor: false, verbose: true });
+    vitest.it("should fetch metadata with Tor and Verbose with 720p60", async () => {
+        const result = await AudioVideoCustom({ Query, Resolution: "720p60", MetaData: true, UseTor: false, Verbose: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
             vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
         }
     });
-    vitest.it("should handle basic stream with 2160p60", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "2160p60", stream: true });
-        vitest.expect(result).toHaveProperty("stream");
+    vitest.it("should handle basic Stream with 2160p60", async () => {
+        const result = await AudioVideoCustom({ Query, Resolution: "2160p60", Stream: true });
+        vitest.expect(result).toHaveProperty("Stream");
         vitest.expect(result).toHaveProperty("FileName");
-        if (result && "stream" in result && result.FileName) {
-            vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        if (result && "Stream" in result && result.FileName) {
+            vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
             const outputStream = createWriteStream(result.FileName);
-            (result as { stream: Readable }).stream?.pipe(outputStream);
+            (result as { Stream: Readable }).Stream?.pipe(outputStream);
             await new Promise(resolve => {
-                (result as { stream: Readable }).stream?.on("end", resolve);
+                (result as { Stream: Readable }).Stream?.on("end", resolve);
             });
         }
     });
-    vitest.it("should handle stream with filter with 144p", async () => {
-        const result = await AudioVideoCustom({ query, resolution: "144p", stream: true, filter: "flipHorizontal" });
-        vitest.expect(result).toHaveProperty("stream");
+    vitest.it("should handle Stream with Filter with 144p", async () => {
+        const result = await AudioVideoCustom({ Query, Resolution: "144p", Stream: true, Filter: "flipHorizontal" });
+        vitest.expect(result).toHaveProperty("Stream");
         vitest.expect(result).toHaveProperty("FileName");
-        if (result && "stream" in result && result.FileName) {
-            vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        if (result && "Stream" in result && result.FileName) {
+            vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
             const outputStream = createWriteStream(result.FileName);
-            (result as { stream: Readable }).stream?.pipe(outputStream);
+            (result as { Stream: Readable }).Stream?.pipe(outputStream);
             await new Promise(resolve => {
-                (result as { stream: Readable }).stream?.on("end", resolve);
+                (result as { Stream: Readable }).Stream?.on("end", resolve);
             });
         }
     });
-    vitest.it("should handle stream with all options with 720p60", async () => {
+    vitest.it("should handle Stream with all options with 720p60", async () => {
         const result = await AudioVideoCustom({
-            query,
-            stream: true,
-            useTor: false,
-            verbose: true,
+            Query,
+            Stream: true,
+            UseTor: false,
+            Verbose: true,
             ShowProgress: true,
-            resolution: "720p60",
-            filter: "rotate270",
+            Resolution: "720p60",
+            Filter: "rotate270",
         });
-        vitest.expect(result).toHaveProperty("stream");
+        vitest.expect(result).toHaveProperty("Stream");
         vitest.expect(result).toHaveProperty("FileName");
-        if (result && "stream" in result && result.FileName) {
-            vitest.expect((result as { stream: Readable }).stream).toBeInstanceOf(Readable);
+        if (result && "Stream" in result && result.FileName) {
+            vitest.expect((result as { Stream: Readable }).Stream).toBeInstanceOf(Readable);
             const outputStream = createWriteStream(result.FileName);
-            (result as { stream: Readable }).stream?.pipe(outputStream);
+            (result as { Stream: Readable }).Stream?.pipe(outputStream);
             await new Promise(resolve => {
-                (result as { stream: Readable })?.stream?.on("end", resolve);
+                (result as { Stream: Readable })?.Stream?.on("end", resolve);
             });
         }
     });

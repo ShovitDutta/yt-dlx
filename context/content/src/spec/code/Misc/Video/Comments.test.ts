@@ -6,7 +6,7 @@ vitest.describe("videoComments", () => {
     const queryForVideoWithNoComments = "a video known to have no comments";
     vitest.it("should handle basic comments fetch", async () => {
         try {
-            const result = await videoComments({ query: validQuery });
+            const result = await videoComments({ Query: validQuery });
             vitest.expect(Array.isArray(result)).toBe(true);
             if (result && result.length > 0) {
                 vitest.expect(result[0]).toHaveProperty("comment_id");
@@ -14,19 +14,19 @@ vitest.describe("videoComments", () => {
                 vitest.expect(result[0]).toHaveProperty("author");
             }
         } catch (error) {
-            console.warn(`Basic comments fetch failed for query "${validQuery}". This test requires a real video query that returns a video with comments.`, error);
+            console.warn(`Basic comments fetch failed for Query "${validQuery}". This test requires a real video Query that returns a video with comments.`, error);
             throw error;
         }
     });
-    vitest.it("should handle comments fetch with verbose logging", async () => {
+    vitest.it("should handle comments fetch with Verbose logging", async () => {
         try {
-            const result = await videoComments({ query: validQuery, verbose: true });
+            const result = await videoComments({ Query: validQuery, Verbose: true });
             vitest.expect(Array.isArray(result)).toBe(true);
             if (result && result.length > 0) {
                 vitest.expect(result[0]).toHaveProperty("comment_id");
             }
         } catch (error) {
-            console.warn(`Verbose comments fetch failed for query "${validQuery}". This test requires a real video query that returns a video with comments.`, error);
+            console.warn(`Verbose comments fetch failed for Query "${validQuery}". This test requires a real video Query that returns a video with comments.`, error);
             throw error;
         }
     });

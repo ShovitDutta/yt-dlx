@@ -22,10 +22,10 @@ vitest.describe("search_playlists", () => {
                 vitest.expect(Array.isArray(result.data.thumbnails)).toBe(true);
             }
         } catch (error) {
-            console.warn(`Basic playlist search failed for query "${validQuery}".`, error);
+            console.warn(`Basic playlist search failed for Query "${validQuery}".`, error);
         }
     });
-    vitest.it("should handle playlist search with a different query", async () => {
+    vitest.it("should handle playlist search with a different Query", async () => {
         const result = await search_playlists({ playlistLink: anotherValidQuery });
         vitest.expect(result).toHaveProperty("data");
          if (result && result.data) {

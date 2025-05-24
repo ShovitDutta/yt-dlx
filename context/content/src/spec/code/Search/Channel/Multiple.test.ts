@@ -5,7 +5,7 @@ vitest.describe("search_channels", () => {
     const queryWithNoResults = "asdfghjklzxcvbnm1234567890qwer";
     vitest.it("should handle basic channel search", async () => {
         try {
-            const result = await search_channels({ query: validQuery });
+            const result = await search_channels({ Query: validQuery });
             vitest.expect(result).toHaveProperty("data");
             if (result && result.data) {
                 vitest.expect(Array.isArray(result.data)).toBe(true);
@@ -24,7 +24,7 @@ vitest.describe("search_channels", () => {
                 }
             }
         } catch (error) {
-            console.warn(`Basic channel search failed for query "${validQuery}". This test requires a query that returns channel results.`, error);
+            console.warn(`Basic channel search failed for Query "${validQuery}". This test requires a Query that returns channel results.`, error);
             throw error;
         }
     });

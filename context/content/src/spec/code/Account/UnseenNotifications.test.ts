@@ -4,17 +4,15 @@ import * as vitest from "vitest";
 import dotenv from "dotenv";
 dotenv.config();
 vitest.describe("unseen_notifications", () => {
-    const cookies = env.YouTubeDLX_COOKIES as string;
-    if (!cookies) {
-        console.warn("YouTubeDLX_COOKIES environment variable not set. Unseen notifications tests requiring valid cookies will likely fail.");
-    }
-    const mockCookies = cookies || "dummy_cookies_for_tests";
+    const Cookies = env.YouTubeDLX_COOKIES as string;
+    if (!Cookies) console.warn("YouTubeDLX_COOKIES environment variable not set. Unseen notifications tests requiring valid cookies will likely fail.");
+    const mockCookies = Cookies || "dummy_cookies_for_tests";
     vitest.it("should handle basic unseen notifications fetch", async () => {
-        if (!cookies) {
+        if (!Cookies) {
             console.warn("Skipping basic fetch test due to missing YouTubeDLX_COOKIES.");
             return;
         }
-        const result = await unseen_notifications({ cookies: mockCookies });
+        const result = await unseen_notifications({ Cookies: mockCookies });
         vitest.expect(result).toHaveProperty("status");
         vitest.expect(result.status).toBe("success");
         vitest.expect(result).toHaveProperty("data");
@@ -25,11 +23,11 @@ vitest.describe("unseen_notifications", () => {
         }
     });
     vitest.it("should handle unseen notifications fetch with verbose logging", async () => {
-        if (!cookies) {
+        if (!Cookies) {
             console.warn("Skipping verbose fetch test due to missing YouTubeDLX_COOKIES.");
             return;
         }
-        const result = await unseen_notifications({ cookies: mockCookies, verbose: true });
+        const result = await unseen_notifications({ Cookies: mockCookies, Verbose: true });
         vitest.expect(result.status).toBe("success");
         vitest.expect(result.data).toBeInstanceOf(Object);
         if (result.data) {

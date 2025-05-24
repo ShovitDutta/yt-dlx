@@ -17,10 +17,10 @@ export interface SingleVideoType {
     tags: string;
     likeCount: number;
 }
-async function singleVideo({ VIdeoID }: { VIdeoID: string }): Promise<SingleVideoType> {
+async function singleVideo({ VideoId }: { VideoId: string }): Promise<SingleVideoType> {
     try {
         const youtube = new Client();
-        const singleVideoData: any = await youtube.getVideo(VIdeoID);
+        const singleVideoData: any = await youtube.getVideo(VideoId);
         if (!singleVideoData) {
             throw new Error(`${colors.red("@error:")} Unable to fetch video data.`);
         }
@@ -48,7 +48,7 @@ export default async function videoData({ VideoLink, Verbose }: VideoDataOptions
         ZodSchema.parse({ VideoLink, Verbose });
         const vId = await YouTubeID(VideoLink);
         if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
-        const metaData = await singleVideo({ VIdeoID: vId });
+        const metaData = await singleVideo({ VideoId: vId });
         return metaData;
     } catch (error: any) {
         if (error instanceof ZodError) {

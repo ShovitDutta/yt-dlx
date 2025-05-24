@@ -8,7 +8,7 @@ vitest.describe("channel_data", () => {
     const nonexistentChannelLink = "https://www.youtube.com/channel/nonexistentchannel123";
     vitest.it("should handle channel data fetch with a valid channel ID", async () => {
         try {
-            const result = await channel_data({ channelLink: validChannelId });
+            const result = await channel_data({ ChannelLink: validChannelId });
             vitest.expect(result).toHaveProperty("data");
             if (result && result.data) {
                 vitest.expect(result.data).toBeInstanceOf(Channel);
@@ -22,7 +22,7 @@ vitest.describe("channel_data", () => {
     });
     vitest.it("should handle channel data fetch with a valid channel link", async () => {
         try {
-            const result = await channel_data({ channelLink: validChannelLink });
+            const result = await channel_data({ ChannelLink: validChannelLink });
             vitest.expect(result).toHaveProperty("data");
             if (result && result.data) {
                 vitest.expect(result.data).toBeInstanceOf(Channel);

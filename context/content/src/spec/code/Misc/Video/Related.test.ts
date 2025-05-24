@@ -5,7 +5,7 @@ vitest.describe("relatedVideosFn", () => {
     const videoIdWithNoRelated = "nonexistentvideoid123abc";
     vitest.it("should handle basic related videos fetch", async () => {
         try {
-            const result = await relatedVideosFn({ videoId: videoIdWithRelated });
+            const result = await relatedVideosFn({ VideoId: videoIdWithRelated });
             vitest.expect(Array.isArray(result)).toBe(true);
             vitest.expect(result.length).toBeGreaterThan(0);
             if (result && result.length > 0) {

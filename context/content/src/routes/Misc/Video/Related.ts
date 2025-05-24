@@ -1,7 +1,7 @@
 import colors from "colors";
 import { z, ZodError } from "zod";
 import { Client } from "youtubei";
-const ZodSchema = z.object({ VIdeoID: z.string().min(2), Verbose: z.boolean().optional() });
+const ZodSchema = z.object({ VideoId: z.string().min(2), Verbose: z.boolean().optional() });
 export interface RelatedVideosType {
     id: string;
     title: string;
@@ -10,10 +10,10 @@ export interface RelatedVideosType {
     uploadDate: string;
     thumbnails: string[];
 }
-async function relatedVideos({ VIdeoID }: { VIdeoID: string }): Promise<RelatedVideosType[]> {
+async function relatedVideos({ VideoId }: { VideoId: string }): Promise<RelatedVideosType[]> {
     try {
         const youtube = new Client();
-        const videoData: any = await youtube.getVideo(VIdeoID);
+        const videoData: any = await youtube.getVideo(VideoId);
         if (!videoData?.related?.items) return [];
         return videoData.related.items.map((item: any) => ({
             id: item.id,
@@ -28,10 +28,10 @@ async function relatedVideos({ VIdeoID }: { VIdeoID: string }): Promise<RelatedV
     }
 }
 type RelatedVideosOptions = z.infer<typeof ZodSchema>;
-export default async function relatedVideosFn({ VIdeoID, Verbose }: RelatedVideosOptions): Promise<RelatedVideosType[]> {
+export default async function relatedVideosFn({ VideoId, Verbose }: RelatedVideosOptions): Promise<RelatedVideosType[]> {
     try {
-        ZodSchema.parse({ VIdeoID, Verbose });
-        const videos = await relatedVideos({ VIdeoID });
+        ZodSchema.parse({ VideoId, Verbose });
+        const videos = await relatedVideos({ VideoId });
         if (!videos || videos.length === 0) throw new Error(`${colors.red("@error:")} No related videos found for the provided video ID.`);
         return videos;
     } catch (error: any) {
