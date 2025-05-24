@@ -9,50 +9,50 @@ vitest.describe("AudioVideoCustom", () => {
 
     vitest.it("should handle basic download", async () => {
         const result = await AudioVideoCustom({ Query });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with custom AudioFormatId and VideoFormatId", async () => {
         const result = await AudioVideoCustom({ Query, AudioFormatId: "234", VideoFormatId: "137" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with custom AudioBitrate and VideoResolution", async () => {
         const result = await AudioVideoCustom({ Query, AudioBitrate: 195, VideoResolution: "1280x720" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
      vitest.it("should handle download with custom VideoFPS and AudioLanguage", async () => {
         const result = await AudioVideoCustom({ Query, VideoFPS: 30, AudioLanguage: "English" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
 
     vitest.it("should handle download with Output and Filter", async () => {
         const result = await AudioVideoCustom({ Query, Output: "Output", Filter: "grayscale" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
     vitest.it("should handle download with all options", async () => {
         const result = await AudioVideoCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "rotate90", ShowProgress: true, AudioBitrate: 195, VideoResolution: "854x480" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
 
