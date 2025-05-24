@@ -93,16 +93,16 @@ export default async function VideoLowest({
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
             instance.on("start", command => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
+                if (Verbose) console.log(colors.green("@info:") + "FFmpeg Stream started: " + command);
             });
             instance.pipe(passthroughStream, { end: true });
             instance.on("end", () => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                if (Verbose) console.log(colors.green("@info:") + "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
-                console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                console.error(errorMessage + "\nstdout: " + stdout + "\nstderr: " + stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
@@ -116,20 +116,20 @@ export default async function VideoLowest({
             instance.output(OutputPath);
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                    if (Verbose) console.log(colors.green("@info:") + "FFmpeg download started: " + command);
                     if (ShowProgress) processStartTime = new Date();
                 });
                 instance.on("progress", progress => {
                     if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
                 instance.on("end", () => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                    if (Verbose) console.log(colors.green("@info:") + "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
-                    console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                    console.error(errorMessage + "\nstdout: " + stdout + "\nstderr: " + stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
@@ -142,6 +142,6 @@ export default async function VideoLowest({
         else if (error instanceof Error) throw error;
         else throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
     } finally {
-        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
