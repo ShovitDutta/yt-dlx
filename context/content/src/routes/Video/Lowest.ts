@@ -35,12 +35,10 @@ export default async function VideoLowest({
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress });
 
-        if (MetaData && (Stream || Output || Filter || ShowProgress)) {
+        if (MetaData && (Stream || Output || Filter || ShowProgress))
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'Output', 'Filter', or 'ShowProgress'.`);
-        }
-        if (Stream && Output) {
-            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
-        }
+
+        if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
 
         const EngineMeta: EngineOutput | null = await Agent({ Query, Verbose, UseTor });
 
