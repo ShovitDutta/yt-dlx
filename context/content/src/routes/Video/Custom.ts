@@ -104,16 +104,11 @@ export default async function VideoCustom({
             selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
             if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
         } else {
-            // Default to highest quality if no custom options are provided
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
-            if (!selectedVideoFormat || !selectedVideoFormat.url) {
-                throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
-            }
+            if (!selectedVideoFormat || !selectedVideoFormat.url) throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
         }
 
-        if (!selectedVideoFormat?.url) {
-            throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
-        }
+        if (!selectedVideoFormat?.url) throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
 
         instance.addInput(selectedVideoFormat.url!);
 
@@ -129,11 +124,8 @@ export default async function VideoCustom({
             flipVertical: ["vflip"],
         };
 
-        if (Filter && filterMap[Filter]) {
-            instance.withVideoFilter(filterMap[Filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
+        else instance.outputOptions("-c copy");
 
         let processStartTime: Date;
 
