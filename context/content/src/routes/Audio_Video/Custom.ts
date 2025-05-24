@@ -87,36 +87,27 @@ export default async function AudioVideoCustom({
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
         let selectedAudioFormat: CleanedAudioFormat | undefined;
         let selectedVideoFormat: CleanedVideoFormat | undefined;
-
         const availableAudioFormats = [
             ...(EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined || []),
             ...(EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined || []),
         ];
-
         if (AudioFormatId) {
             selectedAudioFormat = availableAudioFormats.find(format => format.format_id === AudioFormatId);
-            if (!selectedAudioFormat) {
-                throw new Error(`${colors.red("@error:")} Audio format with ID '${AudioFormatId}' not found for language '${AudioLanguage || "Unknown"}'.`);
-            }
+            if (!selectedAudioFormat) throw new Error(`${colors.red("@error:")} Audio format with ID '${AudioFormatId}' not found for language '${AudioLanguage || "Unknown"}'.`);
         } else if (AudioBitrate) {
             selectedAudioFormat = availableAudioFormats.reduce((prev: CleanedAudioFormat | undefined, curr: CleanedAudioFormat) => {
                 if (curr.tbr === undefined || curr.tbr === null) return prev;
                 if (prev === undefined || prev.tbr === undefined || prev.tbr === null) return curr;
                 return Math.abs(curr.tbr - AudioBitrate) < Math.abs(prev.tbr - AudioBitrate) ? curr : prev;
             }, undefined);
-
             if (!selectedAudioFormat || selectedAudioFormat.tbr === undefined || selectedAudioFormat.tbr === null) {
                 throw new Error(`${colors.red("@error:")} No audio format found with a valid bitrate close to ${AudioBitrate} for language '${AudioLanguage || "Unknown"}'.`);
             }
         } else {
-            // Default to highest quality audio
             selectedAudioFormat = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest || availableAudioFormats.find(format => format.url !== undefined);
-            if (!selectedAudioFormat || !selectedAudioFormat.url) {
-                throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
-            }
+            if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
         }
 
         const availableVideoFormats = [...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []), ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || [])];
