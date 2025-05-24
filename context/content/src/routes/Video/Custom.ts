@@ -17,10 +17,10 @@ const ZodSchema = z.object({
     Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
     VideoFormatId: z.string().optional(),
     VideoResolution: z.string().optional(),
     VideoFPS: z.number().optional(),
+    Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 
 type VideoCustomOptions = z.infer<typeof ZodSchema>;
