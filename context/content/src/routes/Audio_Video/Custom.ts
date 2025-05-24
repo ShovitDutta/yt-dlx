@@ -148,24 +148,19 @@ export default async function AudioVideoCustom({
                 if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
-
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioVideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
-
             instance.on("start", command => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
             });
-
             instance.pipe(passthroughStream, { end: true });
-
             instance.on("end", () => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
@@ -173,41 +168,34 @@ export default async function AudioVideoCustom({
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.run();
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioVideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const outputPath = path.join(folder, FileName);
-
             instance.output(outputPath);
-
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
-
                 instance.on("progress", progress => {
                     if (ShowProgress && processStartTime) {
                         progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                     }
                 });
-
                 instance.on("end", () => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
-
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
-
                 instance.run();
             });
             return { outputPath };
