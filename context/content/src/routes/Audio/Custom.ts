@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedAudioFormat } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -24,9 +23,7 @@ const ZodSchema = z.object({
     AudioFormatId: z.string().optional(),
     AudioBitrate: z.number().optional(),
 });
-
 type AudioCustomOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioCustom({
     Query,
     Output,
@@ -42,7 +39,6 @@ export default async function AudioCustom({
 }: AudioCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate });
-
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioFormatId || AudioBitrate)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
