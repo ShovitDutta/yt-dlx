@@ -15,11 +15,11 @@ const ZodSchema = z.object({
     UseTor: z.boolean().optional(),
     Stream: z.boolean().optional(),
     Verbose: z.boolean().optional(),
+    VideoFPS: z.number().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
     VideoFormatId: z.string().optional(),
     VideoResolution: z.string().optional(),
-    VideoFPS: z.number().optional(),
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 
