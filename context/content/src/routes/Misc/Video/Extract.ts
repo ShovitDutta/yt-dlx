@@ -196,6 +196,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
         else if (error instanceof Error) throw error;
         else throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
     } finally {
-        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
