@@ -43,7 +43,6 @@ export default async function AudioVideoHighest({
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
-
         if (MetaData) {
             return {
                 MetaData: {
@@ -52,9 +51,7 @@ export default async function AudioVideoHighest({
                     Links: {
                         Audio: {
                             Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest,
-                            // Use audioLanguage parameter
                             DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Highest,
-                            // Use audioLanguage parameter
                         },
                         Video: {
                             Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest,
