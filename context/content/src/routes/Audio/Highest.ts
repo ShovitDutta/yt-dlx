@@ -32,7 +32,7 @@ export default async function AudioHighest({
     Verbose,
     ShowProgress,
     Language,
-}: AudioHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioHighestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -127,8 +127,8 @@ export default async function AudioHighest({
         } else {
             const FileNameBase = `yt-dlx_AudioHighest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
-            const outputPath = path.join(folder, FileName);
-            instance.output(outputPath);
+            const OutputPath = path.join(folder, FileName);
+            instance.output(OutputPath);
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
@@ -150,7 +150,7 @@ export default async function AudioHighest({
                 });
                 instance.run();
             });
-            return { outputPath };
+            return { OutputPath };
         }
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);

@@ -36,7 +36,7 @@ export default async function AudioCustom({
     AudioLanguage,
     AudioFormatId,
     AudioBitrate,
-}: AudioCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate });
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioFormatId || AudioBitrate)) {
@@ -152,8 +152,8 @@ export default async function AudioCustom({
         } else {
             const FileNameBase = `yt-dlx_AudioCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
-            const outputPath = path.join(folder, FileName);
-            instance.output(outputPath);
+            const OutputPath = path.join(folder, FileName);
+            instance.output(OutputPath);
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
@@ -177,7 +177,7 @@ export default async function AudioCustom({
                 });
                 instance.run();
             });
-            return { outputPath };
+            return { OutputPath };
         }
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
