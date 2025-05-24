@@ -50,19 +50,10 @@ export default async function videoData({ VideoLink, Verbose }: VideoDataOptions
         if (!vId) throw new Error(`${colors.red("@error:")} Incorrect video link provided.`);
         const metaData = await singleVideo({ VideoId: vId });
         return metaData;
-    } catch (error: any) {
-        if (error instanceof ZodError) {
-            const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
-            console.error(errorMessage);
-            throw new Error(errorMessage);
-        } else if (error instanceof Error) {
-            console.error(error.message);
-            throw error;
-        } else {
-            const unexpectedError = `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`;
-            console.error(unexpectedError);
-            throw new Error(unexpectedError);
-        }
+    } catch (error) {
+        if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        else if (error instanceof Error) throw error;
+        else throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
     } finally {
         if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
