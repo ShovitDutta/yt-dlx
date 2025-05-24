@@ -113,14 +113,11 @@ export default async function AudioHighest({
             instance.on("start", command => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
             });
-
             instance.pipe(passthroughStream, { end: true });
-
             instance.on("end", () => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
@@ -128,7 +125,6 @@ export default async function AudioHighest({
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.run();
             return { Stream: passthroughStream, FileName: FileName };
         } else {
