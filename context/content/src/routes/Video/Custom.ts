@@ -96,19 +96,13 @@ export default async function VideoCustom({
 
         if (VideoFormatId) {
             selectedVideoFormat = availableVideoFormats.find(format => format.format_id === VideoFormatId);
-            if (!selectedVideoFormat) {
-                throw new Error(`${colors.red("@error:")} Video format with ID '${VideoFormatId}' not found.`);
-            }
+            if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with ID '${VideoFormatId}' not found.`);
         } else if (VideoResolution) {
             selectedVideoFormat = availableVideoFormats.find(format => format.resolution === VideoResolution);
-            if (!selectedVideoFormat) {
-                throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
-            }
+            if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
         } else if (VideoFPS) {
             selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
-            if (!selectedVideoFormat) {
-                throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
-            }
+            if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
         } else {
             // Default to highest quality if no custom options are provided
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
