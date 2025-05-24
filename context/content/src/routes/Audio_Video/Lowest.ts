@@ -33,29 +33,19 @@ export default async function AudioVideoLowest({
     Verbose,
     ShowProgress,
     AudioLanguage,
-}: // Added audioLanguage parameter
-AudioVideoLowestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioVideoLowestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage });
-        // Added audioLanguage to parse
-
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
-        if (Stream && Output) {
-            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
-        }
+        if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
 
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
-        if (!EngineMeta) {
-            throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        }
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
 
-        // Access MetaData correctly from the new structure
-        if (!EngineMeta.MetaData) {
-            throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
-        }
+        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
 
         if (MetaData) {
             return {
