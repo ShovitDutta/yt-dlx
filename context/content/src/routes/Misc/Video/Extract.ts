@@ -45,9 +45,7 @@ interface PayloadType {
         comment_count_formatted: string;
         channel_follower_count_formatted: string;
         VideoLink?: string;
-        // Add VideoLink as it's in the new MetaData
         videoId?: string;
-        // Add VideoId as it's in the new MetaData
     };
     AudioOnly: EngineOutput["AudioOnly"];
     VideoOnly: EngineOutput["VideoOnly"];
@@ -162,18 +160,13 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
 
         const metaBody: EngineOutput | null = await Tuber({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
-        if (!metaBody) {
-            throw new Error(`${colors.red("@error:")} Unable to get response!`);
-        }
-        if (!metaBody.MetaData) {
-            throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
-        }
+        if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response!`);
+
+        if (!metaBody.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
 
         let uploadDate: Date | undefined;
         try {
-            if (metaBody.MetaData.upload_date) {
-                uploadDate = new Date(metaBody.MetaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
-            }
+            if (metaBody.MetaData.upload_date) uploadDate = new Date(metaBody.MetaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
         } catch (error) {
             throw new Error(`${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
         }
