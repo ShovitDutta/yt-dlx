@@ -94,25 +94,15 @@ export default async function AudioLowest({
             vaporwave: ["aresample=48000,asetrate=48000*0.8"],
             nightcore: ["aresample=48000,asetrate=48000*1.25"],
         };
-
-        if (Filter && filterMap[Filter]) {
-            // Changed Filter
-            instance.withAudioFilter(filterMap[Filter]);
-            // Changed Filter
-        } else {
-            instance.outputOptions("-c copy");
-        }
-
+        if (Filter && filterMap[Filter]) instance.withAudioFilter(filterMap[Filter]);
+        else instance.outputOptions("-c copy");
         let processStartTime: Date;
-
         if (ShowProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) {
-                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                }
+                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
 
