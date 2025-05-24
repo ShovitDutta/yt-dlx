@@ -61,10 +61,8 @@ export default async function AudioVideoHighest({
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = Output ? Output : process.cwd();
-
         if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
