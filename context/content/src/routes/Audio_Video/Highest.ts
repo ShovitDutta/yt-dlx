@@ -42,11 +42,7 @@ export default async function AudioVideoHighest({
         if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-
-        // Access MetaData correctly from the new structure
-        if (!EngineMeta.MetaData) {
-            throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
-        }
+        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
 
         if (MetaData) {
             return {
