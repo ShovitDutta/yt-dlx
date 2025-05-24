@@ -25,11 +25,11 @@ interface Video {
     shortViewCount: string;
 }
 export default async function home_feed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
-    let verbose = false;
+    let Verbose = false;
     try {
         ZodSchema.parse(options);
         const { Verbose: parsedVerbose, Cookies, Sort } = options;
-        verbose = parsedVerbose ?? false;
+        Verbose = parsedVerbose ?? false;
         if (!Cookies) throw new Error(`${colors.red("@error:")} Cookies not provided!`);
         const client: TubeType = await TubeLogin(Cookies);
         if (!client) throw new Error(`${colors.red("@error:")} Could not initialize Tube client.`);
@@ -100,6 +100,6 @@ export default async function home_feed(options: HomeFeedOptions): Promise<TubeR
         else if (error instanceof Error) throw error;
         else throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
     } finally {
-        if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
