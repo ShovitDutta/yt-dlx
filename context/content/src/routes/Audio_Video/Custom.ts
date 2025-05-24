@@ -115,22 +115,14 @@ export default async function AudioVideoCustom({
             if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with ID '${VideoFormatId}' not found.`);
         } else if (VideoResolution) {
             selectedVideoFormat = availableVideoFormats.find(format => format.resolution === VideoResolution);
-            if (!selectedVideoFormat) {
-                throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
-            }
+            if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with resolution '${VideoResolution}' not found.`);
         } else if (VideoFPS) {
             selectedVideoFormat = availableVideoFormats.find(format => format.fps === VideoFPS);
-            if (!selectedVideoFormat) {
-                throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
-            }
+            if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with FPS '${VideoFPS}' not found.`);
         } else {
-            // Default to highest quality video
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
-            if (!selectedVideoFormat || !selectedVideoFormat.url) {
-                throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
-            }
+            if (!selectedVideoFormat || !selectedVideoFormat.url) throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
         }
-
         if (!selectedAudioFormat?.url) {
             throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
         }
