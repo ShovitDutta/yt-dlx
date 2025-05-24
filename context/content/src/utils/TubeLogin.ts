@@ -20,7 +20,7 @@ export default async function TubeLogin(cookiesFilePathOrString: string): Promis
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
             cookie: cookiesData,
         });
-        console.log(colors.green("@info:"), "Connected to YouTube...");
+        console.log(colors.green("@info:") + "Connected to YouTube...");
         return Tube;
     } catch (err) {
         console.error(colors.red("@error:"), "Failed to authenticate. The cookies appear to be corrupt or invalid.");
