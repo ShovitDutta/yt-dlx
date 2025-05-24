@@ -137,26 +137,20 @@ export default async function AudioHighest({
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
-
                 instance.on("progress", progress => {
-                    if (ShowProgress && processStartTime) {
-                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                    }
+                    if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
-
                 instance.on("end", () => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished."); // Changed Verbose
+                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
-
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
-
                 instance.run();
             });
             return { outputPath };
