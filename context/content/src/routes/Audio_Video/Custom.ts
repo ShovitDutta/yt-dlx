@@ -19,6 +19,7 @@ const ZodSchema = z.object({
     ShowProgress: z.boolean().optional(),
     AudioLanguage: z.string().optional(),
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
+
     // Custom audio and video quality parameters
     AudioFormatId: z.string().optional(),
     AudioBitrate: z.number().optional(),

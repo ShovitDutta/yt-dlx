@@ -17,7 +17,8 @@ const ZodSchema = z.object({
     Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    AudioLanguage: z.string().optional(), // Added audioLanguage parameter
+    AudioLanguage: z.string().optional(),
+    // Added audioLanguage parameter
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 
@@ -32,10 +33,12 @@ export default async function AudioVideoHighest({
     MetaData,
     Verbose,
     ShowProgress,
-    AudioLanguage, // Added audioLanguage parameter
-}: AudioVideoHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+    AudioLanguage,
+}: // Added audioLanguage parameter
+AudioVideoHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
-        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage }); // Added audioLanguage to parse
+        ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage });
+        // Added audioLanguage to parse
 
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
@@ -49,6 +52,7 @@ export default async function AudioVideoHighest({
         if (!EngineMeta) {
             throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         }
+
         // Access MetaData correctly from the new structure
         if (!EngineMeta.MetaData) {
             throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
@@ -61,8 +65,10 @@ export default async function AudioVideoHighest({
                     FileName: `yt-dlx_AudioVideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
                         Audio: {
-                            Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest, // Use audioLanguage parameter
-                            DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Highest, // Use audioLanguage parameter
+                            Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest,
+                            // Use audioLanguage parameter
+                            DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Highest,
+                            // Use audioLanguage parameter
                         },
                         Video: {
                             Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest,
@@ -107,9 +113,11 @@ export default async function AudioVideoHighest({
         instance.addInput(highestVideo.url);
 
         // Get the highest quality audio format from the Standard category for the specified language
-        const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest; // Use audioLanguage parameter
+        const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest;
+        // Use audioLanguage parameter
         if (!highestAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`); // Updated error message
+            throw new Error(`${colors.red("@error:")} Highest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
+            // Updated error message
         }
         instance.addInput(highestAudio.url);
 
