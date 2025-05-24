@@ -79,13 +79,11 @@ export default async function AudioCustom({
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
         let selectedAudioFormat: CleanedAudioFormat | undefined;
         const availableAudioFormats = [
             ...(EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined || []),
             ...(EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined || []),
         ];
-
         if (AudioFormatId) {
             selectedAudioFormat = availableAudioFormats.find(format => format.format_id === AudioFormatId);
             if (!selectedAudioFormat) {
