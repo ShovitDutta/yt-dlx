@@ -165,9 +165,7 @@ export default async function AudioVideoLowest({
                 });
 
                 instance.on("progress", progress => {
-                    if (ShowProgress && processStartTime) {
-                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                    }
+                    if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
 
                 instance.on("end", () => {
