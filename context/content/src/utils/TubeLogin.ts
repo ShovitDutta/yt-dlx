@@ -10,7 +10,7 @@ export default async function TubeLogin(cookiesFilePathOrString: string): Promis
         try {
             cookiesData = fs.readFileSync(cookiesFilePathOrString, "utf8");
         } catch (error) {
-            console.error(colors.red("@error:"), "Failed to read cookies file.");
+            console.error(colors.red("@error:") + "Failed to read cookies file.");
             process.exit(1);
         }
     } else cookiesData = cookiesFilePathOrString;
