@@ -44,7 +44,6 @@ export default async function AudioVideoCustom({
 }: AudioVideoCustomOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate, VideoFormatId, VideoResolution, VideoFPS });
-
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioLanguage || AudioFormatId || AudioBitrate || VideoFormatId || VideoResolution || VideoFPS)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
