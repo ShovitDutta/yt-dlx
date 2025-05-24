@@ -73,20 +73,10 @@ export default async function AudioLowest({
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
-        // Use the Lowest quality audio from the Standard category for the specified language
         const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest;
-        // Use Language parameter
-
-        if (!lowestQualityAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Unknown"}.`);
-            // Updated error message
-        }
-
+        if (!lowestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Unknown"}.`);
         instance.addInput(lowestQualityAudio.url!);
-
         instance.withOutputFormat("avi");
-
         const filterMap: Record<string, string[]> = {
             speed: ["atempo=2"],
             flanger: ["flanger"],
