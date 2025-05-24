@@ -93,7 +93,6 @@ export default async function AudioVideoLowest({
 
         instance.addInput(lowestVideo.url);
 
-        // Get the lowest quality audio format from the Standard category for the specified language
         const lowestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest;
         // Use audioLanguage parameter
         if (!lowestAudio?.url) {
