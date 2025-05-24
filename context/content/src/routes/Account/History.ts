@@ -80,10 +80,7 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
             throw new Error(errorMessage);
         } else if (error instanceof Error) throw error;
-        else {
-            const unexpectedError = `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`;
-            throw new Error(unexpectedError);
-        }
+        else throw new Error(`${colors.red("@error:")} An unexpected error occurred: ${String(error)}`);
     } finally {
         if (verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
