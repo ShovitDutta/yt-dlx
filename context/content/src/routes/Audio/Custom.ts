@@ -86,11 +86,8 @@ export default async function AudioCustom({
         ];
         if (AudioFormatId) {
             selectedAudioFormat = availableAudioFormats.find(format => format.format_id === AudioFormatId);
-            if (!selectedAudioFormat) {
-                throw new Error(`${colors.red("@error:")} Audio format with ID '${AudioFormatId}' not found for language '${AudioLanguage || "Unknown"}'.`);
-            }
+            if (!selectedAudioFormat) throw new Error(`${colors.red("@error:")} Audio format with ID '${AudioFormatId}' not found for language '${AudioLanguage || "Unknown"}'.`);
         } else if (AudioBitrate) {
-            // Find the format with the closest bitrate
             selectedAudioFormat = availableAudioFormats.reduce((prev: CleanedAudioFormat | undefined, curr: CleanedAudioFormat) => {
                 if (curr.tbr === undefined || curr.tbr === null) return prev;
                 if (prev === undefined || prev.tbr === undefined || prev.tbr === null) return curr;
