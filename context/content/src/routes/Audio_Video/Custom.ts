@@ -112,9 +112,7 @@ export default async function AudioVideoCustom({
         const availableVideoFormats = [...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []), ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || [])];
         if (VideoFormatId) {
             selectedVideoFormat = availableVideoFormats.find(format => format.format_id === VideoFormatId);
-            if (!selectedVideoFormat) {
-                throw new Error(`${colors.red("@error:")} Video format with ID '${VideoFormatId}' not found.`);
-            }
+            if (!selectedVideoFormat) throw new Error(`${colors.red("@error:")} Video format with ID '${VideoFormatId}' not found.`);
         } else if (VideoResolution) {
             selectedVideoFormat = availableVideoFormats.find(format => format.resolution === VideoResolution);
             if (!selectedVideoFormat) {
