@@ -8,21 +8,21 @@ vitest.describe("VideoLowest", () => {
     const Query = "https://www.youtube.com/watch?v=30LWjhZzg50";
     vitest.it("should handle basic download", async () => {
         const result = await VideoLowest({ Query });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
     });
     vitest.it("should handle download with Output and Filter", async () => {
         const result = await VideoLowest({ Query, Output: "Output", Filter: "grayscale" });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
     vitest.it("should handle download with all options", async () => {
         const result = await VideoLowest({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "invert", ShowProgress: true });
-        vitest.expect(result).toHaveProperty("outputPath");
-        if ("outputPath" in result) {
-            vitest.expect(result.outputPath).toMatch(/\.mkv$/);
+        vitest.expect(result).toHaveProperty("OutputPath");
+        if ("OutputPath" in result) {
+            vitest.expect(result.OutputPath).toMatch(/\.mkv$/);
         }
     });
     vitest.it("should fetch metadata only", async () => {
