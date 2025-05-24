@@ -66,28 +66,19 @@ export default async function AudioHighest({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
         const paths = await locator();
-        if (!paths.ffmpeg) {
-            throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-        }
-        if (!paths.ffprobe) {
-            throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-        }
+        if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+
+        if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
+
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
-        if (EngineMeta.Thumbnails.Highest?.url) {
-            instance.addInput(EngineMeta.Thumbnails.Highest.url);
-        }
+        if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
-        // Use the Highest quality audio from the Standard category for the specified language
+        // Use th Highest quality audio from the Standard category for the specified language
         const highestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Highest; // Use Language parameter
-
-        if (!highestQualityAudio?.url) {
-            throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found for language: ${Language || "Unknown"}.`); // Updated error message
-        }
+        if (!highestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found for language: ${Language || "Unknown"}.`); // Updated error message
 
         instance.addInput(highestQualityAudio.url!);
 
