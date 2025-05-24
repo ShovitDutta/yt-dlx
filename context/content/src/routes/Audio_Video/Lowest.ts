@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -20,9 +19,7 @@ const ZodSchema = z.object({
     AudioLanguage: z.string().optional(),
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
-
 type AudioVideoLowestOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioVideoLowest({
     Query,
     Output,
@@ -40,13 +37,9 @@ export default async function AudioVideoLowest({
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
         if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
-
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
-
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
-
         if (MetaData) {
             return {
                 MetaData: {
@@ -57,18 +50,13 @@ export default async function AudioVideoLowest({
                             Standard_Lowest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest,
                             DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Lowest,
                         },
-                        Video: {
-                            Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest,
-                            HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Lowest,
-                        },
+                        Video: { Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest, HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Lowest },
                     },
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = Output ? Output : process.cwd();
-
         if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -76,30 +64,20 @@ export default async function AudioVideoLowest({
                 throw new Error(`${colors.red("@error:")} Failed to create output directory: ${mkdirError.message}`);
             }
         }
-
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
-
         const paths = await locator();
         if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
         const lowestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest;
         if (!lowestVideo?.url) throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
-
         instance.addInput(lowestVideo.url);
-
         const lowestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest;
         if (!lowestAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
-
         instance.addInput(lowestAudio.url);
-
         instance.withOutputFormat("matroska");
-
         const filterMap: Record<string, string[]> = {
             grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
             invert: ["negate"],
@@ -109,12 +87,9 @@ export default async function AudioVideoLowest({
             flipHorizontal: ["hflip"],
             flipVertical: ["vflip"],
         };
-
         if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
         else instance.outputOptions("-c copy");
-
         let processStartTime: Date;
-
         if (ShowProgress) {
             instance.on("start", () => {
                 processStartTime = new Date();
@@ -123,24 +98,19 @@ export default async function AudioVideoLowest({
                 if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
-
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioVideoLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
-
             instance.on("start", command => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
             });
-
             instance.pipe(passthroughStream, { end: true });
-
             instance.on("end", () => {
                 if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
                 console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
@@ -148,39 +118,32 @@ export default async function AudioVideoLowest({
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
             });
-
             instance.run();
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioVideoLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const outputPath = path.join(folder, FileName);
-
             instance.output(outputPath);
-
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                     if (ShowProgress) processStartTime = new Date();
                 });
-
                 instance.on("progress", progress => {
                     if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
-
                 instance.on("end", () => {
                     if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
-
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
-
                 instance.run();
             });
             return { outputPath };
