@@ -102,11 +102,8 @@ export default async function AudioVideoHighest({
             flipVertical: ["vflip"],
         };
 
-        if (Filter && filterMap[Filter]) {
-            instance.withVideoFilter(filterMap[Filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
+        else instance.outputOptions("-c copy");
 
         let processStartTime: Date;
 
@@ -115,9 +112,7 @@ export default async function AudioVideoHighest({
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) {
-                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                }
+                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
 
