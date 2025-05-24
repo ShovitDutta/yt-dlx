@@ -98,11 +98,8 @@ export default async function VideoHighest({
             flipVertical: ["vflip"],
         };
 
-        if (Filter && filterMap[Filter]) {
-            instance.withVideoFilter(filterMap[Filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
+        else instance.outputOptions("-c copy");
 
         let processStartTime: Date;
 
