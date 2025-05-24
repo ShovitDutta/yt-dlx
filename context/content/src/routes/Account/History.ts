@@ -79,9 +79,8 @@ export default async function watch_history(options: WatchHistoryOptions & { ver
         if (error instanceof ZodError) {
             const errorMessage = `${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`;
             throw new Error(errorMessage);
-        } else if (error instanceof Error) {
-            throw error;
-        } else {
+        } else if (error instanceof Error) throw error;
+        else {
             const unexpectedError = `${colors.red("@error:")} An unexpected error occurred: ${String(error)}`;
             throw new Error(unexpectedError);
         }
