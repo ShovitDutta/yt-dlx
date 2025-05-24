@@ -6,36 +6,30 @@ import Tuber from "../../../utils/Agent";
 import { Innertube, UniversalCache } from "youtubei.js";
 import type { CommentType } from "../../../interfaces/CommentType";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({ Query: z.string().min(2), UseTor: z.boolean().optional(), Verbose: z.boolean().optional() });
-
 interface CaptionSegment {
     utf8: string;
     tOffsetMs?: number;
     acAsrConf: number;
 }
-
 interface VideoTranscriptType {
     text: string;
     start: number;
     duration: number;
     segments: CaptionSegment[];
 }
-
 interface UploadAgo {
     years: number;
     months: number;
     days: number;
     formatted: string;
 }
-
 interface VideoDuration {
     hours: number;
     minutes: number;
     seconds: number;
     formatted: string;
 }
-
 interface PayloadType {
     MetaData: EngineOutput["MetaData"] & {
         upload_ago: number;
@@ -57,7 +51,6 @@ interface PayloadType {
     comments: CommentType[] | null;
     transcript: VideoTranscriptType[] | null;
 }
-
 function calculateUploadAgo(days: number): UploadAgo {
     const years = Math.floor(days / 365);
     const months = Math.floor((days % 365) / 30);
@@ -65,7 +58,6 @@ function calculateUploadAgo(days: number): UploadAgo {
     const formattedString = `${years > 0 ? years + " years, " : ""}${months > 0 ? months + " months, " : ""}${remainingDays} days`;
     return { years, months, days: remainingDays, formatted: formattedString };
 }
-
 function calculateVideoDuration(seconds: number): VideoDuration {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -73,7 +65,6 @@ function calculateVideoDuration(seconds: number): VideoDuration {
     const formattedString = `${hours > 0 ? hours + " hours, " : ""}${minutes > 0 ? minutes + " minutes, " : ""}${remainingSeconds} seconds`;
     return { hours, minutes, seconds: remainingSeconds, formatted: formattedString };
 }
-
 function formatCount(count: number): string {
     const abbreviations = ["K", "M", "B", "T"];
     for (let i = abbreviations.length - 1; i >= 0; i--) {
@@ -85,7 +76,6 @@ function formatCount(count: number): string {
     }
     return `${count}`;
 }
-
 async function fetchCommentsByVideoId(VideoId: string, Verbose: boolean): Promise<CommentType[] | null> {
     try {
         if (Verbose) console.log(colors.green("@info:"), `Workspaceing comments for video ID: ${VideoId}`);
@@ -127,7 +117,6 @@ async function fetchCommentsByVideoId(VideoId: string, Verbose: boolean): Promis
         return null;
     }
 }
-
 async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<VideoTranscriptType[] | null> {
     try {
         if (Verbose) console.log(colors.green("@info:"), `Working on transcript for video ID: ${VideoId}`);
@@ -150,46 +139,34 @@ async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<
         return null;
     }
 }
-
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
     let Verbose = false;
     try {
         const parsedOptions = ZodSchema.parse(options);
         const { Query, UseTor, Verbose: parsedVerbose } = parsedOptions;
         Verbose = parsedVerbose ?? false;
-
         const metaBody: EngineOutput | null = await Tuber({ Query: Query, Verbose: Verbose, UseTor: UseTor });
-
         if (!metaBody) throw new Error(`${colors.red("@error:")} Unable to get response!`);
-
         if (!metaBody.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the response!`);
-
         let uploadDate: Date | undefined;
         try {
             if (metaBody.MetaData.upload_date) uploadDate = new Date(metaBody.MetaData.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"));
         } catch (error) {
             throw new Error(`${colors.red("@error:")} Failed to parse upload date: ${error instanceof Error ? error.message : String(error)}`);
         }
-
         const currentDate = new Date();
         const daysAgo = uploadDate ? Math.floor((currentDate.getTime() - uploadDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
         const prettyDate = uploadDate?.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) || "N/A";
         const uploadAgoObject = calculateUploadAgo(daysAgo);
-
         const videoTimeInSeconds = metaBody.MetaData.duration;
         const videoDuration = calculateVideoDuration(videoTimeInSeconds ?? 0);
-
         const viewCountFormatted = metaBody.MetaData.view_count !== undefined ? formatCount(metaBody.MetaData.view_count) : "N/A";
         const likeCountFormatted = metaBody.MetaData.like_count !== undefined ? formatCount(metaBody.MetaData.like_count) : "N/A";
         const channelFollowerCountFormatted = metaBody.MetaData.channel_follower_count !== undefined ? formatCount(metaBody.MetaData.channel_follower_count || 0) : "N/A";
-
         const commentsPromise = fetchCommentsByVideoId(metaBody.MetaData.videoId || "", Verbose ?? false);
         const transcriptPromise = fetchVideoTranscript(metaBody.MetaData.videoId || "", Verbose ?? false);
-
         const [comments, transcript] = await Promise.all([commentsPromise, transcriptPromise]);
-
         const commentCountFormatted = comments !== null ? formatCount(comments.length) : "N/A";
-
         const payload: PayloadType = {
             MetaData: {
                 ...metaBody.MetaData,
@@ -202,7 +179,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
                 comment_count_formatted: commentCountFormatted,
                 channel_follower_count_formatted: channelFollowerCountFormatted ?? "0",
                 channel_follower_count: metaBody.MetaData.channel_follower_count !== null ? metaBody.MetaData.channel_follower_count : undefined,
-
             },
             AudioOnly: metaBody.AudioOnly,
             VideoOnly: metaBody.VideoOnly,
@@ -214,7 +190,6 @@ export default async function extract(options: z.infer<typeof ZodSchema>): Promi
             comments,
             transcript,
         };
-
         return payload;
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
