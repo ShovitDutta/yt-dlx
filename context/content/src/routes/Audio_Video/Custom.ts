@@ -124,14 +124,10 @@ export default async function AudioVideoCustom({
             if (!selectedVideoFormat || !selectedVideoFormat.url) throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
         }
         if (!selectedAudioFormat?.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
-
         if (!selectedVideoFormat?.url) throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
-
         instance.addInput(selectedVideoFormat.url!);
         instance.addInput(selectedAudioFormat.url!);
-
         instance.withOutputFormat("matroska");
-
         const filterMap: Record<string, string[]> = {
             grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
             invert: ["negate"],
@@ -141,12 +137,8 @@ export default async function AudioVideoCustom({
             flipHorizontal: ["hflip"],
             flipVertical: ["vflip"],
         };
-
-        if (Filter && filterMap[Filter]) {
-            instance.withVideoFilter(filterMap[Filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
+        else instance.outputOptions("-c copy");
 
         let processStartTime: Date;
 
