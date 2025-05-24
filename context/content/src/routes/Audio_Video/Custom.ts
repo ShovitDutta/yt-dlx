@@ -123,12 +123,9 @@ export default async function AudioVideoCustom({
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
             if (!selectedVideoFormat || !selectedVideoFormat.url) throw new Error(`${colors.red("@error:")} No suitable video formats found.`);
         }
-        if (!selectedAudioFormat?.url) {
-            throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
-        }
-        if (!selectedVideoFormat?.url) {
-            throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
-        }
+        if (!selectedAudioFormat?.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
+
+        if (!selectedVideoFormat?.url) throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
 
         instance.addInput(selectedVideoFormat.url!);
         instance.addInput(selectedAudioFormat.url!);
