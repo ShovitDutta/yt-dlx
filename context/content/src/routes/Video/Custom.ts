@@ -44,12 +44,10 @@ export default async function VideoCustom({
         if (MetaData && (Stream || Output || Filter || ShowProgress || VideoFormatId || VideoResolution || VideoFPS)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
-        if (Stream && Output) {
-            throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
-        }
-        if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS)) {
+        if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
+
+        if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS))
             throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
-        }
 
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
 
