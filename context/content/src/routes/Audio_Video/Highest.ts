@@ -18,7 +18,6 @@ const ZodSchema = z.object({
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
     AudioLanguage: z.string().optional(),
-    // Added audioLanguage parameter
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 
@@ -34,12 +33,9 @@ export default async function AudioVideoHighest({
     Verbose,
     ShowProgress,
     AudioLanguage,
-}: // Added audioLanguage parameter
-AudioVideoHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioVideoHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage });
-        // Added audioLanguage to parse
-
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
