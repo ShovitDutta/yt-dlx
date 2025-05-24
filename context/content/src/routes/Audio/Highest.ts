@@ -17,8 +17,8 @@ const ZodSchema = z.object({
     Verbose: z.boolean().optional(),
     MetaData: z.boolean().optional(),
     ShowProgress: z.boolean().optional(),
-    Language: z.string().optional(), // Changed to Title Case
-    Filter: z // Changed to Title Case
+    Language: z.string().optional(),
+    Filter: z
         .enum(["echo", "slow", "speed", "phaser", "flanger", "panning", "reverse", "vibrato", "subboost", "surround", "bassboost", "nightcore", "superslow", "vaporwave", "superspeed"])
         .optional(),
 });
@@ -34,7 +34,7 @@ export default async function AudioHighest({
     MetaData,
     Verbose,
     ShowProgress,
-    Language, // Changed to Title Case
+    Language,
 }: AudioHighestOptions): Promise<{ MetaData: object } | { outputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language }); // Changed to Title Case
