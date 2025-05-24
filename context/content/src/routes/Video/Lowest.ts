@@ -97,11 +97,8 @@ export default async function VideoLowest({
             flipVertical: ["vflip"],
         };
 
-        if (Filter && filterMap[Filter]) {
-            instance.withVideoFilter(filterMap[Filter]);
-        } else {
-            instance.outputOptions("-c copy");
-        }
+        if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
+        else instance.outputOptions("-c copy");
 
         let processStartTime: Date;
 
@@ -110,9 +107,7 @@ export default async function VideoLowest({
                 processStartTime = new Date();
             });
             instance.on("progress", progress => {
-                if (processStartTime) {
-                    progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                }
+                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
             });
         }
 
@@ -157,9 +152,7 @@ export default async function VideoLowest({
                 });
 
                 instance.on("progress", progress => {
-                    if (ShowProgress && processStartTime) {
-                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                    }
+                    if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
 
                 instance.on("end", () => {
