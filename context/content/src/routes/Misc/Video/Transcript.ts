@@ -34,15 +34,15 @@ export default async function videoTranscript({ VideoLink, Verbose }: VideoTrans
     try {
         ZodSchema.parse({ VideoLink, Verbose });
         const vId = await YouTubeID(VideoLink);
-        if (!vId) throw new Error(colors.red("@error:") + ` Incorrect video link`);
+        if (!vId) throw new Error(colors.red("@error:") + " Incorrect video link");
         const transcriptData: VideoTranscriptType[] = await getVideoTranscript({ VideoId: vId });
-        if (!transcriptData || transcriptData.length === 0) throw new Error(colors.red("@error:") + ` Unable to get transcript for this video!`);
+        if (!transcriptData || transcriptData.length === 0) throw new Error(colors.red("@error:") + " Unable to get transcript for this video!");
         return transcriptData;
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error:") + ` Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        if (error instanceof ZodError) throw new Error(colors.red("@error:") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error:") + ` An unexpected error occurred: ${String(error)}`);
+        else throw new Error(colors.red("@error:") + " An unexpected error occurred: " + String(error));
     } finally {
-        if (Verbose) console.log(colors.green("@info:"), `❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.`);
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
