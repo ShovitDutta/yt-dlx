@@ -12,31 +12,31 @@ export const getLocatedPaths = async (): Promise<Record<string, string>> => {
 };
 const startTor = async (ytDlxPath: string, Verbose = false): Promise<ChildProcessWithoutNullStreams> => {
     return new Promise(async (resolve, reject) => {
-        if (Verbose) console.log(colors.green("@info: ") + `Attempting to spawn Tor using yt-dlx at: ${ytDlxPath}`);
+        if (Verbose) console.log(colors.green("@info: ") + "Attempting to spawn Tor using yt-dlx at: " + ytDlxPath);
         const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as unknown as ChildProcessWithoutNullStreams;
         const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
         const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
         rlStdout.on("line", line => {
-            if (Verbose) console.log(colors.green("@info: ") + `${line}`);
+            if (Verbose) console.log(colors.green("@info: ") + line);
             if (line.includes("Bootstrapped 100% (done): Done")) {
-                if (Verbose) console.log(colors.green("@info: ") + `Tor is 100% bootstrapped!`);
+                if (Verbose) console.log(colors.green("@info: ") + "Tor is 100% bootstrapped!");
                 rlStdout.removeAllListeners("line");
                 rlStderr.removeAllListeners("line");
                 resolve(torProcess);
             }
         });
         rlStderr.on("line", line => {
-            if (Verbose) console.error(colors.red("@error: ") + `${line}`);
+            if (Verbose) console.error(colors.red("@error: ") + line);
         });
         torProcess.on("error", err => {
-            console.error(colors.red("@error: ") + `Tor process error: ${err}`);
+            console.error(colors.red("@error: ") + "Tor process error: " + err);
             reject(err);
         });
         torProcess.on("close", code => {
-            console.log(colors.green("@info: ") + `Tor process closed with code ${code}`);
+            console.log(colors.green("@info: ") + "Tor process closed with code " + code);
             if (code !== 0) reject(new Error(`Tor process exited with code ${code} before bootstrapping.`));
         });
-        if (Verbose) console.log(colors.green("@info: ") + `Spawned yt-dlx --tor process with PID: ${torProcess.pid} using ${ytDlxPath}. Waiting for bootstrap...`);
+        if (Verbose) console.log(colors.green("@info: ") + "Spawned yt-dlx --tor process with PID: " + torProcess.pid + " using " + ytDlxPath + ". Waiting for bootstrap...");
     });
 };
 export var sizeFormat = (filesize: number): string | number => {
@@ -62,16 +62,16 @@ export default async function Engine(options: {
     const ytDlxPath = located["yt-dlx"];
     const ffmpegPath = located["ffmpeg"];
     if (!ytDlxPath) {
-        console.error(colors.red("@error: ") + `yt-dlx executable path not found.`);
+        console.error(colors.red("@error: ") + "yt-dlx executable path not found.");
         return null;
     }
     if (UseTor) {
         try {
-            if (Verbose) console.log(colors.green("@info: ") + `Attempting to start Tor and wait for bootstrap...`);
+            if (Verbose) console.log(colors.green("@info: ") + "Attempting to start Tor and wait for bootstrap...");
             torProcess = await startTor(ytDlxPath, Verbose);
-            if (Verbose) console.log(colors.green("@info: ") + `Tor is ready for ${process.platform === "win32" ? "Windows" : "Linux"}.`);
+            if (Verbose) console.log(colors.green("@info: ") + "Tor is ready for " + (process.platform === "win32" ? "Windows" : "Linux") + ".");
         } catch (error) {
-            console.error(colors.red("@error: ") + `Failed to start Tor: ${error}`);
+            console.error(colors.red("@error: ") + "Failed to start Tor: " + error);
         }
     }
     const ytprobeArgs = [
@@ -92,17 +92,17 @@ export default async function Engine(options: {
     const argsToInsert: string[] = [];
     if (UseTor) {
         argsToInsert.push("--proxy", "socks5://127.0.0.1:9050");
-        if (Verbose) console.log(colors.green("@info: ") + `Adding Tor proxy arguments.`);
+        if (Verbose) console.log(colors.green("@info: ") + "Adding Tor proxy arguments.");
     }
     if (ffmpegPath) {
         argsToInsert.push("--ffmpeg", ffmpegPath);
-        if (Verbose) console.log(colors.green("@info: ") + `Adding ffmpeg path argument: ${ffmpegPath}`);
+        if (Verbose) console.log(colors.green("@info: ") + "Adding ffmpeg path argument: " + ffmpegPath);
     } else {
-        console.warn(colors.yellow("@warn: ") + `ffmpeg executable path not found. yt-dlx may use its built-in downloader or fail for some formats.`);
+        console.warn(colors.yellow("@warn: ") + "ffmpeg executable path not found. yt-dlx may use its built-in downloader or fail for some formats.");
     }
     if (Verbose) {
         argsToInsert.push("--Verbose");
-        if (Verbose) console.log(colors.green("@info: ") + `Adding Verbose argument for yt-dlx.`);
+        if (Verbose) console.log(colors.green("@info: ") + "Adding Verbose argument for yt-dlx.");
     }
     if (argsToInsert.length > 0) {
         ytprobeArgs.splice(insertIndex, 0, ...argsToInsert);
@@ -112,7 +112,7 @@ export default async function Engine(options: {
     }, retryConfig);
     if (torProcess) {
         torProcess.kill();
-        if (Verbose) console.log(colors.green("@info: ") + `Tor process terminated on ${process.platform === "win32" ? "Windows" : "Linux"}`);
+        if (Verbose) console.log(colors.green("@info: ") + "Tor process terminated on " + (process.platform === "win32" ? "Windows" : "Linux"));
     }
     const rawresp: OriginalJson = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
     const AllFormats = rawresp.formats || [];
