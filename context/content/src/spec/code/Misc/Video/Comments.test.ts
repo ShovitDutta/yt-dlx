@@ -14,7 +14,7 @@ vitest.describe("videoComments", () => {
                 vitest.expect(result[0]).toHaveProperty("author");
             }
         } catch (error) {
-            console.warn("Basic comments fetch failed for Query \"" + validQuery + "\". This test requires a real video Query that returns a video with comments. " + error);
+            console.warn("Basic comments fetch failed for Query \"" + validQuery + "\". This test requires a real video Query that returns a video with comments. " + `${error}`);
             throw error;
         }
     });
@@ -26,7 +26,7 @@ vitest.describe("videoComments", () => {
                 vitest.expect(result[0]).toHaveProperty("comment_id");
             }
         } catch (error) {
-            console.warn("Verbose comments fetch failed for Query \"" + validQuery + "\". This test requires a real video Query that returns a video with comments. " + error);
+            console.warn("Verbose comments fetch failed for Query \"" + validQuery + "\". This test requires a real video Query that returns a video with comments. " + `${error}`);
             throw error;
         }
     });
