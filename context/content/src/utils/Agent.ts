@@ -56,13 +56,13 @@ export default async function Agent({ Query, UseTor = false, Verbose = false }: 
     let url: string;
     const youtube = new Client();
     const videoId: string | undefined = await YouTubeID(Query);
-    if (Verbose && UseTor) console.log(colors.green("@info:") + `Using Tor for request anonymization`);
+    if (Verbose && UseTor) console.log(colors.green("@info: ") + `Using Tor for request anonymization`);
     if (!videoId) {
         try {
             const searchResults = await youtube.search(Query, { type: "video" });
             if (searchResults.items.length === 0) throw new Error(colors.red("@error: ") + `Unable to find a video for Query: ${Query}`);
             const video = searchResults.items[0];
-            console.log(colors.green("@info:") + `preparing payload for ${video.title}`);
+            console.log(colors.green("@info: ") + `preparing payload for ${video.title}`);
             url = `https://www.youtube.com/watch?v=${video.id}`;
         } catch (error: any) {
             throw new Error(colors.red("@error: ") + `Error during video search: ${error.message}`);
@@ -70,7 +70,7 @@ export default async function Agent({ Query, UseTor = false, Verbose = false }: 
     } else {
         const TubeBody = await VideoInfo({ videoId });
         if (!TubeBody) throw new Error(colors.red("@error: ") + `Unable to get video data for id: ${videoId}`);
-        console.log(colors.green("@info:") + `preparing payload for ${TubeBody.title}`);
+        console.log(colors.green("@info: ") + `preparing payload for ${TubeBody.title}`);
         url = `https://www.youtube.com/watch?v=${TubeBody.id}`;
     }
     return await Engine({ Query: url, UseTor, Verbose });
