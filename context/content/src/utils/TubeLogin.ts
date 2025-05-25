@@ -10,7 +10,7 @@ export default async function TubeLogin(cookiesFilePathOrString: string): Promis
         try {
             cookiesData = fs.readFileSync(cookiesFilePathOrString, "utf8");
         } catch (error) {
-            console.error(colors.red("@error: ") + `Failed to read cookies file.`);
+            console.error(colors.red("@error: ") + "Failed to read cookies file.");
             process.exit(1);
         }
     } else cookiesData = cookiesFilePathOrString;
@@ -20,11 +20,11 @@ export default async function TubeLogin(cookiesFilePathOrString: string): Promis
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
             cookie: cookiesData,
         });
-        console.log(colors.green("@info: ") + `Connected to YouTube...`);
+        console.log(colors.green("@info: ") + "Connected to YouTube...");
         return Tube;
     } catch (err) {
-        console.error(colors.red("@error: ") + `Failed to authenticate. The cookies appear to be corrupt or invalid.`);
-        console.error(colors.red("@error: ") + `Try using valid YouTube cookies.`);
+        console.error(colors.red("@error: ") + "Failed to authenticate. The cookies appear to be corrupt or invalid.");
+        console.error(colors.red("@error: ") + "Try using valid YouTube cookies.");
         process.exit(1);
     }
 }
