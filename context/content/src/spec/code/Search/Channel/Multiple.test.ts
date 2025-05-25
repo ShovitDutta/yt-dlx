@@ -24,7 +24,7 @@ vitest.describe("search_channels", () => {
                 }
             }
         } catch (error) {
-            console.warn("Basic channel search failed for Query \"" + validQuery + "\". This test requires a Query that returns channel results. " + `${error}`);
+            console.warn("Basic channel search failed for Query \"" + validQuery + "\". This test requires a Query that returns channel results. " + error);
             throw error;
         }
     });
