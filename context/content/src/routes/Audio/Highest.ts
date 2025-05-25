@@ -48,8 +48,8 @@ export default async function AudioHighest({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                     Links: {
-                        Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Highest,
-                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Highest,
+                        Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Default"]?.Highest,
+                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Default"]?.Highest,
                     },
                 },
             };
@@ -70,8 +70,8 @@ export default async function AudioHighest({
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-        const highestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Highest;
-        if (!highestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found for language: ${Language || "Unknown"}.`);
+        const highestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Default"]?.Highest;
+        if (!highestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL was not found for language: ${Language || "Default"}.`);
         instance.addInput(highestQualityAudio.url!);
         instance.withOutputFormat("avi");
         const filterMap: Record<string, string[]> = {

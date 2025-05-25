@@ -53,10 +53,11 @@ export default async function AudioVideoCustom({
         if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS)) {
             throw new Error(`${colors.red("@error:")} Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`);
         }
-        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
-        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
-        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
+
         if (MetaData) {
+            const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
+            if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+            if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
             return {
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
@@ -70,6 +71,12 @@ export default async function AudioVideoCustom({
                 },
             };
         }
+
+        // Refetch EngineMeta right before processing to ensure fresh URLs for download/stream
+        const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
+        if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
+        if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
+
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = Output ? Output : process.cwd();
         if (!Stream && !fs.existsSync(folder)) {
@@ -124,6 +131,10 @@ export default async function AudioVideoCustom({
         }
         if (!selectedAudioFormat?.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
         if (!selectedVideoFormat?.url) throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
+
+        // Explicitly whitelist protocols and add reconnect options for FFmpeg to handle HLS streams over HTTPS
+        instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
+
         instance.addInput(selectedVideoFormat.url!);
         instance.addInput(selectedAudioFormat.url!);
         instance.withOutputFormat("matroska");
@@ -136,8 +147,10 @@ export default async function AudioVideoCustom({
             flipHorizontal: ["hflip"],
             flipVertical: ["vflip"],
         };
-        if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
-        else instance.outputOptions("-c copy");
+        if (Filter && filterMap[Filter]) {
+            instance.withVideoFilter(filterMap[Filter]);
+        }
+        // Removed -c copy to force re-encoding and potentially fix "Invalid data found" error
         let processStartTime: Date;
         if (ShowProgress) {
             instance.on("start", () => {

@@ -53,8 +53,8 @@ export default async function AudioCustom({
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                     Links: {
-                        Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined,
-                        AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined,
+                        Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Combined,
+                        AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Combined,
                     },
                 },
             };
@@ -77,12 +77,12 @@ export default async function AudioCustom({
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
         let selectedAudioFormat: CleanedAudioFormat | undefined;
         const availableAudioFormats = [
-            ...(EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined || []),
-            ...(EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined || []),
+            ...(EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Combined || []),
+            ...(EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Combined || []),
         ];
         if (AudioFormatId) {
             selectedAudioFormat = availableAudioFormats.find(format => format.format_id === AudioFormatId);
-            if (!selectedAudioFormat) throw new Error(`${colors.red("@error:")} Audio format with ID '${AudioFormatId}' not found for language '${AudioLanguage || "Unknown"}'.`);
+            if (!selectedAudioFormat) throw new Error(`${colors.red("@error:")} Audio format with ID '${AudioFormatId}' not found for language '${AudioLanguage || "Default"}'.`);
         } else if (AudioBitrate) {
             selectedAudioFormat = availableAudioFormats.reduce((prev: CleanedAudioFormat | undefined, curr: CleanedAudioFormat) => {
                 if (curr.tbr === undefined || curr.tbr === null) return prev;
@@ -90,11 +90,11 @@ export default async function AudioCustom({
                 return Math.abs(curr.tbr - AudioBitrate) < Math.abs(prev.tbr - AudioBitrate) ? curr : prev;
             }, undefined);
             if (!selectedAudioFormat || selectedAudioFormat.tbr === undefined || selectedAudioFormat.tbr === null) {
-                throw new Error(`${colors.red("@error:")} No audio format found with a valid bitrate close to ${AudioBitrate} for language '${AudioLanguage || "Unknown"}'.`);
+                throw new Error(`${colors.red("@error:")} No audio format found with a valid bitrate close to ${AudioBitrate} for language '${AudioLanguage || "Default"}'.`);
             }
         } else {
-            selectedAudioFormat = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest || availableAudioFormats.find(format => format.url !== undefined);
-            if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Unknown"}'.`);
+            selectedAudioFormat = EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Highest || availableAudioFormats.find(format => format.url !== undefined);
+            if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Default"}'.`);
         }
         if (!selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
         instance.addInput(selectedAudioFormat.url!);

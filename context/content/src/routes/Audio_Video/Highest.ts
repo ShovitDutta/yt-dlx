@@ -47,8 +47,8 @@ export default async function AudioVideoHighest({
                     FileName: `yt-dlx_AudioVideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
                         Audio: {
-                            Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest,
-                            DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Highest,
+                            Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Highest,
+                            DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Highest,
                         },
                         Video: { Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest, HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest },
                     },
@@ -74,8 +74,8 @@ export default async function AudioVideoHighest({
         const highestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest;
         if (!highestVideo?.url) throw new Error(`${colors.red("@error:")} Highest quality video URL not found.`);
         instance.addInput(highestVideo.url);
-        const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Highest;
-        if (!highestAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
+        const highestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Highest;
+        if (!highestAudio?.url) throw new Error(`${colors.red("@error:")} Highest quality audio URL not found for language: ${AudioLanguage || "Default"}.`);
         instance.addInput(highestAudio.url);
         instance.withOutputFormat("matroska");
         const filterMap: Record<string, string[]> = {

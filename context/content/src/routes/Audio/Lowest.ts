@@ -47,7 +47,7 @@ export default async function AudioLowest({
                 MetaData: {
                     MetaData: EngineMeta.MetaData,
                     FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                    Links: { Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest, DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Unknown"]?.Lowest },
+                    Links: { Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Default"]?.Lowest, DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Default"]?.Lowest },
                 },
             };
         }
@@ -67,8 +67,8 @@ export default async function AudioLowest({
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-        const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Unknown"]?.Lowest;
-        if (!lowestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Unknown"}.`);
+        const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Default"]?.Lowest;
+        if (!lowestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Default"}.`);
         instance.addInput(lowestQualityAudio.url!);
         instance.withOutputFormat("avi");
         const filterMap: Record<string, string[]> = {

@@ -7,7 +7,7 @@ import { EngineOutput } from "../../../interfaces/EngineOutput";
 vitest.describe("AudioCustom", () => {
     const Query = "https://www.youtube.com/watch?v=30LWjhZzg50";
     vitest.it("should handle basic download", async () => {
-        const result = await AudioCustom({ Query });
+        const result = await AudioCustom({ Query, AudioLanguage: "Default," });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
             vitest.expect(result.OutputPath).toMatch(/\.avi$/);

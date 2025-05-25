@@ -47,8 +47,8 @@ export default async function AudioVideoLowest({
                     FileName: `yt-dlx_AudioVideoLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                     Links: {
                         Audio: {
-                            Standard_Lowest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest,
-                            DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Lowest,
+                            Standard_Lowest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Lowest,
+                            DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Lowest,
                         },
                         Video: { Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest, HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Lowest },
                     },
@@ -74,8 +74,8 @@ export default async function AudioVideoLowest({
         const lowestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest;
         if (!lowestVideo?.url) throw new Error(`${colors.red("@error:")} Lowest quality video URL not found.`);
         instance.addInput(lowestVideo.url);
-        const lowestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Lowest;
-        if (!lowestAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL not found for language: ${AudioLanguage || "Unknown"}.`);
+        const lowestAudio = EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Lowest;
+        if (!lowestAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL not found for language: ${AudioLanguage || "Default"}.`);
         instance.addInput(lowestAudio.url);
         instance.withOutputFormat("matroska");
         const filterMap: Record<string, string[]> = {
