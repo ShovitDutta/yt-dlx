@@ -1,5 +1,6 @@
 import { locator } from "../utils/Locator";
 import progbar from "../utils/ProgBar";
+import M3u8 from "../utils/M3u8";
 import dotenv from "dotenv";
 import YouTubeDLX from "..";
 import fs from "fs";
@@ -9,18 +10,19 @@ console.clear();
     const respEngine = await YouTubeDLX.Misc.Video.Extract({ Query: "1 hour lofi" });
     fs.writeFileSync("Engine.json", JSON.stringify(respEngine, null, 2));
     const paths = await locator();
-    const FileName = "Audio_Video.mkv";
-    new YouTubeDLX.Misc.System.FFmpeg_M3U8({
-        ffmpegPath: paths.ffmpeg,
-        ffprobePath: paths.ffprobe,
+    const main = new M3u8({
+        Verbose: true,
+        FFmpegPath: paths.ffmpeg,
+        FFprobePath: paths.ffprobe,
         Audio_M3u8_URL: respEngine.AudioOnly.Standard["Default,"].Highest?.url!,
         Video_M3u8_URL: respEngine.VideoOnly.Standard_Dynamic_Range.Highest?.url!,
-        parafig: instance => {
-            instance.save(FileName);
+        configure: instance => {
+            instance.outputFormat("matroska");
             instance.outputOptions("-c copy");
-            instance.setFfmpegPath(paths.ffmpeg);
-            instance.setFfprobePath(paths.ffprobe);
+            const sanitizedFileName = respEngine.MetaData.title?.toString().replace(/[^\w-]/g, "_") + ".mkv";
+            instance.save(sanitizedFileName);
             instance.on("progress", progress => progbar({ ...progress, percent: progress.percent !== undefined && !isNaN(progress.percent) ? progress.percent : 0, startTime: new Date() }));
         },
-    }).run();
+    });
+    main.run();
 })().catch(console.error);
