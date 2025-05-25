@@ -32,12 +32,12 @@ export default async function VideoHighest({
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
-            throw new Error(colors.red("@error: ") + ` The 'MetaData' parameter cannot be used with 'Stream', 'Output', 'Filter', or 'ShowProgress'.`);
+            throw new Error(colors.red("@error: ") + " The 'MetaData' parameter cannot be used with 'Stream', 'Output', 'Filter', or 'ShowProgress'.");
         }
-        if (Stream && Output) throw new Error(colors.red("@error: ") + ` The 'Stream' parameter cannot be used with 'Output'.`);
+        if (Stream && Output) throw new Error(colors.red("@error: ") + " The 'Stream' parameter cannot be used with 'Output'.");
         const EngineMeta: EngineOutput | null = await Agent({ Query, Verbose, UseTor });
-        if (!EngineMeta) throw new Error(colors.red("@error: ") + ` Unable to retrieve a response from the engine.`);
-        if (!EngineMeta.MetaData) throw new Error(colors.red("@error: ") + ` Metadata not found in the engine response.`);
+        if (!EngineMeta) throw new Error(colors.red("@error: ") + " Unable to retrieve a response from the engine.");
+        if (!EngineMeta.MetaData) throw new Error(colors.red("@error: ") + " Metadata not found in the engine response.");
         if (MetaData) {
             return {
                 MetaData: {
@@ -53,18 +53,18 @@ export default async function VideoHighest({
             try {
                 fs.mkdirSync(folder, { recursive: true });
             } catch (mkdirError: any) {
-                throw new Error(colors.red("@error: ") + ` Failed to create Output directory: ${mkdirError.message}`);
+                throw new Error(colors.red("@error: ") + " Failed to create Output directory: " + mkdirError.message);
             }
         }
         const instance: ffmpeg.FfmpegCommand = ffmpeg();
         const paths = await locator();
-        if (!paths.ffmpeg) throw new Error(colors.red("@error: ") + ` ffmpeg executable not found.`);
-        if (!paths.ffprobe) throw new Error(colors.red("@error: ") + ` ffprobe executable not found.`);
+        if (!paths.ffmpeg) throw new Error(colors.red("@error: ") + " ffmpeg executable not found.");
+        if (!paths.ffprobe) throw new Error(colors.red("@error: ") + " ffprobe executable not found.");
         instance.setFfmpegPath(paths.ffmpeg);
         instance.setFfprobePath(paths.ffprobe);
         if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
         const highestVideo = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest;
-        if (!highestVideo || !highestVideo.url) throw new Error(colors.red("@error: ") + ` Highest quality video URL not found.`);
+        if (!highestVideo || !highestVideo.url) throw new Error(colors.red("@error: ") + " Highest quality video URL not found.");
         instance.addInput(highestVideo.url);
         instance.withOutputFormat("matroska");
         const filterMap: Record<string, string[]> = {
@@ -93,16 +93,16 @@ export default async function VideoHighest({
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
             instance.on("start", command => {
-                if (Verbose) console.log(colors.green("@info: ") + `FFmpeg Stream started: ${command}`);
+                if (Verbose) console.log(colors.green("@info: ") + "FFmpeg Stream started: " + command);
             });
             instance.pipe(passthroughStream, { end: true });
             instance.on("end", () => {
-                if (Verbose) console.log(colors.green("@info: ") + `FFmpeg streaming finished.`);
+                if (Verbose) console.log(colors.green("@info: ") + "FFmpeg streaming finished.");
                 if (ShowProgress) process.stdout.write("\n");
             });
             instance.on("error", (error, stdout, stderr) => {
                 const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
-                console.error(errorMessage + `\nstdout: ${stdout}\nstderr: ${stderr}`);
+                console.error(errorMessage + "\nstdout: " + stdout + "\nstderr: " + stderr);
                 passthroughStream.emit("error", new Error(errorMessage));
                 passthroughStream.destroy(new Error(errorMessage));
                 if (ShowProgress) process.stdout.write("\n");
@@ -116,20 +116,20 @@ export default async function VideoHighest({
             instance.output(OutputPath);
             await new Promise<void>((resolve, reject) => {
                 instance.on("start", command => {
-                    if (Verbose) console.log(colors.green("@info: ") + `FFmpeg download started: ${command}`);
+                    if (Verbose) console.log(colors.green("@info: ") + "FFmpeg download started: " + command);
                     if (ShowProgress) processStartTime = new Date();
                 });
                 instance.on("progress", progress => {
                     if (ShowProgress && processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                 });
                 instance.on("end", () => {
-                    if (Verbose) console.log(colors.green("@info: ") + `FFmpeg download finished.`);
+                    if (Verbose) console.log(colors.green("@info: ") + "FFmpeg download finished.");
                     if (ShowProgress) process.stdout.write("\n");
                     resolve();
                 });
                 instance.on("error", (error, stdout, stderr) => {
                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
-                    console.error(errorMessage + `\nstdout: ${stdout}\nstderr: ${stderr}`);
+                    console.error(errorMessage + "\nstdout: " + stdout + "\nstderr: " + stderr);
                     if (ShowProgress) process.stdout.write("\n");
                     reject(new Error(errorMessage));
                 });
@@ -138,10 +138,10 @@ export default async function VideoHighest({
             return { OutputPath };
         }
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error: ") + ` Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error: ") + ` An unexpected error occurred: ${String(error)}`);
+        else throw new Error(colors.red("@error: ") + " An unexpected error occurred: " + String(error));
     } finally {
-        if (Verbose) console.log(colors.green("@info: ") + `❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.`);
+        if (Verbose) console.log(colors.green("@info: ") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
