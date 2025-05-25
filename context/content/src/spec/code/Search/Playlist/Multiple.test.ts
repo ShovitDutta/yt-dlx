@@ -22,7 +22,7 @@ vitest.describe("search_playlists", () => {
                 vitest.expect(Array.isArray(result.data.thumbnails)).toBe(true);
             }
         } catch (error) {
-            console.warn("Basic playlist search failed for Query \"" + validQuery + "\". " + `${error}`);
+            console.warn("Basic playlist search failed for Query \"" + validQuery + "\". " + error);
         }
     });
     vitest.it("should handle playlist search with a different Query", async () => {
