@@ -14,7 +14,7 @@ vitest.describe("searchVideos", () => {
                 vitest.expect(result[0]).toHaveProperty("isLive");
             }
         } catch (error) {
-            console.warn("Basic video search failed for Query \"" + validQuery + "\". This test requires a Query that returns video results. " + error);
+            console.warn("Basic video search failed for Query \"" + validQuery + "\". This test requires a Query that returns video results. " + `${error}`);
         }
     });
     vitest.it("should handle search with Verbose logging", async () => {
