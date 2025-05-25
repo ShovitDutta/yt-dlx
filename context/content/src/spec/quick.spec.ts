@@ -1,7 +1,5 @@
-import M3U8Downloader from "@renmu/m3u8-downloader";
 import { locator } from "../utils/Locator";
 import progbar from "../utils/ProgBar";
-import Ffmpeg from "fluent-ffmpeg";
 import dotenv from "dotenv";
 import YouTubeDLX from "..";
 import fs from "fs";
@@ -10,29 +8,19 @@ console.clear();
 (async () => {
     const respEngine = await YouTubeDLX.Misc.Video.Extract({ Query: "1 hour lofi" });
     fs.writeFileSync("Engine.json", JSON.stringify(respEngine, null, 2));
-    let processStartTime: Date;
     const paths = await locator();
-    const AudName = "Audio_M3U8.mp4";
     const FileName = "Audio_Video.mkv";
-    const instance: Ffmpeg.FfmpegCommand = Ffmpeg();
-    const AudDev = new Promise<void>((resolve, reject) => {
-        const main = new M3U8Downloader(respEngine.AudioOnly.Standard["Default,"].Highest?.url!, AudName, { ffmpegPath: paths.ffmpeg, convert2Mp4: true });
-        main.on("progress", progress => process.stdout.write(`Download progress: ${progress.downloaded}/${progress.total}%\r`));
-        main.on("error", error => reject(error));
-        main.on("completed", () => resolve());
-        main.download();
-    }).catch(console.error);
-    await AudDev;
-    instance.input(respEngine.VideoOnly.Standard_Dynamic_Range.Highest?.url!);
-    instance.input(AudName);
-    instance.outputOptions("-c copy");
-    instance.setFfmpegPath(paths.ffmpeg);
-    instance.withOutputFormat("matroska");
-    instance.setFfprobePath(paths.ffprobe);
-    instance.addInputOption("-protocol_whitelist", "file,http,https,tcp,tls,crypto");
-    instance.on("end", () => fs.unlinkSync(AudName));
-    instance.on("start", () => (processStartTime = new Date()));
-    instance.on("progress", progress => progbar({ ...progress, percent: progress.percent ?? 0, startTime: processStartTime }));
-    instance.output(FileName);
-    instance.run();
+    new YouTubeDLX.Misc.System.FFmpeg_M3U8({
+        ffmpegPath: paths.ffmpeg,
+        ffprobePath: paths.ffprobe,
+        Audio_M3u8_URL: respEngine.AudioOnly.Standard["Default,"].Highest?.url!,
+        Video_M3u8_URL: respEngine.VideoOnly.Standard_Dynamic_Range.Highest?.url!,
+        parafig: instance => {
+            instance.save(FileName);
+            instance.outputOptions("-c copy");
+            instance.setFfmpegPath(paths.ffmpeg);
+            instance.setFfprobePath(paths.ffprobe);
+            instance.on("progress", progress => progbar({ ...progress, percent: progress.percent !== undefined && !isNaN(progress.percent) ? progress.percent : 0, startTime: new Date() }));
+        },
+    }).run();
 })().catch(console.error);

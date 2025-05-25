@@ -24,6 +24,7 @@ import search_channels from "./routes/Search/Channel/Multiple";
 import search_playlists from "./routes/Search/Playlist/Multiple";
 import subscriptions_feed from "./routes/Account/SubscriptionsFeed";
 import unseen_notifications from "./routes/Account/UnseenNotifications";
+import { FFmpeg_M3U8 } from "./utils/FFmpeg_M3U8";
 var YouTubeDLX = {
     Audio: {
         Custom: AudioCustom, // YouTubeDLX.Audio.Custom
@@ -63,6 +64,7 @@ var YouTubeDLX = {
     Misc: {
         System: {
             Help: help, // YouTubeDLX.Misc.System.Help
+            FFmpeg_M3U8, // YouTubeDLX.Misc.System.FFmpeg_M3U8
             ProgressBar: ProgBar, // YouTubeDLX.Misc.System.ProgressBar
         },
         Video: {
