@@ -13,26 +13,26 @@ async function playlistVideos({ PlaylistId }: { PlaylistId: string }): Promise<p
     try {
         const youtube = new Client();
         const playlistVideosData: any = await youtube.getPlaylist(PlaylistId);
-        if (!playlistVideosData) throw new Error(colors.red("@error: ") + ` Unable to fetch playlist data.`);
+        if (!playlistVideosData) throw new Error(colors.red("@error: ") + " Unable to fetch playlist data.");
         const result = playlistVideosData.videos.items.map((item: any) => ({ id: item.id, title: item.title, isLive: item.isLive, duration: item.duration, thumbnails: item.thumbnails?.[0] || null }));
         return { id: playlistVideosData.id, title: playlistVideosData.title, videoCount: playlistVideosData.videoCount, result };
     } catch (error: any) {
-        throw new Error(colors.red("@error: ") + ` ${error.message}`);
+        throw new Error(colors.red("@error: ") + " " + error.message);
     }
 }
 export default async function playlist_data({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: playlistVideosType }> {
     try {
         ZodSchema.parse({ playlistLink, Verbose });
         const PlaylistId = await YouTubeID(playlistLink);
-        if (!PlaylistId) throw new Error(colors.red("@error: ") + ` Incorrect playlist link provided.`);
+        if (!PlaylistId) throw new Error(colors.red("@error: ") + " Incorrect playlist link provided.");
         const metaData: playlistVideosType | null = await playlistVideos({ PlaylistId });
-        if (!metaData) throw new Error(colors.red("@error: ") + ` Unable to retrieve playlist information.`);
+        if (!metaData) throw new Error(colors.red("@error: ") + " Unable to retrieve playlist information.");
         return { data: metaData };
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error:") + ` Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
+        if (error instanceof ZodError) throw new Error(colors.red("@error:") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error:") + ` An unexpected error occurred: ${String(error)}`);
+        else throw new Error(colors.red("@error:") + " An unexpected error occurred: " + String(error));
     } finally {
-        if (Verbose) console.log(colors.green("@info:"), `❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.`);
+        if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
