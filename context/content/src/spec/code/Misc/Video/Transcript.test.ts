@@ -12,7 +12,7 @@ vitest.describe("videoTranscript", () => {
                 vitest.expect(result[0]).toHaveProperty("duration");
             }
         } catch (error) {
-            console.warn("Basic transcript fetch failed for " + VideoLink + ". This might require a real video link with a transcript. " + error);
+            console.warn("Basic transcript fetch failed for " + VideoLink + ". This might require a real video link with a transcript. " + `${error}`);
             throw error;
         }
     });
@@ -26,7 +26,7 @@ vitest.describe("videoTranscript", () => {
                 vitest.expect(result[0]).toHaveProperty("duration");
             }
         } catch (error) {
-            console.warn("Basic transcript fetch failed for " + VideoLink + ". This might require a real video link with a transcript. " + error);
+            console.warn("Basic transcript fetch failed for " + VideoLink + ". This might require a real video link with a transcript. " + `${error}`);
             throw error;
         }
     });
