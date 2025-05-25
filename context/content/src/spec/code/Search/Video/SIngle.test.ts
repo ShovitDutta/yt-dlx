@@ -24,7 +24,7 @@ vitest.describe("videoData", () => {
                 vitest.expect(typeof result.channelname).toBe("string");
             }
         } catch (error) {
-            console.warn("Basic video data fetch failed for " + validVideoLink + ". This might require a real video link. " + error);
+            console.warn("Basic video data fetch failed for " + validVideoLink + ". This might require a real video link. " + `${error}`);
             throw error;
         }
     });
@@ -40,7 +40,7 @@ vitest.describe("videoData", () => {
                 vitest.expect(typeof result.duration).toBe("number");
             }
         } catch (error) {
-            console.warn("Video data fetch failed for " + shortenedVideoLink + ". This might require a real video link. " + error);
+            console.warn("Video data fetch failed for " + shortenedVideoLink + ". This might require a real video link. " + `${error}`);
             throw error;
         }
     });
@@ -56,7 +56,7 @@ vitest.describe("videoData", () => {
                 vitest.expect(typeof result.duration).toBe("number");
             }
         } catch (error) {
-            console.warn("Video data fetch failed for " + rawVideoId + ". This might require a real video ID. " + error);
+            console.warn("Video data fetch failed for " + rawVideoId + ". This might require a real video ID. " + `${error}`);
             throw error;
         }
     });
