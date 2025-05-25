@@ -18,7 +18,7 @@ vitest.describe("relatedVideosFn", () => {
                 vitest.expect(Array.isArray(result[0].thumbnails)).toBe(true);
             }
         } catch (error) {
-            console.warn("Basic related videos fetch failed for " + videoIdWithRelated + ". This test requires a real video ID with related videos. " + error);
+            console.warn("Basic related videos fetch failed for " + videoIdWithRelated + ". This test requires a real video ID with related videos. " + `${error}`);
             throw error;
         }
     });
