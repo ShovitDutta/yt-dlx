@@ -1,4 +1,3 @@
-import * as os from "os";
 import pq from "p-queue";
 import axios from "axios";
 import colors from "colors";
@@ -79,7 +78,7 @@ export default class M3u8 extends EventEmitter {
             });
     }
     async getFfmpegCommand(): Promise<ffmpeg.FfmpegCommand> {
-        const segmentsDir = path.join(os.tmpdir(), "m3u8_segments");
+        const segmentsDir = path.join(process.cwd(), "m3u8_segments");
         const queue = new pq({ concurrency: 5 });
         const downloadedFiles: string[] = [];
         const audioUrl = this.options.Audio_M3u8_URL;
