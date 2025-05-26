@@ -73,6 +73,7 @@ export default async function AudioLowest({
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
                 instance.withOutputFormat("avi");
+                instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
                 const filterMap: Record<string, string[]> = {
                     speed: ["atempo=2"],
                     flanger: ["flanger"],
