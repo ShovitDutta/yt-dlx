@@ -7,7 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
-import { EngineOutput } from "../../interfaces/EngineOutput";
+import { CleanedAudioFormat, EngineOutput } from "../../interfaces/EngineOutput";
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -32,7 +32,11 @@ export default async function AudioHighest({
     Language,
     MetaData,
     ShowProgress,
-}: AudioHighestOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioHighestOptions): Promise<
+    | { MetaData: EngineOutput["MetaData"]; FileName: string; Links: { Standard_Highest: CleanedAudioFormat | null; HDR_Highest: CleanedAudioFormat | null } }
+    | { Stream: Readable; FileName: string }
+    | { OutputPath: string }
+> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -47,8 +51,8 @@ export default async function AudioHighest({
                 MetaData: EngineMeta.MetaData,
                 FileName: `yt-dlx_AudioHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
                 Links: {
-                    Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Default"]?.Highest,
-                    DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Default"]?.Highest,
+                    Standard_Highest: Object.fromEntries(Object.entries(EngineMeta.AudioOnly.Standard).map(([lang, data]) => [lang, data?.Highest as CleanedAudioFormat | null])),
+                    HDR_Highest: null,
                 },
             };
         }

@@ -7,7 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
-import { EngineOutput } from "../../interfaces/EngineOutput";
+import { EngineOutput, CleanedAudioFormat } from "../../interfaces/EngineOutput";
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -32,7 +32,11 @@ export default async function AudioLowest({
     Language,
     MetaData,
     ShowProgress,
-}: AudioLowestOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioLowestOptions): Promise<
+    | { MetaData: EngineOutput["MetaData"]; FileName: string; Links: { Standard_Lowest: CleanedAudioFormat | null; HDR_Lowest: CleanedAudioFormat | null } }
+    | { Stream: Readable; FileName: string }
+    | { OutputPath: string }
+> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -46,7 +50,10 @@ export default async function AudioLowest({
             return {
                 MetaData: EngineMeta.MetaData,
                 FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                Links: { Standard_Lowest: EngineMeta.AudioOnly.Standard[Language || "Default"]?.Lowest, DRC_Lowest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Default"]?.Lowest },
+                Links: {
+                    Standard_Lowest: Object.fromEntries(Object.entries(EngineMeta.AudioOnly.Standard).map(([lang, data]) => [lang, data?.Lowest as CleanedAudioFormat | null])),
+                    HDR_Lowest: null,
+                },
             };
         }
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";

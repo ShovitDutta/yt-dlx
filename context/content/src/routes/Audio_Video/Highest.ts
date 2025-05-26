@@ -7,7 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
-import { EngineOutput } from "../../interfaces/EngineOutput";
+import { EngineOutput, CleanedAudioFormat, CleanedVideoFormat } from "../../interfaces/EngineOutput";
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -20,17 +20,18 @@ const ZodSchema = z.object({
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 type AudioVideoHighestOptions = z.infer<typeof ZodSchema>;
-export default async function AudioVideoHighest({
-    Query,
-    Output,
-    UseTor,
-    Stream,
-    Filter,
-    MetaData,
-    Verbose,
-    ShowProgress,
-    AudioLanguage,
-}: AudioVideoHighestOptions): Promise<{ MetaData: EngineOutput["MetaData"]; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+export default async function AudioVideoHighest({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage }: AudioVideoHighestOptions): Promise<
+    | {
+          MetaData: EngineOutput["MetaData"];
+          FileName: string;
+          Links: {
+              Audio: { Standard_Highest: CleanedAudioFormat | null; DRC_Highest: CleanedAudioFormat | null };
+              Video: { Standard_Lowest: CleanedVideoFormat | null; HDR_Lowest: CleanedVideoFormat | null };
+          };
+      }
+    | { Stream: Readable; FileName: string }
+    | { OutputPath: string }
+> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -46,10 +47,13 @@ export default async function AudioVideoHighest({
                 FileName: `yt-dlx_AudioVideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
                 Links: {
                     Audio: {
-                        Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Highest,
-                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Highest,
+                        Standard_Highest: Object.fromEntries(Object.entries(EngineMeta.AudioOnly.Standard).map(([lang, data]) => [lang, data?.Highest as CleanedAudioFormat | null])),
+                        DRC_Highest: Object.fromEntries(Object.entries(EngineMeta.AudioOnly.Dynamic_Range_Compression).map(([lang, data]) => [lang, data?.Highest as CleanedAudioFormat | null])),
                     },
-                    Video: { Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest, HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest },
+                    Video: {
+                        Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest as CleanedVideoFormat | null,
+                        HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest as CleanedVideoFormat | null,
+                    },
                 },
             };
         }
