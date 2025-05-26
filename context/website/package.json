@@ -1,0 +1,42 @@
+{
+    "name": "website-dlx",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Shovit Dutta",
+        "email": "shovitdutta1@gmail.com"
+    },
+    "description": "Effortless Audio-Video Downloader And Streamer!",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yt-dlx/yt-dlx.git"
+    },
+    "homepage": "https://yt-dlx-shovit.koyeb.src",
+    "scripts": {
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@tanstack/react-query": "^5.76.1",
+        "@tanstack/react-query-devtools": "^5.76.1",
+        "framer-motion": "^12.12.1",
+        "hls.js": "^1.6.2",
+        "lucide-react": "^0.511.0",
+        "next": "15.3.2",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-icons": "^5.5.0",
+        "react-youtube": "^10.1.0",
+        "yt-dlx": "^19.4.2"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4",
+        "@types/hls.js": "^1.0.0",
+        "@types/node": "^22.15.21",
+        "@types/react": "^19.1.5",
+        "@types/react-dom": "^19",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
+}

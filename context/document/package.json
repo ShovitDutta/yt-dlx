@@ -1,0 +1,44 @@
+{
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Shovit Dutta",
+        "email": "shovitdutta1@gmail.com"
+    },
+    "description": "Effortless Audio-Video Downloader And Streamer!",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yt-dlx/yt-dlx.git"
+    },
+    "homepage": "https://yt-dlx-shovit.koyeb.src",
+    "scripts": {
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "colors": "^1.4.0",
+        "daisyui": "^5.0.37",
+        "framer-motion": "^12.12.1",
+        "lucide-react": "^0.511.0",
+        "next": "15.3.2",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-icons": "^5.5.0",
+        "react-player": "^2.16.0",
+        "react-tooltip": "^5.28.1",
+        "yt-dlx": "^19.4.2",
+        "zod": "^3.25.20"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@tailwindcss/postcss": "^4.1.7",
+        "@types/node": "^22.15.21",
+        "@types/react": "^19.1.5",
+        "@types/react-dom": "^19",
+        "eslint": "^9.27.0",
+        "eslint-config-next": "15.3.2",
+        "tailwindcss": "^4.1.7",
+        "typescript": "^5"
+    }
+}
