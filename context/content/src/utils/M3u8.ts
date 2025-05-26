@@ -50,7 +50,7 @@ const M3u8_Options_Schema = z.object({
     FFmpegPath: z.string().min(1, "FFmpegPath must be provided."),
     FFprobePath: z.string().min(1, "FFprobePath must be provided."),
     Audio_M3u8_URL: z.string().url("Audio_M3u8_URL must be a valid URL.").optional(),
-    Video_M3u8_URL: z.string().url("Video_M3u8_URL must be a valid URL."),
+    Video_M3u8_URL: z.string().url("Video_M3u8_URL must be a valid URL.").optional(),
     Verbose: z.boolean().optional(),
     configure: z
         .function()
@@ -60,6 +60,7 @@ const M3u8_Options_Schema = z.object({
 interface M3u8_Options extends z.infer<typeof M3u8_Options_Schema> {
     configure: (instance: ffmpeg.FfmpegCommand) => void;
     Verbose?: boolean;
+    Video_M3u8_URL?: string;
 }
 
 export default class M3u8 extends EventEmitter {
