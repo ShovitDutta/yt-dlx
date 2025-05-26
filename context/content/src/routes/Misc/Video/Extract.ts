@@ -200,7 +200,7 @@ async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
+export default async function Misc_Video_Extracted(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
     let Verbose = false;
     try {
         const parsedOptions = ZodSchema.parse(options);
