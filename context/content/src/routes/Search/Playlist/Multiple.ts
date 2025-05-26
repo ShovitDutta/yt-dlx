@@ -46,7 +46,7 @@ async function searchPlaylists({ Query }: { Query: string }): Promise<searchPlay
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function search_playlists({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<searchPlaylistsType> {
+export default async function Search_Playlist_Multiple({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<searchPlaylistsType> {
     try {
         ZodSchema.parse({ playlistLink, Verbose });
         const isID = await YouTubeID(playlistLink);
