@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedVideoFormat } from "../../interfaces/EngineOutput";
-import ffmpeg from "fluent-ffmpeg"; // Keep import for type hinting in configure
 
 const ZodSchema = z.object({
     Query: z.string().min(2),
