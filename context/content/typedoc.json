@@ -1,10 +1,10 @@
 {
-  "entryPoints": ["src/index.ts"],
-  "out": "docs",
-  "excludePrivate": true,
-  "excludeProtected": true,
-  "excludeInternal": true,
-  "readme": "README.md",
-  "githubPages": true,
-  "excludeExternals": true
+    "out": "docs",
+    "githubPages": true,
+    "readme": "README.md",
+    "excludePrivate": true,
+    "excludeInternal": true,
+    "excludeExternals": true,
+    "excludeProtected": true,
+    "entryPoints": ["src/index.ts"]
 }
