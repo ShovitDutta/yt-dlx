@@ -68,7 +68,7 @@ type AudioVideoLowestOptions = z.infer<typeof ZodSchema>;
  * - For any FFmpeg-related errors during streaming or download: `Error: @error: FFmpeg Stream error: [error_message]` or `Error: @error: FFmpeg download error: [error_message]`
  * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function AudioVideoLowest({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage }: AudioVideoLowestOptions): Promise<
+export default async function Audio_Video_Lowest({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage }: AudioVideoLowestOptions): Promise<
     | {
           MetaData: EngineOutput["MetaData"];
           FileName: string;
