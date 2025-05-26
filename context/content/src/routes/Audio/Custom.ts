@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedAudioFormat } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -25,7 +24,6 @@ const ZodSchema = z.object({
     AudioBitrate: z.number().optional(),
 });
 type AudioCustomOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioCustom({
     Query,
     Output,
@@ -41,17 +39,14 @@ export default async function AudioCustom({
 }: AudioCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate });
-
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioFormatId || AudioBitrate)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
         if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'Output'.`);
         if (AudioFormatId && AudioBitrate) throw new Error(`${colors.red("@error:")} The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one.`);
-
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-
         if (MetaData) {
             return {
                 MetaData: {
@@ -64,10 +59,8 @@ export default async function AudioCustom({
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = Output ? Output : process.cwd();
-
         if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -75,7 +68,6 @@ export default async function AudioCustom({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-
         let selectedAudioFormat: CleanedAudioFormat | undefined;
         const availableAudioFormats = [
             ...(EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Combined || []),
@@ -98,11 +90,9 @@ export default async function AudioCustom({
             if (!selectedAudioFormat || !selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} No suitable audio formats found for language '${AudioLanguage || "Default"}'.`);
         }
         if (!selectedAudioFormat.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
-
         const paths = await locator();
         if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-
         const main = new M3u8({
             Audio_M3u8_URL: selectedAudioFormat.url,
             Verbose: Verbose,
@@ -110,9 +100,7 @@ export default async function AudioCustom({
             FFprobePath: paths.ffprobe,
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
                 instance.withOutputFormat("avi");
-
                 const filterMap: Record<string, string[]> = {
                     speed: ["atempo=2"],
                     flanger: ["flanger"],
@@ -132,7 +120,6 @@ export default async function AudioCustom({
                 };
                 if (Filter && filterMap[Filter]) instance.withAudioFilter(filterMap[Filter]);
                 else instance.outputOptions("-c copy");
-
                 let processStartTime: Date;
                 if (ShowProgress) {
                     instance.on("start", () => {
@@ -142,13 +129,11 @@ export default async function AudioCustom({
                         if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                     });
                 }
-
                 if (Stream) {
                     const passthroughStream = new PassThrough();
                     const FileNameBase = `yt-dlx_AudioCustom_`;
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
                     (passthroughStream as any).FileName = FileName;
-
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
                     });
@@ -169,7 +154,6 @@ export default async function AudioCustom({
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
                     const OutputPath = path.join(folder, FileName);
                     instance.output(OutputPath);
-
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                         if (ShowProgress) processStartTime = new Date();
@@ -191,23 +175,18 @@ export default async function AudioCustom({
                 }
             },
         });
-
         const ffmpegCommand = await main.getFfmpegCommand();
-
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
             (passthroughStream as any).FileName = FileName;
-
             ffmpegCommand.pipe(passthroughStream, { end: true });
-
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
             const OutputPath = path.join(folder, FileName);
-
             await new Promise<void>((resolve, reject) => {
                 ffmpegCommand.on("end", () => resolve());
                 ffmpegCommand.on("error", (error, stdout, stderr) => {
@@ -218,7 +197,6 @@ export default async function AudioCustom({
                 });
                 ffmpegCommand.run();
             });
-
             return { OutputPath };
         }
     } catch (error) {
