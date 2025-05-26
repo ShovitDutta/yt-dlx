@@ -81,7 +81,7 @@ export default class M3u8 extends EventEmitter {
             });
     }
     async getFfmpegCommand(): Promise<ffmpeg.FfmpegCommand> {
-        const segmentsDir = path.join(process.cwd(), "m3u8_segments");
+        const segmentsDir = path.join(process.cwd(), "YouTubeDLX", "m3u8_segments");
         const queue = new pq({ concurrency: 5 });
         const downloadedFiles: string[] = [];
         const audioUrl = this.options.Audio_M3u8_URL;
