@@ -137,28 +137,18 @@ export default async function VideoLowest({
                 }
             },
         });
-        const ffmpegCommand = await main.getFfmpegCommand();
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_VideoLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
-            ffmpegCommand.pipe(passthroughStream, { end: true });
+            await main.pipe(passthroughStream, { end: true });
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_VideoLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const OutputPath = path.join(folder, FileName);
-            await new Promise<void>((resolve, reject) => {
-                ffmpegCommand.on("end", () => resolve());
-                ffmpegCommand.on("error", (error, stdout, stderr) => {
-                    const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
-                    console.error(errorMessage + "\nstdout: " + stdout + "\nstderr: " + stderr);
-                    if (ShowProgress) process.stdout.write("\n");
-                    reject(new Error(errorMessage));
-                });
-                ffmpegCommand.run();
-            });
+            await main.run();
             return { OutputPath };
         }
     } catch (error) {
