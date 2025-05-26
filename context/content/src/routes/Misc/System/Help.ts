@@ -1,5 +1,5 @@
 import colors from "colors";
-export default async function help(): Promise<string> {
+export default async function Misc_System_Help(): Promise<string> {
     try {
         console.log(
             colors.green("@info: ") +
