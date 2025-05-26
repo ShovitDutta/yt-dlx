@@ -72,11 +72,11 @@ export default async function AudioVideoHighest({
         if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
         const main = new M3u8({
-            Video_M3u8_URL: highestVideo.url,
-            Audio_M3u8_URL: highestAudio.url,
             Verbose: Verbose,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
+            Video_M3u8_URL: highestVideo.url,
+            Audio_M3u8_URL: highestAudio.url,
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
                 instance.withOutputFormat("matroska");
