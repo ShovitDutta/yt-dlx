@@ -93,7 +93,7 @@ export default async function AudioVideoHighest({
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
                 instance.withOutputFormat("matroska");
-
+                instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
                 const filterMap: Record<string, string[]> = {
                     invert: ["negate"],
                     flipVertical: ["vflip"],
@@ -137,7 +137,6 @@ export default async function AudioVideoHighest({
                         passthroughStream.destroy(new Error(errorMessage));
                         if (ShowProgress) process.stdout.write("\n");
                     });
-
                 } else {
                     const FileNameBase = `yt-dlx_AudioVideoHighest_`;
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
@@ -185,17 +184,16 @@ export default async function AudioVideoHighest({
             await new Promise<void>((resolve, reject) => {
                 ffmpegCommand.on("end", () => resolve());
                 ffmpegCommand.on("error", (error, stdout, stderr) => {
-                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
-                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
-                     if (ShowProgress) process.stdout.write("\n");
-                     reject(new Error(errorMessage));
+                    const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
+                    console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                    if (ShowProgress) process.stdout.write("\n");
+                    reject(new Error(errorMessage));
                 });
                 ffmpegCommand.run();
             });
 
             return { OutputPath };
         }
-
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
         else if (error instanceof Error) throw error;
