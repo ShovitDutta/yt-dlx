@@ -51,7 +51,7 @@ interface Content {
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
  * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function subscriptions_feed({ Cookies, Verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
+export default async function Account_SubscriptionsFeed({ Cookies, Verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
         ZodSchema.parse({ Cookies, Verbose });
         if (Verbose) console.log(colors.green("@info:"), "Fetching subscriptions feed...");
