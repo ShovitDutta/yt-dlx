@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedVideoFormat } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -23,7 +22,6 @@ const ZodSchema = z.object({
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 type VideoCustomOptions = z.infer<typeof ZodSchema>;
-
 export default async function VideoCustom({
     Query,
     Output,
@@ -39,18 +37,15 @@ export default async function VideoCustom({
 }: VideoCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, VideoFormatId, VideoResolution, VideoFPS });
-
         if (MetaData && (Stream || Output || Filter || ShowProgress || VideoFormatId || VideoResolution || VideoFPS)) {
             throw new Error(colors.red("@error: ") + " The 'MetaData' parameter cannot be used with other processing parameters.");
         }
         if (Stream && Output) throw new Error(colors.red("@error: ") + " The 'Stream' parameter cannot be used with 'Output'.");
         if ((VideoFormatId && VideoResolution) || (VideoFormatId && VideoFPS) || (VideoResolution && VideoFPS))
             throw new Error(colors.red("@error: ") + " Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.");
-
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(colors.red("@error: ") + " Unable to retrieve a response from the engine.");
         if (!EngineMeta.MetaData) throw new Error(colors.red("@error: ") + " Metadata was not found in the engine response.");
-
         if (MetaData) {
             return {
                 MetaData: {
@@ -60,10 +55,8 @@ export default async function VideoCustom({
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
         const folder = Output ? Output : process.cwd();
-
         if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -71,10 +64,8 @@ export default async function VideoCustom({
                 throw new Error(colors.red("@error: ") + " Failed to create the output directory: " + mkdirError.message);
             }
         }
-
         let selectedVideoFormat: CleanedVideoFormat | undefined;
         const availableVideoFormats = [...(EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined || []), ...(EngineMeta.VideoOnly.High_Dynamic_Range.Combined || [])];
-
         if (VideoFormatId) {
             selectedVideoFormat = availableVideoFormats.find(format => format.format_id === VideoFormatId);
             if (!selectedVideoFormat) throw new Error(colors.red("@error: ") + " Video format with ID '" + VideoFormatId + "' not found.");
@@ -88,13 +79,10 @@ export default async function VideoCustom({
             selectedVideoFormat = EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest || availableVideoFormats.find(format => format.url !== undefined);
             if (!selectedVideoFormat || !selectedVideoFormat.url) throw new Error(colors.red("@error: ") + " No suitable video formats found.");
         }
-
         if (!selectedVideoFormat?.url) throw new Error(colors.red("@error: ") + " Selected video format URL was not found.");
-
         const paths = await locator();
         if (!paths.ffmpeg) throw new Error(colors.red("@error: ") + " ffmpeg executable not found.");
         if (!paths.ffprobe) throw new Error(colors.red("@error: ") + " ffprobe executable not found.");
-
         const main = new M3u8({
             Video_M3u8_URL: selectedVideoFormat.url,
             Verbose: Verbose,
@@ -102,7 +90,6 @@ export default async function VideoCustom({
             FFprobePath: paths.ffprobe,
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
                 instance.withOutputFormat("matroska");
                 instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
                 const filterMap: Record<string, string[]> = {
@@ -116,7 +103,6 @@ export default async function VideoCustom({
                 };
                 if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
                 else instance.outputOptions("-c copy");
-
                 let processStartTime: Date;
                 if (ShowProgress) {
                     instance.on("start", () => {
@@ -126,13 +112,11 @@ export default async function VideoCustom({
                         if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                     });
                 }
-
                 if (Stream) {
                     const passthroughStream = new PassThrough();
                     const FileNameBase = `yt-dlx_VideoCustom_`;
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
                     (passthroughStream as any).FileName = FileName;
-
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info: ") + "FFmpeg Stream started: " + command);
                     });
@@ -153,7 +137,6 @@ export default async function VideoCustom({
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
                     const OutputPath = path.join(folder, FileName);
                     instance.output(OutputPath);
-
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info: ") + "FFmpeg download started: " + command);
                         if (ShowProgress) processStartTime = new Date();
@@ -173,23 +156,18 @@ export default async function VideoCustom({
                 }
             },
         });
-
         const ffmpegCommand = await main.getFfmpegCommand();
-
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_VideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
-
             ffmpegCommand.pipe(passthroughStream, { end: true });
-
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_VideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const OutputPath = path.join(folder, FileName);
-
             await new Promise<void>((resolve, reject) => {
                 ffmpegCommand.on("end", () => resolve());
                 ffmpegCommand.on("error", (error, stdout, stderr) => {
@@ -200,7 +178,6 @@ export default async function VideoCustom({
                 });
                 ffmpegCommand.run();
             });
-
             return { OutputPath };
         }
     } catch (error) {
