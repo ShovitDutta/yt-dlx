@@ -16,9 +16,9 @@
     "@jridgewell/trace-mapping" "^0.3.24"
 
 "@bufbuild/protobuf@^2.0.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-2.4.0.tgz#ef6bfd2fc0374a95a4904cdc5fd8e02cc999cf73"
-  integrity sha512-RN9M76x7N11QRihKovEglEjjVCQEA9PRBVnDgk9xw8JHLrcUrp4FpAVSPSH91cNbcTft3u2vpLN4GMbiKY9PJw==
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-2.5.0.tgz#3e38eb5742f186472e4196fc51b058392eab4abc"
+  integrity sha512-nniMblXT+dNyubek2OLKAYJnG/in4tmfS2c5CDnIvqfF9kFlERSG3FCBvmdqerpkWuPv0qhdGKReQ2OqKPG20w==
 
 "@emnapi/core@^1.4.3":
   version "1.4.3"
@@ -337,10 +337,10 @@
   resolved "https://registry.yarnpkg.com/@next/env/-/env-15.3.2.tgz#7143eafa9b11cfdf3d3c7318b0facb9dfdb2948f"
   integrity sha512-xURk++7P7qR9JG1jJtLzPzf0qEvqCN0A/T3DXf8IPMKo9/6FfjxtEffRJIIew/bIL4T3C2jLLqBor8B/zVlx6g==
 
-"@next/eslint-plugin-next@15.3.2":
-  version "15.3.2"
-  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-15.3.2.tgz#6a371b022d6de47f2bafc868c7c2220f4e6a2903"
-  integrity sha512-ijVRTXBgnHT33aWnDtmlG+LJD+5vhc9AKTJPquGG5NKXjpKNjc62woIhFtrAcWdBobt8kqjCoaJ0q6sDQoX7aQ==
+"@next/eslint-plugin-next@15.4.0-canary.51":
+  version "15.4.0-canary.51"
+  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-15.4.0-canary.51.tgz#f1940169030389aaa4c08b1c57314730ba04ccb3"
+  integrity sha512-o8i6nSHaPGxgycpqyAw8nu1xyO1VQhf4dhuhYx3PallA0OjbCaXRI3178DKqwiDStrpVJLvCAqVbiSeEOjbn/g==
   dependencies:
     fast-glob "3.3.1"
 
@@ -1492,12 +1492,12 @@ escape-string-regexp@^4.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
   integrity sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==
 
-eslint-config-next@15.3.2:
-  version "15.3.2"
-  resolved "https://registry.yarnpkg.com/eslint-config-next/-/eslint-config-next-15.3.2.tgz#ed2bc6607f54555bbeaf23a032b4e430e453b63c"
-  integrity sha512-FerU4DYccO4FgeYFFglz0SnaKRe1ejXQrDb8kWUkTAg036YWi+jUsgg4sIGNCDhAsDITsZaL4MzBWKB6f4G1Dg==
+eslint-config-next@15.4.0-canary.51:
+  version "15.4.0-canary.51"
+  resolved "https://registry.yarnpkg.com/eslint-config-next/-/eslint-config-next-15.4.0-canary.51.tgz#c1df6a46b0128f338b4012fe7da1880fea2d620f"
+  integrity sha512-0xjMgH0LKDYON7OLHmBWZUn1oADAD7uVaSoHVtZRj1+XWpaK9aS9d1sGgyY0OF4aqlpxSefh0DVpNj1BFwNOlg==
   dependencies:
-    "@next/eslint-plugin-next" "15.3.2"
+    "@next/eslint-plugin-next" "15.4.0-canary.51"
     "@rushstack/eslint-patch" "^1.10.3"
     "@typescript-eslint/eslint-plugin" "^5.4.2 || ^6.0.0 || ^7.0.0 || ^8.0.0"
     "@typescript-eslint/parser" "^5.4.2 || ^6.0.0 || ^7.0.0 || ^8.0.0"
@@ -1886,10 +1886,10 @@ forwarded@0.2.0:
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
   integrity sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==
 
-framer-motion@^12.12.1:
-  version "12.12.1"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.12.1.tgz#b756079cc050be7fa6ae0d093ab0903fd3f15ca1"
-  integrity sha512-PFw4/GCREHI2suK/NlPSUxd+x6Rkp80uQsfCRFSOQNrm5pZif7eGtmG1VaD/UF1fW9tRBy5AaS77StatB3OJDg==
+framer-motion@^12.12.2:
+  version "12.12.2"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.12.2.tgz#7aa7925ea828f768453248686a970dee3424ee11"
+  integrity sha512-qCszZCiGWkilL40E3VuhIJJC/CS3SIBl2IHyGK8FU30nOUhTmhBNWPrNFyozAWH/bXxwzi19vJHIGVdALF0LCg==
   dependencies:
     motion-dom "^12.12.1"
     motion-utils "^12.12.1"
@@ -3589,9 +3589,9 @@ tar@^7.4.3:
     yallist "^5.0.0"
 
 tinyglobby@^0.2.13:
-  version "0.2.13"
-  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.13.tgz#a0e46515ce6cbcd65331537e57484af5a7b2ff7e"
-  integrity sha512-mEwzpUgrLySlveBwEVDMKk5B57bhLPYovRfPAXD5gA/98Opn0rCDj3GtLwFvCvH5RK9uPCExUROW5NjDwvqkxw==
+  version "0.2.14"
+  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.14.tgz#5280b0cf3f972b050e74ae88406c0a6a58f4079d"
+  integrity sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ==
   dependencies:
     fdir "^6.4.4"
     picomatch "^4.0.2"
@@ -3905,10 +3905,10 @@ yt-dlx@^19.4.2:
     zod "^3.25.7"
     zustand "^5.0.4"
 
-zod@^3.25.20, zod@^3.25.7:
-  version "3.25.20"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.20.tgz#c36739c52f6d01cf04c53bf56d99f2f5488739ee"
-  integrity sha512-z03fqpTMDF1G02VLKUMt6vyACE7rNWkh3gpXVHgPTw28NPtDFRGvcpTtPwn2kMKtQ0idtYJUTxchytmnqYswcw==
+zod@^3.25.28, zod@^3.25.7:
+  version "3.25.28"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.28.tgz#8ab13d04afa05933598fd9fca32490ca92c7ea3a"
+  integrity sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q==
 
 zustand@^5.0.4:
   version "5.0.5"
