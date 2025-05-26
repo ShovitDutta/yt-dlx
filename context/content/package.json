@@ -71,6 +71,7 @@
         "@types/node": "^22.15.21",
         "@types/readline-sync": "^1.4.8",
         "@types/supertest": "^6.0.3",
+        "commander": "^14.0.0",
         "dotenv": "^16.5.0",
         "pkg": "^5.8.1",
         "rimraf": "^6.0.1",
