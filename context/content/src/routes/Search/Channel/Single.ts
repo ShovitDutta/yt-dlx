@@ -20,7 +20,7 @@ const ZodSchema = z.object({ ChannelLink: z.string().min(2), Verbose: z.boolean(
  * - If unable to fetch channel data for the provided link: `Error: @error: Unable to fetch channel data for the provided link.`
  * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function channel_data({ ChannelLink, Verbose }: z.infer<typeof ZodSchema>): Promise<Channel> {
+export default async function Search_Channel_Single({ ChannelLink, Verbose }: z.infer<typeof ZodSchema>): Promise<Channel> {
     try {
         ZodSchema.parse({ ChannelLink, Verbose });
         const youtube = new Client();

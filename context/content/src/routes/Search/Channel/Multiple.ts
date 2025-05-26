@@ -49,7 +49,7 @@ async function searchChannels({ Query }: { Query: string }): Promise<channelSear
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any unexpected errors during the search process, including network issues or problems with the YouTube API: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function search_channels({ Query, Verbose }: z.infer<typeof ZodSchema>): Promise<channelSearchType[]> {
+export default async function Search_Channel_Multiple({ Query, Verbose }: z.infer<typeof ZodSchema>): Promise<channelSearchType[]> {
     try {
         ZodSchema.parse({ Query, Verbose });
         const channels = await searchChannels({ Query });
