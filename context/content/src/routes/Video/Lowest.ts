@@ -64,7 +64,7 @@ type VideoLowestOptions = z.infer<typeof ZodSchema>;
  * - For any FFmpeg-related errors during streaming or download: `Error: @error: FFmpeg Stream error: [error_message]` or `Error: @error: FFmpeg download error: [error_message]`
  * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function VideoLowest({
+export default async function Video_Lowest({
     Query,
     Output,
     UseTor,
