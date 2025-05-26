@@ -65,7 +65,7 @@ interface Video {
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
  * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function home_feed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
+export default async function Account_HomeFeed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
     let Verbose = false;
     try {
         ZodSchema.parse(options);
