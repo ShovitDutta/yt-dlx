@@ -79,13 +79,13 @@ export default async function AudioVideoHighest({
         instance.addInput(highestAudio.url);
         instance.withOutputFormat("matroska");
         const filterMap: Record<string, string[]> = {
-            grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
             invert: ["negate"],
-            rotate90: ["rotate=PI/2"],
-            rotate180: ["rotate=PI"],
-            rotate270: ["rotate=3*PI/2"],
-            flipHorizontal: ["hflip"],
             flipVertical: ["vflip"],
+            rotate180: ["rotate=PI"],
+            rotate90: ["rotate=PI/2"],
+            flipHorizontal: ["hflip"],
+            rotate270: ["rotate=3*PI/2"],
+            grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
         };
         if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
         else instance.outputOptions("-c copy");

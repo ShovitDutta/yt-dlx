@@ -2,12 +2,14 @@ import * as fs from "fs";
 import colors from "colors";
 import * as path from "path";
 import { z, ZodError } from "zod";
-import ffmpeg from "fluent-ffmpeg";
+import M3u8 from "../../utils/M3u8";
 import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedAudioFormat, CleanedVideoFormat } from "../../interfaces/EngineOutput";
+import ffmpeg from "fluent-ffmpeg"; // Keep import for type hinting in configure
+
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -25,6 +27,7 @@ const ZodSchema = z.object({
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
+
 export default async function AudioVideoCustom({
     Query,
     Output,
@@ -43,6 +46,7 @@ export default async function AudioVideoCustom({
 }: AudioVideoCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate, VideoFormatId, VideoResolution, VideoFPS });
+
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioLanguage || AudioFormatId || AudioBitrate || VideoFormatId || VideoResolution || VideoFPS)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with other processing parameters.`);
         }
@@ -86,13 +90,7 @@ export default async function AudioVideoCustom({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-        const instance: ffmpeg.FfmpegCommand = ffmpeg();
-        const paths = await locator();
-        if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
-        if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-        instance.setFfmpegPath(paths.ffmpeg);
-        instance.setFfprobePath(paths.ffprobe);
-        if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
+
         let selectedAudioFormat: CleanedAudioFormat | undefined;
         let selectedVideoFormat: CleanedVideoFormat | undefined;
         const availableAudioFormats = [
@@ -132,86 +130,128 @@ export default async function AudioVideoCustom({
         if (!selectedAudioFormat?.url) throw new Error(`${colors.red("@error:")} Selected audio format URL was not found.`);
         if (!selectedVideoFormat?.url) throw new Error(`${colors.red("@error:")} Selected video format URL was not found.`);
 
-        // Explicitly whitelist protocols and add reconnect options for FFmpeg to handle HLS streams over HTTPS
-        instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
+        const paths = await locator();
+        if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
+        if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
 
-        instance.addInput(selectedVideoFormat.url!);
-        instance.addInput(selectedAudioFormat.url!);
-        instance.withOutputFormat("matroska");
-        const filterMap: Record<string, string[]> = {
-            grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
-            invert: ["negate"],
-            rotate90: ["rotate=PI/2"],
-            rotate180: ["rotate=PI"],
-            rotate270: ["rotate=3*PI/2"],
-            flipHorizontal: ["hflip"],
-            flipVertical: ["vflip"],
-        };
-        if (Filter && filterMap[Filter]) {
-            instance.withVideoFilter(filterMap[Filter]);
-        }
-        // Removed -c copy to force re-encoding and potentially fix "Invalid data found" error
-        let processStartTime: Date;
-        if (ShowProgress) {
-            instance.on("start", () => {
-                processStartTime = new Date();
-            });
-            instance.on("progress", progress => {
-                if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-            });
-        }
+        const main = new M3u8({
+            Video_M3u8_URL: selectedVideoFormat.url,
+            Audio_M3u8_URL: selectedAudioFormat.url,
+            Verbose: Verbose,
+            FFmpegPath: paths.ffmpeg,
+            FFprobePath: paths.ffprobe,
+            configure: instance => {
+                if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
+
+                instance.withOutputFormat("matroska");
+
+                const filterMap: Record<string, string[]> = {
+                    invert: ["negate"],
+                    flipVertical: ["vflip"],
+                    rotate180: ["rotate=PI"],
+                    rotate90: ["rotate=PI/2"],
+                    flipHorizontal: ["hflip"],
+                    rotate270: ["rotate=3*PI/2"],
+                    grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
+                };
+                if (Filter && filterMap[Filter]) {
+                    instance.withVideoFilter(filterMap[Filter]);
+                }
+                // Removed -c copy to force re-encoding and potentially fix "Invalid data found" error
+
+                // Explicitly whitelist protocols and add reconnect options for FFmpeg to handle HLS streams over HTTPS
+                instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
+
+                let processStartTime: Date;
+                if (ShowProgress) {
+                    instance.on("start", () => {
+                        processStartTime = new Date();
+                    });
+                    instance.on("progress", progress => {
+                        if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                    });
+                }
+
+                if (Stream) {
+                    const passthroughStream = new PassThrough();
+                    const FileNameBase = `yt-dlx_AudioVideoCustom_`;
+                    let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
+                    (passthroughStream as any).FileName = FileName;
+
+                    instance.on("start", command => {
+                        if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
+                    });
+                    instance.pipe(passthroughStream, { end: true });
+                    instance.on("end", () => {
+                        if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
+                        if (ShowProgress) process.stdout.write("\n");
+                    });
+                    instance.on("error", (error, stdout, stderr) => {
+                        const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
+                        console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                        passthroughStream.emit("error", new Error(errorMessage));
+                        passthroughStream.destroy(new Error(errorMessage));
+                        if (ShowProgress) process.stdout.write("\n");
+                    });
+
+                } else {
+                    const FileNameBase = `yt-dlx_AudioVideoCustom_`;
+                    let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
+                    const OutputPath = path.join(folder, FileName);
+                    instance.output(OutputPath);
+
+                    instance.on("start", command => {
+                        if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
+                        if (ShowProgress) processStartTime = new Date();
+                    });
+                    instance.on("progress", progress => {
+                        if (ShowProgress && processStartTime) {
+                            progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
+                        }
+                    });
+                    instance.on("end", () => {
+                        if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
+                        if (ShowProgress) process.stdout.write("\n");
+                    });
+                    instance.on("error", (error, stdout, stderr) => {
+                        const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
+                        console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                        if (ShowProgress) process.stdout.write("\n");
+                    });
+                }
+            },
+        });
+
+        const ffmpegCommand = await main.getFfmpegCommand();
+
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioVideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             (passthroughStream as any).FileName = FileName;
-            instance.on("start", command => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
-            });
-            instance.pipe(passthroughStream, { end: true });
-            instance.on("end", () => {
-                if (Verbose) console.log(colors.green("@info:"), "FFmpeg streaming finished.");
-                if (ShowProgress) process.stdout.write("\n");
-            });
-            instance.on("error", (error, stdout, stderr) => {
-                const errorMessage = `${colors.red("@error:")} FFmpeg Stream error: ${error?.message}`;
-                console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
-                passthroughStream.emit("error", new Error(errorMessage));
-                passthroughStream.destroy(new Error(errorMessage));
-                if (ShowProgress) process.stdout.write("\n");
-            });
-            instance.run();
+
+            ffmpegCommand.pipe(passthroughStream, { end: true });
+
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioVideoCustom_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
             const OutputPath = path.join(folder, FileName);
-            instance.output(OutputPath);
+
             await new Promise<void>((resolve, reject) => {
-                instance.on("start", command => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
-                    if (ShowProgress) processStartTime = new Date();
+                ffmpegCommand.on("end", () => resolve());
+                ffmpegCommand.on("error", (error, stdout, stderr) => {
+                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
+                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                     if (ShowProgress) process.stdout.write("\n");
+                     reject(new Error(errorMessage));
                 });
-                instance.on("progress", progress => {
-                    if (ShowProgress && processStartTime) {
-                        progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
-                    }
-                });
-                instance.on("end", () => {
-                    if (Verbose) console.log(colors.green("@info:"), "FFmpeg download finished.");
-                    if (ShowProgress) process.stdout.write("\n");
-                    resolve();
-                });
-                instance.on("error", (error, stdout, stderr) => {
-                    const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
-                    console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
-                    if (ShowProgress) process.stdout.write("\n");
-                    reject(new Error(errorMessage));
-                });
-                instance.run();
+                ffmpegCommand.run();
             });
+
             return { OutputPath };
         }
+
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
         else if (error instanceof Error) throw error;
