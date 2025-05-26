@@ -34,7 +34,11 @@ export default async function VideoCustom({
     VideoFormatId,
     VideoResolution,
     VideoFPS,
-}: VideoCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: VideoCustomOptions): Promise<
+    | { MetaData: EngineOutput["MetaData"]; FileName: string; Links: { VideoSDR: CleanedVideoFormat[] | null; VideoHDR: CleanedVideoFormat[] | null } }
+    | { Stream: Readable; FileName: string }
+    | { OutputPath: string }
+> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, VideoFormatId, VideoResolution, VideoFPS });
         if (MetaData && (Stream || Output || Filter || ShowProgress || VideoFormatId || VideoResolution || VideoFPS)) {
@@ -48,11 +52,9 @@ export default async function VideoCustom({
         if (!EngineMeta.MetaData) throw new Error(colors.red("@error: ") + " Metadata was not found in the engine response.");
         if (MetaData) {
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_VideoCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
-                    Links: { VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined, VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined },
-                },
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_VideoCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                Links: { VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined, VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined },
             };
         }
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
@@ -85,6 +87,7 @@ export default async function VideoCustom({
         if (!paths.ffprobe) throw new Error(colors.red("@error: ") + " ffprobe executable not found.");
         const main = new M3u8({
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             Video_M3u8_URL: selectedVideoFormat.url,

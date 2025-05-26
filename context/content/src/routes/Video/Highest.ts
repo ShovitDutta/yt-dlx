@@ -7,7 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
-import { EngineOutput } from "../../interfaces/EngineOutput";
+import { CleanedVideoFormat, EngineOutput } from "../../interfaces/EngineOutput";
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -28,7 +28,11 @@ export default async function VideoHighest({
     MetaData,
     Verbose,
     ShowProgress,
-}: VideoHighestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: VideoHighestOptions): Promise<
+    | { MetaData: EngineOutput["MetaData"]; FileName: string; Links: { Standard_Highest: CleanedVideoFormat | null; HDR_Highest: CleanedVideoFormat | null } }
+    | { Stream: Readable; FileName: string }
+    | { OutputPath: string }
+> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -40,11 +44,9 @@ export default async function VideoHighest({
         if (!EngineMeta.MetaData) throw new Error(colors.red("@error: ") + " Metadata not found in the engine response.");
         if (MetaData) {
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_VideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
-                    Links: { Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest, HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest },
-                },
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_VideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                Links: { Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest, HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest },
             };
         }
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
@@ -63,6 +65,7 @@ export default async function VideoHighest({
         if (!paths.ffprobe) throw new Error(colors.red("@error: ") + " ffprobe executable not found.");
         const main = new M3u8({
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             Video_M3u8_URL: highestVideo.url,

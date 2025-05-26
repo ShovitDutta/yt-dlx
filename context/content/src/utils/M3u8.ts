@@ -40,11 +40,12 @@ async function mergeTsSegments(segmentsDir: string, totalSegments: number): Prom
     });
 }
 const M3u8_Options_Schema = z.object({
+    Verbose: z.boolean().optional(),
+    ShowProgress: z.boolean().optional(),
     FFmpegPath: z.string().min(1, "FFmpegPath must be provided."),
     FFprobePath: z.string().min(1, "FFprobePath must be provided."),
     Audio_M3u8_URL: z.string().url("Audio_M3u8_URL must be a valid URL.").optional(),
     Video_M3u8_URL: z.string().url("Video_M3u8_URL must be a valid URL.").optional(),
-    Verbose: z.boolean().optional(),
     configure: z
         .function()
         .args(z.any() as z.ZodType<ffmpeg.FfmpegCommand>)
@@ -53,6 +54,7 @@ const M3u8_Options_Schema = z.object({
 interface M3u8_Options extends z.infer<typeof M3u8_Options_Schema> {
     configure: (instance: ffmpeg.FfmpegCommand) => void;
     Verbose?: boolean;
+    ShowProgress?: boolean;
     Video_M3u8_URL?: string;
 }
 export default class M3u8 extends EventEmitter {
@@ -83,6 +85,7 @@ export default class M3u8 extends EventEmitter {
         const downloadedFiles: string[] = [];
         const audioUrl = this.options.Audio_M3u8_URL;
         const videoUrl = this.options.Video_M3u8_URL;
+        const showProgress = this.options.ShowProgress;
         if (!videoUrl) throw new Error(`${colors.red("@error:")} Video_M3u8_URL must be provided in the constructor options.`);
         const isAudioM3u8 = audioUrl ? audioUrl.includes(".m3u8") : false;
         let mergedAudioFilePath: string | undefined;
@@ -94,7 +97,7 @@ export default class M3u8 extends EventEmitter {
                 const audioM3u8Content = await Get_M3U8(audioUrl);
                 const audioTsUrls = this.Parse_M3u8(audioM3u8Content, audioUrl);
                 const totalAudioSegments = audioTsUrls.length;
-                await TS_Segment_Download(audioTsUrls, segmentsDir, downloadedFiles, queue, progbar);
+                await TS_Segment_Download(audioTsUrls, segmentsDir, downloadedFiles, queue, showProgress ? progbar : () => {});
                 if (this.options.Verbose) console.log(colors.green("@info: ") + "Merging Audio Segments...");
                 mergedAudioFilePath = await mergeTsSegments(segmentsDir, totalAudioSegments);
             }

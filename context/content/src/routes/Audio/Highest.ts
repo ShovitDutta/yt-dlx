@@ -32,7 +32,7 @@ export default async function AudioHighest({
     Language,
     MetaData,
     ShowProgress,
-}: AudioHighestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioHighestOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -44,13 +44,11 @@ export default async function AudioHighest({
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (MetaData) {
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                    Links: {
-                        Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Default"]?.Highest,
-                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Default"]?.Highest,
-                    },
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_AudioHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                Links: {
+                    Standard_Highest: EngineMeta.AudioOnly.Standard[Language || "Default"]?.Highest,
+                    DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[Language || "Default"]?.Highest,
                 },
             };
         }
@@ -70,6 +68,7 @@ export default async function AudioHighest({
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
         const main = new M3u8({
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             Audio_M3u8_URL: highestQualityAudio.url,

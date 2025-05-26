@@ -7,7 +7,7 @@ import Agent from "../../utils/Agent";
 import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
-import { EngineOutput } from "../../interfaces/EngineOutput";
+import { CleanedVideoFormat, EngineOutput } from "../../interfaces/EngineOutput";
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -28,7 +28,11 @@ export default async function VideoLowest({
     MetaData,
     Verbose,
     ShowProgress,
-}: VideoLowestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: VideoLowestOptions): Promise<
+    | { MetaData: EngineOutput["MetaData"]; FileName: string; Links: { Standard_Lowest: CleanedVideoFormat | null; HDR_Lowest: CleanedVideoFormat | null } }
+    | { Stream: Readable; FileName: string }
+    | { OutputPath: string }
+> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -40,11 +44,9 @@ export default async function VideoLowest({
         if (!EngineMeta.MetaData) throw new Error(colors.red("@error: ") + " Metadata not found in the engine response.");
         if (MetaData) {
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_VideoLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
-                    Links: { Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest, HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Lowest },
-                },
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_VideoLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                Links: { Standard_Lowest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Lowest, HDR_Lowest: EngineMeta.VideoOnly.High_Dynamic_Range.Lowest },
             };
         }
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video";
@@ -63,6 +65,7 @@ export default async function VideoLowest({
         if (!paths.ffprobe) throw new Error(colors.red("@error: ") + " ffprobe executable not found.");
         const main = new M3u8({
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             Video_M3u8_URL: lowestVideo.url,

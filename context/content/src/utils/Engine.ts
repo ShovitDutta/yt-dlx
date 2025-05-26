@@ -172,7 +172,7 @@ export default async function Engine(options: {
     const groupAudioFormatsByLanguage = (formats: CleanedAudioFormat[]) => {
         const formatsByLanguage: { [key: string]: CleanedAudioFormat[] } = {};
         formats.forEach(format => {
-            const languageMatch = format.format_note?.match(/^([^ -]+)/);
+            const languageMatch = format.format_note?.match(/^([^ \-]+)/); // Modified regex to stop at space or hyphen
             const language = languageMatch ? languageMatch[1] : "Unknown";
             if (!formatsByLanguage[language]) formatsByLanguage[language] = [];
             formatsByLanguage[language].push(format);

@@ -36,7 +36,7 @@ export default async function AudioCustom({
     AudioBitrate,
     AudioLanguage,
     AudioFormatId,
-}: AudioCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioCustomOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate });
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioFormatId || AudioBitrate)) {
@@ -49,13 +49,11 @@ export default async function AudioCustom({
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
         if (MetaData) {
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
-                    Links: {
-                        Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Combined,
-                        AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Combined,
-                    },
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_AudioCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                Links: {
+                    Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Combined,
+                    AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Combined,
                 },
             };
         }
@@ -96,6 +94,7 @@ export default async function AudioCustom({
         const main = new M3u8({
             Audio_M3u8_URL: selectedAudioFormat.url,
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             configure: instance => {

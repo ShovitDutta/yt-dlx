@@ -40,7 +40,7 @@ export default async function AudioVideoCustom({
     VideoFormatId,
     VideoResolution,
     VideoFPS,
-}: AudioVideoCustomOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioVideoCustomOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate, VideoFormatId, VideoResolution, VideoFPS });
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioLanguage || AudioFormatId || AudioBitrate || VideoFormatId || VideoResolution || VideoFPS)) {
@@ -58,15 +58,15 @@ export default async function AudioVideoCustom({
             if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
             if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioVideoCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
-                    Links: {
-                        Audio: EngineMeta.AudioOnly.Standard[AudioLanguage || "Unknown"]?.Combined,
-                        AudioDRC: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Unknown"]?.Combined,
-                        VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined,
-                        VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined,
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_AudioVideoCustom_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                Links: {
+                    Audio: {
+                        ...EngineMeta.AudioOnly.Standard,
+                        ...EngineMeta.AudioOnly.Dynamic_Range_Compression,
                     },
+                    VideoSDR: EngineMeta.VideoOnly.Standard_Dynamic_Range.Combined,
+                    VideoHDR: EngineMeta.VideoOnly.High_Dynamic_Range.Combined,
                 },
             };
         }
@@ -125,6 +125,7 @@ export default async function AudioVideoCustom({
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
         const main = new M3u8({
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             Video_M3u8_URL: selectedVideoFormat.url,

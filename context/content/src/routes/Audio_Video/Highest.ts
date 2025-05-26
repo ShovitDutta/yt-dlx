@@ -30,7 +30,7 @@ export default async function AudioVideoHighest({
     Verbose,
     ShowProgress,
     AudioLanguage,
-}: AudioVideoHighestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioVideoHighestOptions): Promise<{ MetaData: EngineOutput["MetaData"]; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage });
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
@@ -42,16 +42,14 @@ export default async function AudioVideoHighest({
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata not found in the engine response.`);
         if (MetaData) {
             return {
-                MetaData: {
-                    MetaData: EngineMeta.MetaData,
-                    FileName: `yt-dlx_AudioVideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
-                    Links: {
-                        Audio: {
-                            Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Highest,
-                            DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Highest,
-                        },
-                        Video: { Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest, HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest },
+                MetaData: EngineMeta.MetaData,
+                FileName: `yt-dlx_AudioVideoHighest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "video"}.mkv`,
+                Links: {
+                    Audio: {
+                        Standard_Highest: EngineMeta.AudioOnly.Standard[AudioLanguage || "Default"]?.Highest,
+                        DRC_Highest: EngineMeta.AudioOnly.Dynamic_Range_Compression[AudioLanguage || "Default"]?.Highest,
                     },
+                    Video: { Standard_Highest: EngineMeta.VideoOnly.Standard_Dynamic_Range.Highest, HDR_Highest: EngineMeta.VideoOnly.High_Dynamic_Range.Highest },
                 },
             };
         }
@@ -73,6 +71,7 @@ export default async function AudioVideoHighest({
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
         const main = new M3u8({
             Verbose: Verbose,
+            ShowProgress: ShowProgress,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
             Video_M3u8_URL: highestVideo.url,
