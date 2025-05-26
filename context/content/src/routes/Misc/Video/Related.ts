@@ -29,9 +29,9 @@ async function relatedVideos({ VideoId }: { VideoId: string }): Promise<RelatedV
 }
 type RelatedVideosOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Fetches a list of related YouTube videos for a given video ID.
+ * @summary Fetches a list of related YouTube videos for a given video ID.
  *
- * @description This function retrieves a list of videos that YouTube considers related to the provided `VideoId`.
+ * This function retrieves a list of videos that YouTube considers related to the provided `VideoId`.
  * It leverages the `youtubei` library to access YouTube's video data, extracting relevant information such as video ID, title, live status, duration, upload date, and thumbnails for each related video.
  *
  * @param options - An object containing the options for retrieving related videos.

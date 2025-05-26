@@ -21,9 +21,9 @@ const ZodSchema = z.object({
 });
 type AudioVideoLowestOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams a YouTube video with the lowest available audio and video quality, with optional filtering and metadata retrieval.
+ * @summary Downloads or streams a YouTube video with the lowest available audio and video quality, with optional filtering and metadata retrieval.
  *
- * @description This function retrieves the lowest available quality video stream and the highest available quality audio stream (by default or specified language) from a given YouTube query (URL or video ID).
+ * This function retrieves the lowest available quality video stream and the highest available quality audio stream (by default or specified language) from a given YouTube query (URL or video ID).
  * It then combines these streams into a single output.
  * The function supports various output options including saving to a file, streaming the content directly, or just returning metadata about the video and audio streams.
  * Video processing, such as applying filters (invert, grayscale, rotations, flips), is handled via FFmpeg.

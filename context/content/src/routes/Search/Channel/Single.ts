@@ -3,9 +3,9 @@ import { z, ZodError } from "zod";
 import { Client, Channel } from "youtubei";
 const ZodSchema = z.object({ ChannelLink: z.string().min(2), Verbose: z.boolean().optional() });
 /**
- * @shortdesc Fetches and processes data for a single YouTube channel.
+ * @summary Fetches and processes data for a single YouTube channel.
  *
- * @description This function retrieves detailed information for a specific YouTube channel using the provided channel link.
+ * This function retrieves detailed information for a specific YouTube channel using the provided channel link.
  * It initializes a YouTube client, fetches the channel data, and returns the data.
  * The `Verbose` option provides additional logging information.
  *

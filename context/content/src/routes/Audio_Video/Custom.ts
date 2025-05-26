@@ -26,9 +26,9 @@ const ZodSchema = z.object({
 });
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams a YouTube video with custom audio and video quality settings, optional filtering, and metadata retrieval.
+ * @summary Downloads or streams a YouTube video with custom audio and video quality settings, optional filtering, and metadata retrieval.
  *
- * @description This function offers granular control over the quality of both audio and video streams when downloading or streaming a YouTube video.
+ * This function offers granular control over the quality of both audio and video streams when downloading or streaming a YouTube video.
  * You can specify desired audio quality by `AudioFormatId` or `AudioBitrate`, and video quality by `VideoFormatId`, `VideoResolution`, or `VideoFPS`.
  * If no specific audio/video parameters are provided, it defaults to the highest available standard dynamic range for both.
  * The function supports saving the combined audio-video output to a specified directory, streaming it as a Node.js `Readable` stream, or simply retrieving detailed metadata.

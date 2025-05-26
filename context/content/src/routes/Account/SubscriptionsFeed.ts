@@ -30,9 +30,9 @@ interface Content {
     }[];
 }
 /**
- * @shortdesc Fetches and processes the YouTube subscriptions feed for a given account.
+ * @summary Fetches and processes the YouTube subscriptions feed for a given account.
  *
- * @description This function retrieves the personalized subscriptions feed content for a YouTube account using the provided cookies.
+ * This function retrieves the personalized subscriptions feed content for a YouTube account using the provided cookies.
  * It initializes a Tube client, fetches the feed, and then sanitizes and structures the content.
  * The `Verbose` option provides additional logging information.
  *

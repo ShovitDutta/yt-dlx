@@ -39,9 +39,9 @@ interface Video {
     shortViewCount: string;
 }
 /**
- * @shortdesc Fetches and processes the YouTube home feed for a given account.
+ * @summary Fetches and processes the YouTube home feed for a given account.
  *
- * @description This function retrieves the personalized home feed content (including Shorts and regular videos) for a YouTube account using the provided cookies.
+ * This function retrieves the personalized home feed content (including Shorts and regular videos) for a YouTube account using the provided cookies.
  * It initializes a Tube client, fetches the home feed, and then sanitizes and categorizes the content into Shorts and Videos.
  * The results can optionally be sorted based on the `Sort` parameter.
  * The `Verbose` option provides additional logging information.

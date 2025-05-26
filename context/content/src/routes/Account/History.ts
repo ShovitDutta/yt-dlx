@@ -34,9 +34,9 @@ interface Video {
     description: string;
 }
 /**
- * @shortdesc Fetches and processes the YouTube watch history for a given account.
+ * @summary Fetches and processes the YouTube watch history for a given account.
  *
- * @description This function retrieves the watch history (including Shorts and regular videos) for a YouTube account using the provided cookies.
+ * This function retrieves the watch history (including Shorts and regular videos) for a YouTube account using the provided cookies.
  * It initializes a Tube client, fetches the history, and then sanitizes and categorizes the content into Shorts and Videos.
  * The results can optionally be sorted based on the `Sort` parameter.
  * The `Verbose` option provides additional logging information.

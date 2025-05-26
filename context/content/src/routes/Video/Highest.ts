@@ -20,9 +20,9 @@ const ZodSchema = z.object({
 });
 type VideoHighestOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams the highest quality video from YouTube, with optional filtering and metadata retrieval.
+ * @summary Downloads or streams the highest quality video from YouTube, with optional filtering and metadata retrieval.
  *
- * @description This function retrieves the highest available quality video stream from a given YouTube query (URL or video ID).
+ * This function retrieves the highest available quality video stream from a given YouTube query (URL or video ID).
  * It supports various output options including saving to a file, streaming the video directly, or just returning metadata about the video.
  * Video processing, such as applying filters (invert, grayscale, rotations, flips), is handled via FFmpeg.
  * The function automatically locates `ffmpeg` and `ffprobe` executables.

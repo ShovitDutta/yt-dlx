@@ -140,9 +140,9 @@ async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<
     }
 }
 /**
- * @shortdesc Extracts comprehensive metadata, audio/video formats, comments, and transcript for a given YouTube video.
+ * @summary Extracts comprehensive metadata, audio/video formats, comments, and transcript for a given YouTube video.
  *
- * @description This powerful function serves as a central point for extracting a wide array of information about a YouTube video.
+ * This powerful function serves as a central point for extracting a wide array of information about a YouTube video.
  * It fetches general metadata (title, views, likes, etc.), available audio-only and video-only formats, thumbnails,
  * heatmap data, chapters, subtitles, captions, and attempts to retrieve comments and video transcripts.
  * The function enhances some metadata fields with formatted versions (e.g., human-readable upload date, abbreviated counts).

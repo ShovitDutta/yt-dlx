@@ -5,9 +5,9 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional() });
 type UnseenNotificationsOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Fetches the count of unseen YouTube notifications for a given account.
+ * @summary Fetches the count of unseen YouTube notifications for a given account.
  *
- * @description This function retrieves the number of unseen notifications for a YouTube account using the provided cookies.
+ * This function retrieves the number of unseen notifications for a YouTube account using the provided cookies.
  * It initializes a Tube client and then calls the `getUnseenNotificationsCount` method to get the count.
  * The `Verbose` option provides additional logging information.
  *

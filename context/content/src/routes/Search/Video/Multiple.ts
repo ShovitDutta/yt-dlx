@@ -22,9 +22,9 @@ interface VideoSearchResult {
     channelname?: string;
 }
 /**
- * @shortdesc Searches for YouTube videos based on a query and optional criteria, including view count filters and sorting.
+ * @summary Searches for YouTube videos based on a query and optional criteria, including view count filters and sorting.
  *
- * @description This function allows you to search for YouTube videos using a specified query.
+ * This function allows you to search for YouTube videos using a specified query.
  * It provides advanced filtering capabilities based on minimum and maximum view counts,
  * and allows you to sort the results by relevance, view count, rating, or upload date.
  * The function retrieves essential video details such as ID, title, live status, duration, view count,

@@ -23,9 +23,9 @@ const ZodSchema = z.object({
 });
 type AudioHighestOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams the highest quality audio of a YouTube video, with optional audio filters and metadata retrieval.
+ * @summary Downloads or streams the highest quality audio of a YouTube video, with optional audio filters and metadata retrieval.
  *
- * @description This function retrieves the highest available quality audio stream from a given YouTube query (URL or video ID).
+ * This function retrieves the highest available quality audio stream from a given YouTube query (URL or video ID).
  * It provides options to either save the audio to a file, stream it directly as a Node.js `Readable` stream, or simply fetch its detailed metadata.
  * You can apply a variety of audio processing filters (e.g., echo, bassboost, speed changes, nightcore, vaporwave) using FFmpeg, which is seamlessly integrated.
  * The function automatically locates `ffmpeg` and `ffprobe` executables on your system.

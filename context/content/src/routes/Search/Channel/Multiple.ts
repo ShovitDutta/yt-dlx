@@ -26,9 +26,9 @@ async function searchChannels({ Query }: { Query: string }): Promise<channelSear
     }
 }
 /**
- * @shortdesc Searches for YouTube channels based on a query string.
+ * @summary Searches for YouTube channels based on a query string.
  *
- * @description This function performs a search for YouTube channels using the provided query.
+ * This function performs a search for YouTube channels using the provided query.
  * It leverages the `youtubei` library to interact with YouTube's search functionality, specifically filtering for channel results.
  * For each found channel, it extracts and returns key information such as the channel ID, name, subscriber count, description, and thumbnail.
  *

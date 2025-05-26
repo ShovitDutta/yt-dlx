@@ -31,9 +31,9 @@ async function getVideoTranscript({ VideoId }: { VideoId: string }): Promise<Vid
 }
 type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Retrieves the transcript of a YouTube video.
+ * @summary Retrieves the transcript of a YouTube video.
  *
- * @description This function fetches the automatically generated or user-provided transcript for a given YouTube video.
+ * This function fetches the automatically generated or user-provided transcript for a given YouTube video.
  * It takes a video link as input and returns an array of transcript segments, each containing the text, start time, duration, and detailed segment information.
  * The function utilizes the `youtubei` library to interact with YouTube's data.
  *

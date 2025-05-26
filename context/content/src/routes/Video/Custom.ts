@@ -23,9 +23,9 @@ const ZodSchema = z.object({
 });
 type VideoCustomOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams a YouTube video with custom quality settings, optional filtering, and metadata retrieval.
+ * @summary Downloads or streams a YouTube video with custom quality settings, optional filtering, and metadata retrieval.
  *
- * @description This function provides flexible options to retrieve a YouTube video based on a specified `VideoFormatId`, `VideoResolution`, or `VideoFPS`.
+ * This function provides flexible options to retrieve a YouTube video based on a specified `VideoFormatId`, `VideoResolution`, or `VideoFPS`.
  * If none of these custom video quality parameters are provided, it defaults to the highest available standard dynamic range video format.
  * The function supports saving the video to a specified output directory, streaming it as a `Readable` stream, or simply fetching its metadata.
  * Video processing, such as applying various filters (invert, grayscale, rotations, flips), is handled by FFmpeg.

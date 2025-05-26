@@ -60,9 +60,9 @@ async function fetchVideoComments({ Query, Verbose }: VideoCommentsOptions): Pro
     }
 }
 /**
- * @shortdesc Fetches comments for a YouTube video based on a search query.
+ * @summary Fetches comments for a YouTube video based on a search query.
  *
- * @description This function first searches for a YouTube video using the provided `Query`. Once a video is identified (the first result of the search),
+ * This function first searches for a YouTube video using the provided `Query`. Once a video is identified (the first result of the search),
  * it then proceeds to fetch all available comments for that specific video. It leverages the `youtubei` and `youtubei.js` (Innertube) libraries
  * to perform the search and comment retrieval.
  *

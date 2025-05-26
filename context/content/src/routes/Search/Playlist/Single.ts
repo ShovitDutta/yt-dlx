@@ -21,9 +21,9 @@ async function playlistVideos({ PlaylistId }: { PlaylistId: string }): Promise<p
     }
 }
 /**
- * @shortdesc Retrieves detailed information and video listings for a given YouTube playlist.
+ * @summary Retrieves detailed information and video listings for a given YouTube playlist.
  *
- * @description This function takes a YouTube playlist link as input and fetches comprehensive data about the playlist,
+ * This function takes a YouTube playlist link as input and fetches comprehensive data about the playlist,
  * including its ID, title, total video count, and a list of all videos within the playlist.
  * For each video in the playlist, it extracts the video ID, title, live status, duration, and thumbnail URLs.
  * The function leverages the `youtubei` library to interact with YouTube's API.

@@ -23,9 +23,9 @@ const ZodSchema = z.object({
 });
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams the lowest quality audio of a YouTube video, with optional audio filters and metadata retrieval.
+ * @summary Downloads or streams the lowest quality audio of a YouTube video, with optional audio filters and metadata retrieval.
  *
- * @description This function allows you to retrieve the lowest available quality audio stream from a given YouTube query (URL or video ID).
+ * This function allows you to retrieve the lowest available quality audio stream from a given YouTube query (URL or video ID).
  * It supports saving the audio to a file, streaming it directly as a Node.js `Readable` stream, or simply fetching its metadata.
  * Various audio processing filters (e.g., echo, bassboost, speed changes, nightcore, vaporwave) can be applied using FFmpeg.
  * The function automatically detects and uses `ffmpeg` and `ffprobe` executables.

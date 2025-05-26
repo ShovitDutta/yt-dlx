@@ -25,9 +25,9 @@ const ZodSchema = z.object({
 });
 type AudioCustomOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Downloads or streams YouTube audio with custom quality settings, optional audio filters, and metadata retrieval.
+ * @summary Downloads or streams YouTube audio with custom quality settings, optional audio filters, and metadata retrieval.
  *
- * @description This function provides fine-grained control over the audio quality when downloading or streaming audio from a YouTube video.
+ * This function provides fine-grained control over the audio quality when downloading or streaming audio from a YouTube video.
  * You can specify the desired audio quality using either an `AudioFormatId` or an `AudioBitrate`. If neither is provided, the function will default to the highest available standard audio quality for the specified language.
  * The function supports saving the audio to a specified output directory, streaming it as a Node.js `Readable` stream, or simply retrieving detailed metadata about the audio.
  * Various audio processing filters (e.g., echo, bassboost, speed changes, nightcore, vaporwave) can be applied to the audio using the integrated FFmpeg.

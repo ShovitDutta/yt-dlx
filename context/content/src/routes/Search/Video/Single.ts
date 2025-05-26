@@ -44,9 +44,9 @@ async function singleVideo({ VideoId }: { VideoId: string }): Promise<SingleVide
 }
 type VideoDataOptions = z.infer<typeof ZodSchema>;
 /**
- * @shortdesc Retrieves detailed information about a single YouTube video.
+ * @summary Retrieves detailed information about a single YouTube video.
  *
- * @description This function fetches comprehensive data for a specified YouTube video, including its title, thumbnails, upload date, description, duration, view count, channel information, tags, and like count.
+ * This function fetches comprehensive data for a specified YouTube video, including its title, thumbnails, upload date, description, duration, view count, channel information, tags, and like count.
  * It takes a YouTube video link as input and uses the `youtubei` library to interact with the YouTube API.
  *
  * @param options - An object containing the options for retrieving video data.

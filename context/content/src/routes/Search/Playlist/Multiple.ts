@@ -20,9 +20,9 @@ async function searchPlaylists({ Query }: { Query: string }): Promise<searchPlay
     }
 }
 /**
- * @shortdesc Searches for YouTube playlists based on a query.
+ * @summary Searches for YouTube playlists based on a query.
  *
- * @description This function allows you to search for YouTube playlists using a given search query.
+ * This function allows you to search for YouTube playlists using a given search query.
  * It utilizes the `youtubei` library to perform the search and extracts relevant information for each found playlist,
  * including its ID, title, video count, and thumbnails.
  * **Important:** This function is designed for searching by keywords, not for retrieving data from a specific playlist URL.
