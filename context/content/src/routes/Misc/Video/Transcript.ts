@@ -57,7 +57,7 @@ type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function videoTranscript({ VideoLink, Verbose }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
+export default async function Misc_Video_Transcript({ VideoLink, Verbose }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
     try {
         ZodSchema.parse({ VideoLink, Verbose });
         const vId = await YouTubeID(VideoLink);
