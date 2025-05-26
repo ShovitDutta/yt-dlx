@@ -25,8 +25,8 @@ import Account_SubscriptionsFeed from "./routes/Account/SubscriptionsFeed";
 import Account_UnseenNotifications from "./routes/Account/UnseenNotifications";
 //
 import Search_Video_Single from "./routes/Search/Video/Single";
-import Search_Channel_Single from "./routes/Search/Channel/Single";
 import Search_Video_Multiple from "./routes/Search/Video/Multiple";
+import Search_Channel_Single from "./routes/Search/Channel/Single";
 import Search_Playlist_Single from "./routes/Search/Playlist/Single";
 import Search_Channel_Multiple from "./routes/Search/Channel/Multiple";
 import Search_Playlist_Multiple from "./routes/Search/Playlist/Multiple";
