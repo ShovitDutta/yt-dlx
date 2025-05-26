@@ -59,7 +59,7 @@ interface VideoSearchResult {
  * - If argument validation fails due to invalid `options` (e.g., incorrect type, missing required fields, or invalid enum value for `orderBy`): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any unexpected errors during the search operation: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function searchVideos({ Query, minViews, maxViews, orderBy, Verbose }: SearchVideosOptions): Promise<VideoSearchResult[]> {
+export default async function Search_Video_Multiple({ Query, minViews, maxViews, orderBy, Verbose }: SearchVideosOptions): Promise<VideoSearchResult[]> {
     try {
         ZodSchema.parse({ Query, minViews, maxViews, orderBy, Verbose });
         const youtube = new Client();
