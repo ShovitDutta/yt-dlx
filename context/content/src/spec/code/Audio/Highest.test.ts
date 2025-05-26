@@ -10,36 +10,36 @@ vitest.describe("AudioHighest", () => {
         const result = await AudioHighest({ Query });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
     vitest.it("should handle download with Output and Filter", async () => {
         const result = await AudioHighest({ Query, Output: "Output", Filter: "bassboost" });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
     vitest.it("should handle download with all options", async () => {
         const result = await AudioHighest({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "vaporwave", ShowProgress: true });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
     vitest.it("should fetch metadata only", async () => {
         const result = await AudioHighest({ Query, MetaData: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toBeInstanceOf(Object);
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
     vitest.it("should fetch metadata with Tor and Verbose", async () => {
         const result = await AudioHighest({ Query, MetaData: true, UseTor: false, Verbose: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
     vitest.it("should handle basic Stream", async () => {

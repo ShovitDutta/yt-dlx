@@ -3,6 +3,7 @@ import * as vitest from "vitest";
 vitest.describe("extract", () => {
     const validQuery = "https://www.youtube.com/watch?v=30LWjhZzg50";
     const queryThatShouldFail = "a Query that should return no results 12345abcde";
+    const queryForVideoWithNoComments = "a video known to have no comments";
     vitest.it("should handle basic video extract", async () => {
         const result = await extract({ Query: validQuery });
         vitest.expect(result).toHaveProperty("MetaData");
@@ -23,5 +24,19 @@ vitest.describe("extract", () => {
     vitest.it("should handle video extract with Verbose and UseTor", async () => {
         const result = await extract({ Query: validQuery, Verbose: true, UseTor: false });
         vitest.expect(result).toBeInstanceOf(Object);
+    });
+    vitest.it("should handle a query that should fail", async () => {
+        await vitest.expect(extract({ Query: queryThatShouldFail })).rejects.toThrow();
+    });
+    vitest.it("should handle a video with no comments", async () => {
+        const result = await extract({ Query: queryForVideoWithNoComments });
+        vitest.expect(result).toHaveProperty("comments");
+        vitest.expect(result.comments).toBeNull();
+    });
+    vitest.it("should handle a video with no transcript", async () => {
+        const videoLinkWithNoTranscript = "https://www.youtube.com/watch?v=another_video_id_without_transcript";
+        const result = await extract({ Query: videoLinkWithNoTranscript });
+        vitest.expect(result).toHaveProperty("transcript");
+        vitest.expect(result.transcript).toBeNull();
     });
 });

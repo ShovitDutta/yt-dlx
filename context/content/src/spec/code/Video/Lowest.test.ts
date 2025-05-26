@@ -29,14 +29,14 @@ vitest.describe("VideoLowest", () => {
         const result = await VideoLowest({ Query, MetaData: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
     vitest.it("should fetch metadata with Tor and Verbose", async () => {
         const result = await VideoLowest({ Query, MetaData: true, UseTor: false, Verbose: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
     vitest.it("should handle basic Stream", async () => {

@@ -5,7 +5,7 @@ import * as vitest from "vitest";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 
 vitest.describe("VideoCustom", () => {
-    const Query = "https://www.youtube.com/watch?v=30LWjhZzg50"; // Replace with a suitable test query
+    const Query = "https://www.youtube.com/watch?v=30LWjhZzg50";
 
     vitest.it("should handle basic download", async () => {
         const result = await VideoCustom({ Query });
@@ -62,8 +62,8 @@ vitest.describe("VideoCustom", () => {
         const result = await VideoCustom({ Query, MetaData: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toBeInstanceOf(Object);
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
 
@@ -71,7 +71,7 @@ vitest.describe("VideoCustom", () => {
         const result = await VideoCustom({ Query, MetaData: true, UseTor: false, Verbose: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
 

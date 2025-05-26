@@ -31,15 +31,15 @@ vitest.describe("AudioVideoLowest", () => {
         const result = await AudioVideoLowest({ Query, MetaData: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toBeInstanceOf(Object);
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
     vitest.it("should fetch metadata with Tor and Verbose", async () => {
         const result = await AudioVideoLowest({ Query, MetaData: true, UseTor: false, Verbose: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
     vitest.it("should handle basic Stream", async () => {

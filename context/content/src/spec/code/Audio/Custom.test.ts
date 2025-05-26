@@ -10,7 +10,7 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, AudioLanguage: "Default," });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
 
@@ -18,7 +18,7 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, AudioFormatId: "234" });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
 
@@ -26,7 +26,7 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, AudioBitrate: 195 });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
 
@@ -34,7 +34,7 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, Output: "Output", Filter: "bassboost" });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
 
@@ -42,7 +42,7 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, Output: "Output", UseTor: false, Verbose: true, Filter: "vaporwave", ShowProgress: true, AudioBitrate: 195 });
         vitest.expect(result).toHaveProperty("OutputPath");
         if ("OutputPath" in result) {
-            vitest.expect(result.OutputPath).toMatch(/\.avi$/);
+            vitest.expect(result.OutputPath).toMatch(/\.m4a$/);
         }
     });
 
@@ -50,8 +50,8 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, MetaData: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toBeInstanceOf(Object);
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toBeInstanceOf(Object);
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
 
@@ -59,7 +59,7 @@ vitest.describe("AudioCustom", () => {
         const result = await AudioCustom({ Query, MetaData: true, UseTor: false, Verbose: true });
         vitest.expect(result).toHaveProperty("MetaData");
         if (result && "MetaData" in result) {
-            vitest.expect((result as { MetaData: EngineOutput }).MetaData).toHaveProperty("FileName");
+            vitest.expect((result as { MetaData: EngineOutput["MetaData"] }).MetaData).toHaveProperty("FileName");
         }
     });
 

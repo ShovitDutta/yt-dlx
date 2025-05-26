@@ -7,11 +7,12 @@ import fs from "fs";
 dotenv.config();
 console.clear();
 (async () => {
-    const respEngine = await YouTubeDLX.Misc.Video.Extract({ Query: "1 hour lofi" });
+    const respEngine = await YouTubeDLX.Misc.Video.Extract({ Query: "https://www.youtube.com/watch?v=30LWjhZzg50", Verbose: true, UseTor: true });
     fs.writeFileSync("Engine.json", JSON.stringify(respEngine, null, 2));
     const paths = await locator();
-    const main = new M3u8({
+    new M3u8({
         Verbose: true,
+        ShowProgress: true,
         FFmpegPath: paths.ffmpeg,
         FFprobePath: paths.ffprobe,
         Audio_M3u8_URL: respEngine.AudioOnly.Standard["Default,"].Highest?.url!,
@@ -19,10 +20,9 @@ console.clear();
         configure: instance => {
             instance.outputFormat("matroska");
             instance.outputOptions("-c copy");
-            const sanitizedFileName = respEngine.MetaData.title?.toString().replace(/[^\w-]/g, "_") + ".mkv";
-            instance.save(sanitizedFileName);
+            instance.save(respEngine.MetaData.title?.toString().replace(/[^\w-]/g, "_") + ".mkv");
             instance.on("progress", progress => progbar({ ...progress, percent: progress.percent !== undefined && !isNaN(progress.percent) ? progress.percent : 0, startTime: new Date() }));
+            instance.run();
         },
     });
-    main.run();
 })().catch(console.error);

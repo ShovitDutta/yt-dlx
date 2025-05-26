@@ -49,7 +49,7 @@ export default async function AudioLowest({
         if (MetaData) {
             return {
                 MetaData: EngineMeta.MetaData,
-                FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.avi`,
+                FileName: `yt-dlx_AudioLowest_${Filter ? Filter + "_" : ""}${EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio"}.m4a`,
                 Links: {
                     Standard_Lowest: Object.fromEntries(Object.entries(EngineMeta.AudioOnly.Standard).map(([lang, data]) => [lang, data?.Lowest as CleanedAudioFormat | null])),
                     HDR_Lowest: null,
@@ -78,7 +78,7 @@ export default async function AudioLowest({
             Audio_M3u8_URL: lowestQualityAudio.url,
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-                instance.withOutputFormat("avi");
+                instance.withOutputFormat("m4a");
                 instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
                 const filterMap: Record<string, string[]> = {
                     speed: ["atempo=2"],
@@ -111,7 +111,7 @@ export default async function AudioLowest({
                 if (Stream) {
                     const passthroughStream = new PassThrough();
                     const FileNameBase = `yt-dlx_AudioLowest_`;
-                    let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
+                    let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.m4a`;
                     (passthroughStream as any).FileName = FileName;
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
@@ -130,7 +130,7 @@ export default async function AudioLowest({
                     });
                 } else {
                     const FileNameBase = `yt-dlx_AudioLowest_`;
-                    let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
+                    let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.m4a`;
                     const OutputPath = path.join(folder, FileName);
                     instance.output(OutputPath);
                     instance.on("start", command => {
@@ -158,13 +158,13 @@ export default async function AudioLowest({
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioLowest_`;
-            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.m4a`;
             (passthroughStream as any).FileName = FileName;
             ffmpegCommand.pipe(passthroughStream, { end: true });
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioLowest_`;
-            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
+            let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.m4a`;
             const OutputPath = path.join(folder, FileName);
             await new Promise<void>((resolve, reject) => {
                 ffmpegCommand.on("end", () => resolve());
