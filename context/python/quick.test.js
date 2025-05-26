@@ -1,6 +1,8 @@
 import path from "path";
 import process from "process";
 import { spawn } from "child_process";
+import * as net from "net"; // Import net module
+
 const executableName = process.platform === "win32" ? "yt-dlx.exe" : "yt-dlx.bin";
 const executablePath = path.join(process.cwd(), executableName);
 console.log(`Attempting to use executable: ${executablePath}`);
@@ -63,5 +65,51 @@ async function main() {
     } catch (error) {
         console.error("Test 3 Failed:", error.message);
     }
+
+    let torProcess = null;
+    try {
+        console.log("\nTest 4: Starting Tor with ControlPort and connecting...");
+        const torArgs = ["--tor", "ControlPort", "9051"];
+        torProcess = spawn(executablePath, torArgs);
+        await new Promise((resolve, reject) => {
+            torProcess.stdout.on("data", data => {
+                const line = data.toString();
+                process.stdout.write(line);
+                if (line.includes("Bootstrapped 100% (done): Done")) resolve();
+            });
+            torProcess.stderr.on("data", data => {
+                process.stderr.write(data.toString());
+            });
+            torProcess.on("error", err => {
+                console.error("Tor process error:", err);
+                reject(err);
+            });
+            torProcess.on("close", code => {
+                if (code !== 0) reject(new Error(`Tor process exited with code ${code}`));
+            });
+        });
+        console.log("Tor bootstrapped.");
+        await new Promise((resolve, reject) => {
+            const client = net.createConnection({ port: 9051, host: "127.0.0.1" }, () => {
+                console.log("Successfully connected to Tor control port.");
+                client.end();
+                resolve();
+            });
+            client.on("error", err => {
+                console.error("Tor control port connection error:", err.message);
+                reject(err);
+            });
+        });
+        console.log("Test 4 Completed: Tor ControlPort is accessible.");
+    } catch (error) {
+        console.error("Test 4 Failed:", error.message);
+    } finally {
+        if (torProcess) {
+            console.log("Stopping Tor process...");
+            torProcess.kill();
+            console.log("Tor process stopped.");
+        }
+    }
 }
+
 main().catch(console.error);

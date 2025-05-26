@@ -54,5 +54,6 @@ if (false) {
         console.log("Stopping Tor...");
         Stop_Tor(true);
         console.log("Tor stopped.");
+        process.exit(0);
     })().catch(console.error);
 }
