@@ -152,9 +152,7 @@ export default async function AudioVideoCustom({
                     rotate270: ["rotate=3*PI/2"],
                     grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
                 };
-                if (Filter && filterMap[Filter]) {
-                    instance.withVideoFilter(filterMap[Filter]);
-                }
+                if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
                 instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
 
                 let processStartTime: Date;
