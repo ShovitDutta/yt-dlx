@@ -36,7 +36,7 @@ export default async function AudioCustom({
     AudioBitrate,
     AudioLanguage,
     AudioFormatId,
-}: AudioCustomOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioCustomOptions): Promise<{ MetaData: EngineOutput["MetaData"]; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate });
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioFormatId || AudioBitrate)) {

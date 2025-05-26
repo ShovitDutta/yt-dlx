@@ -38,6 +38,95 @@ interface Video {
     viewCount: string;
     shortViewCount: string;
 }
+/**
+ * @shortdesc Fetches a user's YouTube home feed, separating content into Shorts and Videos.
+ *
+ * @description This function retrieves a user's personalized home feed from YouTube by
+ * authenticating with provided cookies. It processes the feed data to categorize items
+ * into separate lists for YouTube Shorts and regular videos.
+ *
+ * Authentication is managed by an internal `TubeLogin` utility, which requires valid
+ * YouTube authentication cookies to successfully access the home feed.
+ *
+ * The `Sort` option provides filtering capabilities for the retrieved feed items:
+ * - `"oldest"`: Attempts to retrieve only the single oldest video and short in the home feed.
+ * - `"newest"`: Attempts to retrieve only the single newest video and short in the home feed.
+ * - `"old-to-new"`: Sorts items by their `videoId` in ascending lexicographical order.
+ * - `"new-to-old"`: Sorts items by their `videoId` in descending lexicographical order.
+ * Note: The "oldest" and "newest" sorting options are designed to extract only the single
+ * oldest or newest item based on the internal structure of the home feed data.
+ * The "old-to-new" and "new-to-old" sorts are based on string comparison of video IDs,
+ * which may not directly correlate with chronological order in the dynamic home feed.
+ *
+ * @param {object} options - The configuration options for fetching the home feed.
+ * @param {string} options.Cookies - Your YouTube authentication cookies. These are essential for authentication.
+ * @param {boolean} [options.Verbose=false] - If true, enables verbose logging throughout the process.
+ * @param {"oldest" | "newest" | "old-to-new" | "new-to-old"} [options.Sort] - An optional sorting order for the feed items.
+ *
+ * @returns {Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>>} A Promise that resolves to a `TubeResponse` object.
+ * - On success (`status: "success"`), the `data` property contains an object with two arrays:
+ * - `Shorts`: An array of `Short` objects, each containing `title`, `videoId`, and `thumbnails`.
+ * - `Videos`: An array of `Video` objects, each containing comprehensive details like `title`, `videoId`, `description`, `thumbnails`, `author` information, and `viewCount`.
+ * - On failure (`status: "error"`), an error message will be available.
+ *
+ * @throws {Error}
+ * - Throws an `Error` if `Cookies` are not provided.
+ * - Throws an `Error` if the internal Tube client fails to initialize (e.g., due to invalid cookies).
+ * - Throws an `Error` if fetching the home feed from YouTube fails.
+ * - Throws a `ZodError` if the provided options do not conform to the expected schema (e.g., `Sort` has an invalid enum value).
+ * - Throws a generic `Error` for any other unexpected issues during execution.
+ *
+ * @example
+ * // 1. Fetching basic home feed (default order, no sorting)
+ * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube authentication cookies.
+ * // These can usually be obtained from your browser's developer tools when logged into YouTube.
+ * try {
+ * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
+ * const feed = await home_feed({ Cookies: myCookies });
+ * console.log("Fetched Home Feed (Shorts):", feed.data?.Shorts);
+ * console.log("Fetched Home Feed (Videos):", feed.data?.Videos);
+ * } catch (error) {
+ * console.error("Error fetching home feed:", error);
+ * }
+ *
+ * @example
+ * // 2. Fetching home feed with verbose logging enabled
+ * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube cookies.
+ * try {
+ * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
+ * const feed = await home_feed({ Cookies: myCookies, Verbose: true });
+ * console.log("Fetched Home Feed (Verbose) (Shorts):", feed.data?.Shorts);
+ * console.log("Fetched Home Feed (Verbose) (Videos):", feed.data?.Videos);
+ * } catch (error) {
+ * console.error("Error fetching home feed with verbose logging:", error);
+ * }
+ *
+ * @example
+ * // 3. Fetching home feed and attempting to get the single newest item
+ * // This will return only the single most recent Short and Video found in the initial feed.
+ * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube cookies.
+ * try {
+ * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
+ * const feed = await home_feed({ Cookies: myCookies, Sort: "newest" });
+ * console.log("Newest Home Feed Item (Shorts):", feed.data?.Shorts);
+ * console.log("Newest Home Feed Item (Videos):", feed.data?.Videos);
+ * } catch (error) {
+ * console.error("Error fetching and sorting by newest:", error);
+ * }
+ *
+ * @example
+ * // 4. Fetching home feed and sorting all items by video ID from old-to-new
+ * // This sorts all retrieved shorts and videos lexicographically by their video ID string.
+ * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube cookies.
+ * try {
+ * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
+ * const feed = await home_feed({ Cookies: myCookies, Sort: "old-to-new" });
+ * console.log("Home Feed (Shorts) sorted old-to-new:", feed.data?.Shorts);
+ * console.log("Home Feed (Videos) sorted old-to-new:", feed.data?.Videos);
+ * } catch (error) {
+ * console.error("Error fetching and sorting old-to-new:", error);
+ * }
+ */
 export default async function home_feed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
     let Verbose = false;
     try {
