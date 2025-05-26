@@ -26,7 +26,7 @@ type UnseenNotificationsOptions = z.infer<typeof ZodSchema>;
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
  * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function unseen_notifications(options: UnseenNotificationsOptions): Promise<TubeResponse<{ count: number }>> {
+export default async function Account_UnseenNotifications(options: UnseenNotificationsOptions): Promise<TubeResponse<{ count: number }>> {
     let Verbose = false;
     try {
         ZodSchema.parse(options);
