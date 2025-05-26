@@ -36,8 +36,8 @@ async function searchChannels({ Query }: { Query: string }): Promise<channelSear
  * @param options.Query - A string representing the search query for channels. This is a mandatory parameter and must be at least 2 characters long.
  * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during the execution process. Defaults to `false`.
  *
- * @returns {Promise<{ data: channelSearchType[] }>} A promise that resolves to an object containing a `data` property, which is an array of `channelSearchType` objects.
- * Each object in the `data` array represents a found channel and has the following properties:
+ * @returns {Promise<channelSearchType[]>} A promise that resolves to an array of `channelSearchType` objects.
+ * Each object in the array represents a found channel and has the following properties:
  * - `id`: The unique identifier of the YouTube channel.
  * - `name`: The name of the channel.
  * - `subscriberCount`: The number of subscribers the channel has.
@@ -49,12 +49,12 @@ async function searchChannels({ Query }: { Query: string }): Promise<channelSear
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any unexpected errors during the search process, including network issues or problems with the YouTube API: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function search_channels({ Query, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: channelSearchType[] }> {
+export default async function search_channels({ Query, Verbose }: z.infer<typeof ZodSchema>): Promise<channelSearchType[]> {
     try {
         ZodSchema.parse({ Query, Verbose });
         const channels = await searchChannels({ Query });
         if (!channels || channels.length === 0) throw new Error(colors.red("@error: ") + " No channels found for the provided Query.");
-        return { data: channels };
+        return channels;
     } catch (error) {
         if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;

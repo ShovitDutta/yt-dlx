@@ -52,24 +52,6 @@ vitest.describe("home_feed", () => {
         vitest.expect(result.status).toBe("success");
         vitest.expect(result.data).toBeInstanceOf(Object);
     });
-    vitest.it("should handle home feed sorted old to new", async () => {
-        if (!Cookies) {
-            console.warn("Skipping old-to-new sort test due to missing YouTubeDLX_COOKIES.");
-            return;
-        }
-        const result = await home_feed({ Cookies: mockCookies, Sort: "old-to-new" });
-        vitest.expect(result.status).toBe("success");
-        vitest.expect(result.data).toBeInstanceOf(Object);
-    });
-    vitest.it("should handle home feed sorted new to old", async () => {
-        if (!Cookies) {
-            console.warn("Skipping new-to-old sort test due to missing YouTubeDLX_COOKIES.");
-            return;
-        }
-        const result = await home_feed({ Cookies: mockCookies, Sort: "new-to-old" });
-        vitest.expect(result.status).toBe("success");
-        vitest.expect(result.data).toBeInstanceOf(Object);
-    });
     vitest.it("should handle home feed with Verbose and oldest sort", async () => {
         if (!Cookies) {
             console.warn("Skipping Verbose and oldest sort test due to missing YouTubeDLX_COOKIES.");
@@ -85,24 +67,6 @@ vitest.describe("home_feed", () => {
             return;
         }
         const result = await home_feed({ Cookies: mockCookies, Verbose: true, Sort: "newest" });
-        vitest.expect(result.status).toBe("success");
-        vitest.expect(result.data).toBeInstanceOf(Object);
-    });
-    vitest.it("should handle home feed with Verbose and old to new sort", async () => {
-        if (!Cookies) {
-            console.warn("Skipping Verbose and old-to-new sort test due to missing YouTubeDLX_COOKIES.");
-            return;
-        }
-        const result = await home_feed({ Cookies: mockCookies, Verbose: true, Sort: "old-to-new" });
-        vitest.expect(result.status).toBe("success");
-        vitest.expect(result.data).toBeInstanceOf(Object);
-    });
-    vitest.it("should handle home feed with Verbose and new to old sort", async () => {
-        if (!Cookies) {
-            console.warn("Skipping Verbose and new-to-old sort test due to missing YouTubeDLX_COOKIES.");
-            return;
-        }
-        const result = await home_feed({ Cookies: mockCookies, Verbose: true, Sort: "new-to-old" });
         vitest.expect(result.status).toBe("success");
         vitest.expect(result.data).toBeInstanceOf(Object);
     });

@@ -7,19 +7,18 @@ vitest.describe("playlist_data", () => {
     vitest.it("should handle basic playlist data fetch", async () => {
         try {
             const result = await playlist_data({ playlistLink: validPlaylistLink });
-            vitest.expect(result).toHaveProperty("data");
-            if (result && result.data) {
-                vitest.expect(result.data).toHaveProperty("id");
-                vitest.expect(typeof result.data.id).toBe("string");
-                vitest.expect(result.data).toHaveProperty("title");
-                vitest.expect(typeof result.data.title).toBe("string");
-                vitest.expect(result.data).toHaveProperty("videoCount");
-                vitest.expect(typeof result.data.videoCount).toBe("number");
-                vitest.expect(result.data).toHaveProperty("result");
-                vitest.expect(Array.isArray(result.data.result)).toBe(true);
-                if (result.data.result && result.data.result.length > 0) {
-                    vitest.expect(result.data.result[0]).toHaveProperty("id");
-                    vitest.expect(result.data.result[0]).toHaveProperty("title");
+            if (result) {
+                vitest.expect(result).toHaveProperty("id");
+                vitest.expect(typeof result.id).toBe("string");
+                vitest.expect(result).toHaveProperty("title");
+                vitest.expect(typeof result.title).toBe("string");
+                vitest.expect(result).toHaveProperty("videoCount");
+                vitest.expect(typeof result.videoCount).toBe("number");
+                vitest.expect(result).toHaveProperty("result");
+                vitest.expect(Array.isArray(result.result)).toBe(true);
+                if (result.result && result.result.length > 0) {
+                    vitest.expect(result.result[0]).toHaveProperty("id");
+                    vitest.expect(result.result[0]).toHaveProperty("title");
                 }
             }
         } catch (error) {

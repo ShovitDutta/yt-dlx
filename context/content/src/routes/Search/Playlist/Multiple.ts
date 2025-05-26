@@ -32,8 +32,8 @@ async function searchPlaylists({ Query }: { Query: string }): Promise<searchPlay
  * @param options.playlistLink - A string representing the search query for playlists. This is a mandatory parameter and must be at least 2 characters long. Note: This parameter name is somewhat misleading; it expects a search query, not a direct playlist URL.
  * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during execution. Defaults to `false`.
  *
- * @returns {Promise<{ data: searchPlaylistsType }>} A promise that resolves to an object containing a `data` property.
- * The `data` property is a `searchPlaylistsType` object representing the first found playlist that matches the query, with the following properties:
+ * @returns {Promise<searchPlaylistsType>} A promise that resolves to an object of type `searchPlaylistsType`.
+ * The object represents the first found playlist that matches the query, with the following properties:
  * - `id`: The unique identifier of the playlist.
  * - `title`: The title of the playlist.
  * - `videoCount`: The number of videos in the playlist.
@@ -44,9 +44,9 @@ async function searchPlaylists({ Query }: { Query: string }): Promise<searchPlay
  * - If no playlists are found for the provided query: `Error: @error: No playlists found for the provided Query.`
  * - If unable to extract data for the first found playlist: `Error: @error: Unable to get playlist data.`
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
- * - For any unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
+ * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function search_playlists({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: searchPlaylistsType }> {
+export default async function search_playlists({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<searchPlaylistsType> {
     try {
         ZodSchema.parse({ playlistLink, Verbose });
         const isID = await YouTubeID(playlistLink);
@@ -55,7 +55,7 @@ export default async function search_playlists({ playlistLink, Verbose }: z.infe
         if (!metaDataArray.length) throw new Error(`${colors.red("@error: ")} No playlists found for the provided Query.`);
         const metaData: searchPlaylistsType = metaDataArray[0];
         if (!metaData) throw new Error(`${colors.red("@error: ")} Unable to get playlist data.`);
-        return { data: metaData };
+        return metaData;
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
         else if (error instanceof Error) throw error;

@@ -6,21 +6,20 @@ vitest.describe("search_channels", () => {
     vitest.it("should handle basic channel search", async () => {
         try {
             const result = await search_channels({ Query: validQuery });
-            vitest.expect(result).toHaveProperty("data");
-            if (result && result.data) {
-                vitest.expect(Array.isArray(result.data)).toBe(true);
-                vitest.expect(result.data.length).toBeGreaterThan(0);
-                if (result.data.length > 0) {
-                    vitest.expect(result.data[0]).toHaveProperty("id");
-                    vitest.expect(typeof result.data[0].id).toBe("string");
-                    vitest.expect(result.data[0]).toHaveProperty("name");
-                    vitest.expect(typeof result.data[0].name).toBe("string");
-                    vitest.expect(result.data[0]).toHaveProperty("subscriberCount");
-                    vitest.expect(typeof result.data[0].subscriberCount).toBe("number");
-                    vitest.expect(result.data[0]).toHaveProperty("description");
-                    vitest.expect(typeof result.data[0].description).toBe("string");
-                    vitest.expect(result.data[0]).toHaveProperty("thumbnails");
-                    vitest.expect(Array.isArray(result.data[0].thumbnails)).toBe(true);
+            if (result) {
+                vitest.expect(Array.isArray(result)).toBe(true);
+                vitest.expect(result.length).toBeGreaterThan(0);
+                if (result.length > 0) {
+                    vitest.expect(result[0]).toHaveProperty("id");
+                    vitest.expect(typeof result[0].id).toBe("string");
+                    vitest.expect(result[0]).toHaveProperty("name");
+                    vitest.expect(typeof result[0].name).toBe("string");
+                    vitest.expect(result[0]).toHaveProperty("subscriberCount");
+                    vitest.expect(typeof result[0].subscriberCount).toBe("number");
+                    vitest.expect(result[0]).toHaveProperty("description");
+                    vitest.expect(typeof result[0].description).toBe("string");
+                    vitest.expect(result[0]).toHaveProperty("thumbnails");
+                    vitest.expect(Array.isArray(result[0].thumbnails)).toBe(true);
                 }
             }
         } catch (error) {

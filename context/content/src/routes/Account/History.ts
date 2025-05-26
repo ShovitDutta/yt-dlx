@@ -3,7 +3,7 @@ import { z, ZodError } from "zod";
 import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/SanitizeContentItem";
-const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional(), Sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
+const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional(), Sort: z.enum(["oldest", "newest"]).optional() });
 type WatchHistoryOptions = z.infer<typeof ZodSchema>;
 interface ReelShelfItem {
     accessibility_text?: string;
@@ -38,8 +38,7 @@ interface Video {
  *
  * @description This function retrieves the watch history (including Shorts and regular videos) for a YouTube account using the provided cookies.
  * It initializes a Tube client, fetches the history, and then sanitizes and categorizes the content into Shorts and Videos.
- * The results can optionally be sorted based on the `Sort` parameter. The sorting mechanism for "old-to-new" and "new-to-old"
- * is based on the lexicographical comparison of video IDs, not chronological order.
+ * The results can optionally be sorted based on the `Sort` parameter.
  * The `Verbose` option provides additional logging information.
  *
  * @param options - An object containing the options for fetching the watch history.
@@ -48,8 +47,6 @@ interface Video {
  * @param options.Sort - An optional enum specifying the sorting order for the fetched history items.
  * - `"oldest"`: Returns only the oldest item in both Shorts and Videos arrays.
  * - `"newest"`: Returns only the newest item in both Shorts and Videos arrays.
- * - `"old-to-new"`: Sorts items by their video ID in ascending lexicographical order.
- * - `"new-to-old"`: Sorts items by their video ID in descending lexicographical order.
  *
  * @returns A Promise that resolves to a `TubeResponse` object.
  * If successful, the `status` will be "success" and `data` will contain an object with:
@@ -96,30 +93,6 @@ export default async function watch_history(options: WatchHistoryOptions & { Ver
             case "newest":
                 if (result.data?.Shorts && result.data.Shorts.length > 1) result.data.Shorts.splice(1);
                 if (result.data?.Videos && result.data.Videos.length > 1) result.data.Videos.splice(1);
-                break;
-            case "old-to-new":
-                if (result.data?.Shorts)
-                    result.data.Shorts.sort((a, b) => {
-                        if (!a?.videoId || !b?.videoId) return 0;
-                        return a.videoId.localeCompare(b.videoId);
-                    });
-                if (result.data?.Videos)
-                    result.data.Videos.sort((a, b) => {
-                        if (!a?.videoId || !b?.videoId) return 0;
-                        return a.videoId.localeCompare(b.videoId);
-                    });
-                break;
-            case "new-to-old":
-                if (result.data?.Shorts)
-                    result.data.Shorts.sort((a, b) => {
-                        if (!a?.videoId || !b?.videoId) return 0;
-                        return b.videoId.localeCompare(a.videoId);
-                    });
-                if (result.data?.Videos)
-                    result.data.Videos.sort((a, b) => {
-                        if (!a?.videoId || !b?.videoId) return 0;
-                        return b.videoId.localeCompare(a.videoId);
-                    });
                 break;
         }
         return result;

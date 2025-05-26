@@ -10,16 +10,15 @@ vitest.describe("search_playlists", () => {
     vitest.it("should handle basic playlist search", async () => {
         try {
             const result = await search_playlists({ playlistLink: validQuery });
-            vitest.expect(result).toHaveProperty("data");
-            if (result && result.data) {
-                vitest.expect(result.data).toHaveProperty("id");
-                vitest.expect(typeof result.data.id).toBe("string");
-                vitest.expect(result.data).toHaveProperty("title");
-                vitest.expect(typeof result.data.title).toBe("string");
-                vitest.expect(result.data).toHaveProperty("videoCount");
-                vitest.expect(typeof result.data.videoCount).toBe("number");
-                vitest.expect(result.data).toHaveProperty("thumbnails");
-                vitest.expect(Array.isArray(result.data.thumbnails)).toBe(true);
+            if (result) {
+                vitest.expect(result).toHaveProperty("id");
+                vitest.expect(typeof result.id).toBe("string");
+                vitest.expect(result).toHaveProperty("title");
+                vitest.expect(typeof result.title).toBe("string");
+                vitest.expect(result).toHaveProperty("videoCount");
+                vitest.expect(typeof result.videoCount).toBe("number");
+                vitest.expect(result).toHaveProperty("thumbnails");
+                vitest.expect(Array.isArray(result.thumbnails)).toBe(true);
             }
         } catch (error) {
             console.warn("Basic playlist search failed for Query \"" + validQuery + "\". " + error);
@@ -27,9 +26,8 @@ vitest.describe("search_playlists", () => {
     });
     vitest.it("should handle playlist search with a different Query", async () => {
         const result = await search_playlists({ playlistLink: anotherValidQuery });
-        vitest.expect(result).toHaveProperty("data");
-         if (result && result.data) {
-            vitest.expect(result.data).toHaveProperty("id");
+         if (result) {
+            vitest.expect(result).toHaveProperty("id");
         }
     });
 });

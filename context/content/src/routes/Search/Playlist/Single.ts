@@ -32,7 +32,7 @@ async function playlistVideos({ PlaylistId }: { PlaylistId: string }): Promise<p
  * @param options.playlistLink - A string representing the YouTube playlist URL or ID. This is a mandatory parameter and must be at least 2 characters long.
  * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during execution. Defaults to `false`.
  *
- * @returns {Promise<{ data: playlistVideosType }>} A promise that resolves to an object containing `data` of type `playlistVideosType`.
+ * @returns {Promise<playlistVideosType>} A promise that resolves to an object of type `playlistVideosType`.
  * The `playlistVideosType` object includes:
  * - `id`: The unique identifier of the playlist.
  * - `title`: The title of the playlist.
@@ -50,14 +50,14 @@ async function playlistVideos({ PlaylistId }: { PlaylistId: string }): Promise<p
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function playlist_data({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: playlistVideosType }> {
+export default async function playlist_data({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<playlistVideosType> {
     try {
         ZodSchema.parse({ playlistLink, Verbose });
         const PlaylistId = await YouTubeID(playlistLink);
         if (!PlaylistId) throw new Error(colors.red("@error: ") + " Incorrect playlist link provided.");
         const metaData: playlistVideosType | null = await playlistVideos({ PlaylistId });
         if (!metaData) throw new Error(colors.red("@error: ") + " Unable to retrieve playlist information.");
-        return { data: metaData };
+        return metaData;
     } catch (error) {
         if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
