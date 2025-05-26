@@ -105,7 +105,7 @@ export default async function VideoCustom({
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
                 instance.withOutputFormat("matroska");
-
+                instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
                 const filterMap: Record<string, string[]> = {
                     invert: ["negate"],
                     flipVertical: ["vflip"],
