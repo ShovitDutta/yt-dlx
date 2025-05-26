@@ -5,7 +5,7 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/SanitizeContentItem";
 const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional() });
 type subscriptions_feedOptions = z.infer<typeof ZodSchema>;
-interface Content {
+export interface Content {
     type: string;
     title: string;
     videoId: string;

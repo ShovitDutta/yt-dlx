@@ -52,7 +52,7 @@ const M3u8_Options_Schema = z.object({
         .args(z.any() as z.ZodType<ffmpeg.FfmpegCommand>)
         .returns(z.void()),
 });
-interface M3u8_Options extends z.infer<typeof M3u8_Options_Schema> {
+export interface M3u8_Options extends z.infer<typeof M3u8_Options_Schema> {
     configure: (instance: ffmpeg.FfmpegCommand) => void;
     Verbose?: boolean;
     ShowProgress?: boolean;

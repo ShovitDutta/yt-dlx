@@ -9,7 +9,7 @@ const ZodSchema = z.object({
     orderBy: z.enum(["relevance", "viewCount", "rating", "date"]).optional(),
 });
 type SearchVideosOptions = z.infer<typeof ZodSchema>;
-interface VideoSearchResult {
+export interface VideoSearchResult {
     id: string;
     title: string;
     isLive: boolean;

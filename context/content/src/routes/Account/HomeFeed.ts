@@ -5,7 +5,7 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/SanitizeContentItem";
 const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional(), Sort: z.enum(["oldest", "newest"]).optional() });
 type HomeFeedOptions = z.infer<typeof ZodSchema>;
-interface Short {
+export interface Short {
     title: string;
     videoId: string;
     thumbnails: {
@@ -14,7 +14,7 @@ interface Short {
         height: number;
     }[];
 }
-interface Video {
+export interface Video {
     type: string;
     title: string;
     videoId: string;

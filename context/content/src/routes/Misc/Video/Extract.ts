@@ -7,18 +7,18 @@ import { Innertube, UniversalCache } from "youtubei.js";
 import type { CommentType } from "../../../interfaces/CommentType";
 import { EngineOutput } from "../../../interfaces/EngineOutput";
 const ZodSchema = z.object({ Query: z.string().min(2), UseTor: z.boolean().optional(), Verbose: z.boolean().optional() });
-interface CaptionSegment {
+export interface CaptionSegment {
     utf8: string;
     tOffsetMs?: number;
     acAsrConf: number;
 }
-interface VideoTranscriptType {
+export interface VideoTranscriptType {
     text: string;
     start: number;
     duration: number;
     segments: CaptionSegment[];
 }
-interface UploadAgo {
+export interface UploadAgo {
     years: number;
     months: number;
     days: number;
@@ -30,7 +30,7 @@ interface VideoDuration {
     seconds: number;
     formatted: string;
 }
-interface PayloadType {
+export interface PayloadType {
     MetaData: EngineOutput["MetaData"] & {
         upload_ago: number;
         upload_ago_formatted: UploadAgo;

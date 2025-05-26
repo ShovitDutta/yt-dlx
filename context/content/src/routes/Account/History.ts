@@ -14,7 +14,7 @@ interface ReelShelfItem {
         height: number;
     }[];
 }
-interface Short {
+export interface Short {
     title: string;
     videoId: string;
     thumbnails: {
@@ -23,7 +23,7 @@ interface Short {
         height: number;
     }[];
 }
-interface Video {
+export interface Video {
     title: string;
     videoId: string;
     thumbnails: {
