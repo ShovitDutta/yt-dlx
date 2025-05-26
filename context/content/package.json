@@ -80,9 +80,9 @@
         "vitest": "^3.1.4"
     },
     "scripts": {
-        "test": "vitest",
-        "docs": "typedoc --options typedoc.json",
         "make": "yarn install --frozen-lockfile",
+        "docs": "typedoc --options typedoc.json",
+        "test": "vitest --config vitest.config.ts",
         "package": "pkg . --output yt-dlx-standalone",
         "prepublishOnly": "rimraf package && yarn build",
         "postinstall": "node postdeps.mjs && shx chmod -R +x .",
