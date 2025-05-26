@@ -1,6 +1,7 @@
 {
-    "include": ["src/**/*.ts"],
+    "types": ["vitest/globals"],
     "extends": "./src/config/root.json",
+    "include": ["src/**/*.ts", "vitest.config.ts"],
     "exclude": ["package", "node_modules", "examples"],
     "compilerOptions": { "strict": true, "target": "esnext", "esModuleInterop": true }
 }
