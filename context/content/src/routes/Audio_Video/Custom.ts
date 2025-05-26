@@ -142,6 +142,7 @@ export default async function AudioVideoCustom({
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
 
                 instance.withOutputFormat("matroska");
+                instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
 
                 const filterMap: Record<string, string[]> = {
                     invert: ["negate"],
@@ -153,7 +154,6 @@ export default async function AudioVideoCustom({
                     grayscale: ["colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3"],
                 };
                 if (Filter && filterMap[Filter]) instance.withVideoFilter(filterMap[Filter]);
-                instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
 
                 let processStartTime: Date;
                 if (ShowProgress) {
