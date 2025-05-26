@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput, CleanedAudioFormat, CleanedVideoFormat } from "../../interfaces/EngineOutput";
-import ffmpeg from "fluent-ffmpeg"; // Keep import for type hinting in configure
 
 const ZodSchema = z.object({
     Query: z.string().min(2),
@@ -193,7 +192,6 @@ export default async function AudioVideoCustom({
                         passthroughStream.destroy(new Error(errorMessage));
                         if (ShowProgress) process.stdout.write("\n");
                     });
-
                 } else {
                     const FileNameBase = `yt-dlx_AudioVideoCustom_`;
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.mkv`;
@@ -241,17 +239,16 @@ export default async function AudioVideoCustom({
             await new Promise<void>((resolve, reject) => {
                 ffmpegCommand.on("end", () => resolve());
                 ffmpegCommand.on("error", (error, stdout, stderr) => {
-                     const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
-                     console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
-                     if (ShowProgress) process.stdout.write("\n");
-                     reject(new Error(errorMessage));
+                    const errorMessage = `${colors.red("@error:")} FFmpeg download error: ${error?.message}`;
+                    console.error(errorMessage, "\nstdout:", stdout, "\nstderr:", stderr);
+                    if (ShowProgress) process.stdout.write("\n");
+                    reject(new Error(errorMessage));
                 });
                 ffmpegCommand.run();
             });
 
             return { OutputPath };
         }
-
     } catch (error) {
         if (error instanceof ZodError) throw new Error(`${colors.red("@error:")} Argument validation failed: ${error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ")}`);
         else if (error instanceof Error) throw error;
