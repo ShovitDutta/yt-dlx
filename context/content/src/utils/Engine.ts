@@ -1,43 +1,13 @@
 import * as colors from "colors";
 import { promisify } from "util";
 import { locator } from "./Locator";
-import * as readline from "readline";
 import * as retry from "async-retry";
-import { spawn, execFile, ChildProcessWithoutNullStreams } from "child_process";
+import { execFile } from "child_process";
 import { EngineOutput, OriginalJson, CleanedAudioFormat, CleanedVideoFormat } from "../interfaces/EngineOutput";
 let cachedLocatedPaths: Record<string, string> | null = null;
 export const getLocatedPaths = async (): Promise<Record<string, string>> => {
     if (cachedLocatedPaths === null) cachedLocatedPaths = await locator();
     return cachedLocatedPaths;
-};
-const startTor = async (ytDlxPath: string, Verbose = false): Promise<ChildProcessWithoutNullStreams> => {
-    return new Promise(async (resolve, reject) => {
-        if (Verbose) console.log(colors.green("@info: ") + "Attempting to spawn Tor using yt-dlx at: " + ytDlxPath);
-        const torProcess = spawn(ytDlxPath, ["--tor"], { stdio: ["ignore", "pipe", "pipe"] }) as unknown as ChildProcessWithoutNullStreams;
-        const rlStdout = readline.createInterface({ input: torProcess.stdout, output: process.stdout, terminal: false });
-        const rlStderr = readline.createInterface({ input: torProcess.stderr, output: process.stderr, terminal: false });
-        rlStdout.on("line", line => {
-            if (Verbose) console.log(colors.green("@info: ") + line);
-            if (line.includes("Bootstrapped 100% (done): Done")) {
-                if (Verbose) console.log(colors.green("@info: ") + "Tor is 100% bootstrapped!");
-                rlStdout.removeAllListeners("line");
-                rlStderr.removeAllListeners("line");
-                resolve(torProcess);
-            }
-        });
-        rlStderr.on("line", line => {
-            if (Verbose) console.error(colors.red("@error: ") + line);
-        });
-        torProcess.on("error", err => {
-            console.error(colors.red("@error: ") + "Tor process error: " + err);
-            reject(err);
-        });
-        torProcess.on("close", code => {
-            console.log(colors.green("@info: ") + "Tor process closed with code " + code);
-            if (code !== 0) reject(new Error(`Tor process exited with code ${code} before bootstrapping.`));
-        });
-        if (Verbose) console.log(colors.green("@info: ") + "Spawned yt-dlx --tor process with PID: " + torProcess.pid + " using " + ytDlxPath + ". Waiting for bootstrap...");
-    });
 };
 export var sizeFormat = (filesize: number): string | number => {
     if (isNaN(filesize) || filesize < 0) return filesize;
@@ -57,22 +27,12 @@ export default async function Engine(options: {
     retryConfig?: { factor: number; retries: number; minTimeout: number; maxTimeout: number };
 }): Promise<EngineOutput | null> {
     const { Query, UseTor = false, Verbose = false, retryConfig = config } = options;
-    let torProcess: ChildProcessWithoutNullStreams | null = null;
     const located = await getLocatedPaths();
     const ytDlxPath = located["yt-dlx"];
     const ffmpegPath = located["ffmpeg"];
     if (!ytDlxPath) {
         console.error(colors.red("@error: ") + "yt-dlx executable path not found.");
         return null;
-    }
-    if (UseTor) {
-        try {
-            if (Verbose) console.log(colors.green("@info: ") + "Attempting to start Tor and wait for bootstrap...");
-            torProcess = await startTor(ytDlxPath, Verbose);
-            if (Verbose) console.log(colors.green("@info: ") + "Tor is ready for " + (process.platform === "win32" ? "Windows" : "Linux") + ".");
-        } catch (error) {
-            console.error(colors.red("@error: ") + "Failed to start Tor: " + error);
-        }
     }
     const ytprobeArgs = [
         "--ytprobe",
@@ -106,10 +66,6 @@ export default async function Engine(options: {
     var metaCore = await retry.default(async () => {
         return await promisify(execFile)(ytDlxPath, ytprobeArgs);
     }, retryConfig);
-    if (torProcess) {
-        torProcess.kill();
-        if (Verbose) console.log(colors.green("@info: ") + "Tor process terminated on " + (process.platform === "win32" ? "Windows" : "Linux"));
-    }
     const rawresp: OriginalJson = JSON.parse(metaCore.stdout.toString().replace(/yt-dlp/g, "yt-dlx"));
     const AllFormats = rawresp.formats || [];
     const NoStoryboard = AllFormats.filter(f => {
@@ -168,7 +124,7 @@ export default async function Engine(options: {
     const groupAudioFormatsByLanguage = (formats: CleanedAudioFormat[]) => {
         const formatsByLanguage: { [key: string]: CleanedAudioFormat[] } = {};
         formats.forEach(format => {
-            const languageMatch = format.format_note?.match(/^([^ \-]+)/); // Modified regex to stop at space or hyphen
+            const languageMatch = format.format_note?.match(/^([^ \-]+)/);
             const language = languageMatch ? languageMatch[1] : "Unknown";
             if (!formatsByLanguage[language]) formatsByLanguage[language] = [];
             formatsByLanguage[language].push(format);
