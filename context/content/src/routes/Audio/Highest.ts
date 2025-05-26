@@ -77,7 +77,7 @@ type AudioHighestOptions = z.infer<typeof ZodSchema>;
  * - For any errors that occur during the FFmpeg download process: `Error: @error: FFmpeg download error: [error_message]`.
  * - For any other unforeseen errors during execution: `Error: @error: An unexpected error occurred: [generic_error_message]`.
  */
-export default async function AudioHighest({
+export default async function Audio_Highest({
     Query,
     Output,
     UseTor,
