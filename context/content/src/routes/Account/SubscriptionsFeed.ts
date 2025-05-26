@@ -29,58 +29,6 @@ interface Content {
         height: number;
     }[];
 }
-/**
- * @shortdesc Fetches a user's YouTube subscriptions feed.
- *
- * @description This function retrieves the latest videos and content from a user's YouTube subscriptions.
- * It authenticates using provided cookies and processes the raw feed data into a structured format.
- *
- * Authentication is handled by an internal `TubeLogin` utility, which requires valid
- * YouTube authentication cookies to successfully access the subscriptions feed.
- *
- * The function returns a list of `Content` objects, each representing a video or other
- * subscription item, including details like title, video ID, author information,
- * thumbnails, and view counts.
- *
- * @param {object} options - The configuration options for fetching the subscriptions feed.
- * @param {string} options.Cookies - Your YouTube authentication cookies. These are essential for authentication.
- * @param {boolean} [options.Verbose=false] - If true, enables verbose logging throughout the process.
- *
- * @returns {Promise<TubeResponse<{ contents: Content[] }>>} A Promise that resolves to a `TubeResponse` object.
- * - On success (`status: "success"`), the `data` property contains an object with a `contents` array:
- * - `contents`: An array of `Content` objects, each representing an item from the subscriptions feed.
- * - On failure (`status: "error"`), an error message will be available.
- *
- * @throws {Error}
- * - Throws an `Error` if `Cookies` are not provided.
- * - Throws an `Error` if the internal Tube client fails to initialize (e.g., due to invalid cookies).
- * - Throws an `Error` if fetching the subscriptions feed from YouTube fails.
- * - Throws a `ZodError` if the provided options do not conform to the expected schema.
- * - Throws a generic `Error` for any other unexpected issues during execution.
- *
- * @example
- * // 1. Fetching the basic subscriptions feed
- * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube authentication cookies.
- * // You can typically obtain these from your browser's developer tools when logged into YouTube.
- * try {
- * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
- * const feed = await subscriptions_feed({ Cookies: myCookies });
- * console.log("Fetched Subscriptions Feed Contents:", feed.data?.contents);
- * } catch (error) {
- * console.error("Error fetching subscriptions feed:", error);
- * }
- *
- * @example
- * // 2. Fetching the subscriptions feed with verbose logging enabled
- * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube cookies.
- * try {
- * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
- * const feed = await subscriptions_feed({ Cookies: myCookies, Verbose: true });
- * console.log("Fetched Subscriptions Feed (Verbose) Contents:", feed.data?.contents);
- * } catch (error) {
- * console.error("Error fetching subscriptions feed with verbose logging:", error);
- * }
- */
 export default async function subscriptions_feed({ Cookies, Verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
         ZodSchema.parse({ Cookies, Verbose });

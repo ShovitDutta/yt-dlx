@@ -4,55 +4,6 @@ import TubeResponse from "../../interfaces/TubeResponse";
 import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional() });
 type UnseenNotificationsOptions = z.infer<typeof ZodSchema>;
-/**
- * @shortdesc Fetches the count of unseen notifications for a YouTube user.
- *
- * @description This function retrieves the number of unread or unseen notifications
- * for a YouTube account by authenticating with provided cookies.
- *
- * Authentication is handled by an internal `TubeLogin` utility, which requires valid
- * YouTube authentication cookies to successfully query notification status.
- *
- * The function returns an object containing the count of unseen notifications.
- *
- * @param {object} options - The configuration options for fetching unseen notifications.
- * @param {string} options.Cookies - Your YouTube authentication cookies. These are required for authentication.
- * @param {boolean} [options.Verbose=false] - If true, enables verbose logging throughout the process.
- *
- * @returns {Promise<TubeResponse<{ count: number }>>} A Promise that resolves to a `TubeResponse` object.
- * - On success (`status: "success"`), the `data` property contains an object with a `count` property, which is the number of unseen notifications.
- * - On failure (`status: "error"`), an error message will be available.
- *
- * @throws {Error}
- * - Throws an `Error` if `Cookies` are not provided.
- * - Throws an `Error` if the internal Tube client fails to initialize (e.g., due to invalid cookies).
- * - Throws an `Error` if fetching the unseen notifications count from YouTube fails or returns an undefined count.
- * - Throws a `ZodError` if the provided options do not conform to the expected schema.
- * - Throws a generic `Error` for any other unexpected issues during execution.
- *
- * @example
- * // 1. Fetching the count of unseen notifications
- * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube authentication cookies.
- * // You can typically obtain these from your browser's developer tools when logged into YouTube.
- * try {
- * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
- * const notifications = await unseen_notifications({ Cookies: myCookies });
- * console.log("Unseen Notifications Count:", notifications.data?.count);
- * } catch (error) {
- * console.error("Error fetching unseen notifications:", error);
- * }
- *
- * @example
- * // 2. Fetching the count of unseen notifications with verbose logging
- * // Replace 'YOUR_YOUTUBE_COOKIES_STRING' with your actual YouTube cookies.
- * try {
- * const myCookies = "YOUR_YOUTUBE_COOKIES_STRING";
- * const notifications = await unseen_notifications({ Cookies: myCookies, Verbose: true });
- * console.log("Unseen Notifications Count (Verbose):", notifications.data?.count);
- * } catch (error) {
- * console.error("Error fetching unseen notifications with verbose logging:", error);
- * }
- */
 export default async function unseen_notifications(options: UnseenNotificationsOptions): Promise<TubeResponse<{ count: number }>> {
     let Verbose = false;
     try {
