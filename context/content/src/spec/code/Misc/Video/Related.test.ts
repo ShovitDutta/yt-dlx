@@ -1,11 +1,9 @@
 import relatedVideosFn from "../../../../routes/Misc/Video/Related";
 import * as vitest from "vitest";
 vitest.describe("relatedVideosFn", () => {
-    const videoIdWithRelated = "https://www.youtube.com/watch?v=30LWjhZzg50";
-    const videoIdWithNoRelated = "nonexistentvideoid123abc";
     vitest.it("should handle basic related videos fetch", async () => {
         try {
-            const result = await relatedVideosFn({ VideoId: videoIdWithRelated });
+            const result = await relatedVideosFn({ VideoId: "https://www.youtube.com/watch?v=30LWjhZzg50" });
             vitest.expect(Array.isArray(result)).toBe(true);
             vitest.expect(result.length).toBeGreaterThan(0);
             if (result && result.length > 0) {
@@ -18,7 +16,7 @@ vitest.describe("relatedVideosFn", () => {
                 vitest.expect(Array.isArray(result[0].thumbnails)).toBe(true);
             }
         } catch (error) {
-            console.warn("Basic related videos fetch failed for " + videoIdWithRelated + ". This test requires a real video ID with related videos. " + error);
+            console.warn('Basic related videos fetch failed for "https://www.youtube.com/watch?v=30LWjhZzg50". This test requires a real video ID with related videos. ' + error);
             throw error;
         }
     });
