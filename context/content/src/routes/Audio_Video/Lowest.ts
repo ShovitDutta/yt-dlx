@@ -20,6 +20,54 @@ const ZodSchema = z.object({
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 type AudioVideoLowestOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Downloads or streams a YouTube video with the lowest available audio and video quality, with optional filtering and metadata retrieval.
+ *
+ * @description This function retrieves the lowest available quality video stream and the highest available quality audio stream (by default or specified language) from a given YouTube query (URL or video ID).
+ * It then combines these streams into a single output.
+ * The function supports various output options including saving to a file, streaming the content directly, or just returning metadata about the video and audio streams.
+ * Video processing, such as applying filters (invert, grayscale, rotations, flips), is handled via FFmpeg.
+ * The function automatically locates `ffmpeg` and `ffprobe` executables.
+ * Progress can be displayed in the console, and verbose logging provides detailed information.
+ *
+ * @param options - An object containing the options for combined audio and video retrieval and processing.
+ * @param options.Query - A string representing the YouTube video URL or ID. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.Output - An optional string specifying the directory where the combined video and audio should be saved. If not provided, the file will be saved in the current working directory. This parameter cannot be used with `Stream` or `MetaData`.
+ * @param options.UseTor - An optional boolean. If `true`, the function attempts to route network requests through the Tor network, enhancing privacy. Defaults to `false`.
+ * @param options.Stream - An optional boolean. If `true`, the combined video and audio will be returned as a `Readable` stream. This parameter cannot be used with `Output` or `MetaData`.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying detailed information and FFmpeg commands during execution. Defaults to `false`.
+ * @param options.MetaData - An optional boolean. If `true`, only the metadata (title, file name, and lowest quality video/highest quality audio links) of the content will be returned, without downloading or streaming. This parameter cannot be used with `Stream`, `Output`, `Filter`, or `ShowProgress`.
+ * @param options.ShowProgress - An optional boolean. If `true`, a progress bar will be displayed in the console during the download or streaming process. Defaults to `false`. This parameter cannot be used with `MetaData`.
+ * @param options.AudioLanguage - An optional string specifying the desired audio language. If not provided, the default audio stream (usually the primary language) will be selected.
+ * @param options.Filter - An optional enum specifying a video filter to apply:
+ * - `"invert"`: Inverts the video colors.
+ * - `"rotate90"`: Rotates the video 90 degrees clockwise.
+ * - `"rotate270"`: Rotates the video 270 degrees clockwise (or 90 degrees counter-clockwise).
+ * - `"grayscale"`: Converts the video to grayscale.
+ * - `"rotate180"`: Rotates the video 180 degrees.
+ * - `"flipVertical"`: Flips the video vertically.
+ * - `"flipHorizontal"`: Flips the video horizontally.
+ * This parameter cannot be used with `MetaData`.
+ *
+ * @returns A Promise that resolves to one of the following based on the provided options:
+ * - If `MetaData` is `true`: An object containing `MetaData` (detailed video metadata), `FileName` (suggested file name), and `Links` (lowest quality standard/HDR video formats and highest quality standard/DRC audio formats available by language).
+ * - If `Stream` is `true`: An object containing `Stream` (a `Readable` stream of the combined audio and video content) and `FileName` (suggested file name).
+ * - If neither `Stream` nor `MetaData` is `true` (default to file download): An object containing `OutputPath` (the full path to the downloaded video file).
+ *
+ * @throws {Error}
+ * - If `MetaData` is used with `Stream`, `Output`, `Filter`, or `ShowProgress`: `Error: @error: The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`
+ * - If both `Stream` and `Output` are set to `true`: `Error: @error: The 'Stream' parameter cannot be used with 'output'.`
+ * - If unable to retrieve a response from the engine: `Error: @error: Unable to retrieve a response from the engine.`
+ * - If metadata is not found in the engine response: `Error: @error: Metadata not found in the engine response.`
+ * - If the lowest quality video URL is not found: `Error: @error: Lowest quality video URL not found.`
+ * - If the lowest quality audio URL is not found for the specified (or default) language: `Error: @error: Lowest quality audio URL not found for language: [language_or_default].`
+ * - If `ffmpeg` executable is not found: `Error: @error: ffmpeg executable not found.`
+ * - If `ffprobe` executable is not found: `Error: @error: ffprobe executable not found.`
+ * - If the output directory cannot be created: `Error: @error: Failed to create output directory: [error_message]`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
+ * - For any FFmpeg-related errors during streaming or download: `Error: @error: FFmpeg Stream error: [error_message]` or `Error: @error: FFmpeg download error: [error_message]`
+ * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function AudioVideoLowest({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage }: AudioVideoLowestOptions): Promise<
     | {
           MetaData: EngineOutput["MetaData"];

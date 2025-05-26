@@ -139,6 +139,67 @@ async function fetchVideoTranscript(VideoId: string, Verbose: boolean): Promise<
         return null;
     }
 }
+/**
+ * @shortdesc Extracts comprehensive metadata, audio/video formats, comments, and transcript for a given YouTube video.
+ *
+ * @description This powerful function serves as a central point for extracting a wide array of information about a YouTube video.
+ * It fetches general metadata (title, views, likes, etc.), available audio-only and video-only formats, thumbnails,
+ * heatmap data, chapters, subtitles, captions, and attempts to retrieve comments and video transcripts.
+ * The function enhances some metadata fields with formatted versions (e.g., human-readable upload date, abbreviated counts).
+ * It uses both `youtubei` and `youtubei.js` (Innertube) clients for robust data retrieval and supports optional Tor usage for privacy.
+ *
+ * @param options - An object containing the query and optional verbose mode.
+ * @param options.Query - A string representing the YouTube video URL or ID. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.UseTor - An optional boolean. If `true`, network requests will attempt to be routed through the Tor network. Defaults to `false`.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, providing detailed output during the extraction process, including progress messages for comments and transcripts. Defaults to `false`.
+ *
+ * @returns {Promise<PayloadType>} A promise that resolves to a `PayloadType` object containing:
+ * - `MetaData`: An extended `EngineOutput["MetaData"]` object with additional formatted fields:
+ * - `upload_ago`: The number of days since the video was uploaded.
+ * - `upload_ago_formatted`: An object with `years`, `months`, `days`, and a human-readable `formatted` string (e.g., "1 year, 2 months, 5 days").
+ * - `view_count_formatted`: The view count formatted with abbreviations (e.g., "1.2M").
+ * - `like_count_formatted`: The like count formatted with abbreviations (e.g., "50K").
+ * - `comment_count_formatted`: The comment count formatted with abbreviations (e.g., "10K").
+ * - `channel_follower_count_formatted`: The channel follower count formatted with abbreviations (e.g., "2M").
+ * - `VideoLink`: (Optional) The original video link if available from the engine.
+ * - `videoId`: (Optional) The video ID if available from the engine.
+ * - `duration`: The video duration in seconds (overwrites original duration with parsed seconds).
+ * - `upload_date`: The upload date formatted as a human-readable string (e.g., "May 26, 2025").
+ * - `AudioOnly`: Available audio-only formats as returned by the engine.
+ * - `VideoOnly`: Available video-only formats as returned by the engine.
+ * - `Thumbnails`: Thumbnail URLs as returned by the engine.
+ * - `Heatmap`: Heatmap data (engagement data) as returned by the engine.
+ * - `Chapters`: Chapter information as returned by the engine.
+ * - `Subtitle`: Subtitle information as returned by the engine.
+ * - `Captions`: Caption information as returned by the engine.
+ * - `comments`: An array of `CommentType` objects if comments are found, otherwise `null`. Each comment includes:
+ * - `comment_id`: Unique ID of the comment.
+ * - `is_pinned`: Whether the comment is pinned by the creator.
+ * - `comment`: The text content of the comment.
+ * - `published_time`: The time the comment was published (e.g., "2 days ago").
+ * - `author_is_channel_owner`: Whether the comment author is the channel owner.
+ * - `creator_thumbnail_url`: URL to the comment author's thumbnail.
+ * - `like_count`: Number of likes on the comment.
+ * - `is_member`: Whether the author is a channel member.
+ * - `author`: The author's name.
+ * - `is_hearted`: Whether the comment is hearted by the creator.
+ * - `is_liked`: Whether the comment is liked by the current user.
+ * - `is_disliked`: Whether the comment is disliked by the current user.
+ * - `reply_count`: Number of replies to the comment.
+ * - `hasReplies`: Whether the comment has replies.
+ * - `transcript`: An array of `VideoTranscriptType` objects if a transcript is found, otherwise `null`. Each transcript segment includes:
+ * - `text`: The text of the segment.
+ * - `start`: The start time of the segment in seconds.
+ * - `duration`: The duration of the segment in seconds.
+ * - `segments`: More granular `CaptionSegment` details including `utf8`, `tOffsetMs`, and `acAsrConf`.
+ *
+ * @throws {Error}
+ * - If the `Query` is invalid or results in no response from the engine: `Error: @error: Unable to get response!`
+ * - If metadata is not found in the engine's response: `Error: @error: Metadata not found in the response!`
+ * - If the upload date cannot be parsed: `Error: @error: Failed to parse upload date: [error_message]`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
+ * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function extract(options: z.infer<typeof ZodSchema>): Promise<PayloadType> {
     let Verbose = false;
     try {

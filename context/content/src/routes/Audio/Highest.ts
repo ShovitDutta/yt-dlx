@@ -22,6 +22,61 @@ const ZodSchema = z.object({
         .optional(),
 });
 type AudioHighestOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Downloads or streams the highest quality audio of a YouTube video, with optional audio filters and metadata retrieval.
+ *
+ * @description This function retrieves the highest available quality audio stream from a given YouTube query (URL or video ID).
+ * It provides options to either save the audio to a file, stream it directly as a Node.js `Readable` stream, or simply fetch its detailed metadata.
+ * You can apply a variety of audio processing filters (e.g., echo, bassboost, speed changes, nightcore, vaporwave) using FFmpeg, which is seamlessly integrated.
+ * The function automatically locates `ffmpeg` and `ffprobe` executables on your system.
+ * Additionally, you have the flexibility to display a progress bar during the download or streaming process and enable verbose logging for comprehensive output.
+ *
+ * @param options - An object containing the options for audio retrieval and processing.
+ * @param options.Query - A string representing the YouTube video URL or ID. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.Output - An optional string specifying the directory where the audio file should be saved. If not provided, the file will be saved in the current working directory. This parameter cannot be used simultaneously with `Stream` or `MetaData`.
+ * @param options.UseTor - An optional boolean. If `true`, the function will attempt to route network requests through the Tor network, enhancing privacy. Defaults to `false`.
+ * @param options.Stream - An optional boolean. If `true`, the audio will be returned as a `Readable` stream, which is useful for in-memory processing or piping the audio to another destination. This parameter cannot be used with `Output` or `MetaData`.
+ * @param options.Verbose - An optional boolean. If `true`, the function will print detailed logs and the FFmpeg command being executed to the console. Defaults to `false`.
+ * @param options.MetaData - An optional boolean. If `true`, the function will only return the video's metadata (including title, suggested file name, and links to the highest quality audio streams) without performing any download or streaming. This parameter cannot be used with `Stream`, `Output`, `Filter`, or `ShowProgress`.
+ * @param options.ShowProgress - An optional boolean. If `true`, a real-time progress bar will be displayed in your console during the audio download or streaming process. Defaults to `false`. This parameter cannot be used with `MetaData`.
+ * @param options.Language - An optional string specifying the desired audio language (e.g., "English", "Spanish"). If not provided, the default audio stream for the video will be selected.
+ * @param options.Filter - An optional enum specifying an audio filter to apply to the output:
+ * - `"echo"`: Adds an echo effect to the audio.
+ * - `"slow"`: Slows down the audio playback speed.
+ * - `"speed"`: Speeds up the audio playback speed.
+ * - `"phaser"`: Applies a phaser audio effect.
+ * - `"flanger"`: Applies a flanger audio effect.
+ * - `"panning"`: Creates an audio panning effect.
+ * - `"reverse"`: Reverses the audio playback.
+ * - `"vibrato"`: Applies a vibrato effect to the audio.
+ * - `"subboost"`: Enhances sub-bass frequencies in the audio.
+ * - `"surround"`: Creates a simulated surround sound effect.
+ * - `"bassboost"`: Boosts the bass frequencies of the audio.
+ * - `"nightcore"`: Applies a nightcore effect (typically sped-up audio with increased pitch).
+ * - `"superslow"`: Significantly slows down the audio playback speed.
+ * - `"vaporwave"`: Applies a vaporwave effect (typically slowed-down audio with reduced pitch).
+ * - `"superspeed"`: Significantly speeds up the audio playback speed.
+ * This parameter cannot be used with `MetaData`.
+ *
+ * @returns A Promise that resolves to one of three distinct object types depending on the `options` provided:
+ * - If `MetaData` is `true`: An object containing the video's `MetaData` (comprehensive details about the video), a suggested `FileName` for the audio, and `Links` to the highest quality standard audio format available by language. Note that `HDR_Highest` will always be `null` as this function focuses on audio.
+ * - If `Stream` is `true`: An object containing a Node.js `Readable` `Stream` of the audio content and a suggested `FileName`.
+ * - If neither `Stream` nor `MetaData` is `true` (which implies downloading to a file): An object containing the `OutputPath` (the full file system path to the downloaded audio file).
+ *
+ * @throws {Error}
+ * - If the `MetaData` parameter is used along with `Stream`, `Output`, `Filter`, or `ShowProgress`: `Error: @error: The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`
+ * - If both the `Stream` and `Output` parameters are set to `true`: `Error: @error: The 'Stream' parameter cannot be used with 'output'.`
+ * - If the function fails to retrieve a response from the underlying engine: `Error: @error: Unable to retrieve a response from the engine.`
+ * - If the engine's response does not contain the expected metadata: `Error: @error: Metadata was not found in the engine response.`
+ * - If the URL for the highest quality audio for the specified `Language` (or default) cannot be found: `Error: @error: Highest quality audio URL was not found for language: [Language or Default].`
+ * - If the `ffmpeg` executable is not found in the system's accessible paths: `Error: @error: ffmpeg executable not found.`
+ * - If the `ffprobe` executable is not found in the system's accessible paths: `Error: @error: ffprobe executable not found.`
+ * - If the specified output directory cannot be created: `Error: @error: Failed to create the output directory: [error_message]`
+ * - If the provided `options` object fails validation against the Zod schema (e.g., incorrect data types or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [validation_message]`.
+ * - For any errors that occur during the FFmpeg streaming process: `Error: @error: FFmpeg Stream error: [error_message]`.
+ * - For any errors that occur during the FFmpeg download process: `Error: @error: FFmpeg download error: [error_message]`.
+ * - For any other unforeseen errors during execution: `Error: @error: An unexpected error occurred: [generic_error_message]`.
+ */
 export default async function AudioHighest({
     Query,
     Output,

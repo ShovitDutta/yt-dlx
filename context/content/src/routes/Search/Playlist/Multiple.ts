@@ -19,6 +19,33 @@ async function searchPlaylists({ Query }: { Query: string }): Promise<searchPlay
         throw new Error(`${colors.red("@error: ")} ${error.message}`);
     }
 }
+/**
+ * @shortdesc Searches for YouTube playlists based on a query.
+ *
+ * @description This function allows you to search for YouTube playlists using a given search query.
+ * It utilizes the `youtubei` library to perform the search and extracts relevant information for each found playlist,
+ * including its ID, title, video count, and thumbnails.
+ * **Important:** This function is designed for searching by keywords, not for retrieving data from a specific playlist URL.
+ * If you have a playlist link (URL), you should use `playlist_data()` instead.
+ *
+ * @param options - An object containing the search query and optional verbose mode.
+ * @param options.playlistLink - A string representing the search query for playlists. This is a mandatory parameter and must be at least 2 characters long. Note: This parameter name is somewhat misleading; it expects a search query, not a direct playlist URL.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during execution. Defaults to `false`.
+ *
+ * @returns {Promise<{ data: searchPlaylistsType }>} A promise that resolves to an object containing a `data` property.
+ * The `data` property is a `searchPlaylistsType` object representing the first found playlist that matches the query, with the following properties:
+ * - `id`: The unique identifier of the playlist.
+ * - `title`: The title of the playlist.
+ * - `videoCount`: The number of videos in the playlist.
+ * - `thumbnails`: An array of thumbnail URLs for the playlist. (Note: The current implementation only extracts the first thumbnail URL).
+ *
+ * @throws {Error}
+ * - If the `playlistLink` parameter (interpreted as a query here) is actually a YouTube playlist ID (URL): `Error: @error: Use playlist_data() for playlist link!`
+ * - If no playlists are found for the provided query: `Error: @error: No playlists found for the provided Query.`
+ * - If unable to extract data for the first found playlist: `Error: @error: Unable to get playlist data.`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
+ * - For any unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function search_playlists({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: searchPlaylistsType }> {
     try {
         ZodSchema.parse({ playlistLink, Verbose });

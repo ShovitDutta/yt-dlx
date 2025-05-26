@@ -59,7 +59,40 @@ async function fetchVideoComments({ Query, Verbose }: VideoCommentsOptions): Pro
         if (Verbose) console.log(colors.green("@info: ") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
-
+/**
+ * @shortdesc Fetches comments for a YouTube video based on a search query.
+ *
+ * @description This function first searches for a YouTube video using the provided `Query`. Once a video is identified (the first result of the search),
+ * it then proceeds to fetch all available comments for that specific video. It leverages the `youtubei` and `youtubei.js` (Innertube) libraries
+ * to perform the search and comment retrieval.
+ *
+ * @param options - An object containing the query and optional verbose mode.
+ * @param options.Query - A string representing the search query for the YouTube video (e.g., video title, URL, or ID). This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information about the search process and comment fetching to the console. Defaults to `false`.
+ *
+ * @returns {Promise<CommentType[]>} A promise that resolves to an array of `CommentType` objects,
+ * where each object represents a comment and includes the following properties:
+ * - `comment_id`: The unique identifier of the comment.
+ * - `is_pinned`: A boolean indicating if the comment is pinned by the video creator.
+ * - `comment`: The actual text content of the comment.
+ * - `published_time`: A string indicating when the comment was published (e.g., "3 days ago").
+ * - `author_is_channel_owner`: A boolean indicating if the comment's author is the channel owner.
+ * - `creator_thumbnail_url`: The URL to the comment author's profile picture thumbnail.
+ * - `like_count`: The number of likes the comment has received.
+ * - `is_member`: A boolean indicating if the comment author is a channel member.
+ * - `author`: The name of the comment author.
+ * - `is_hearted`: A boolean indicating if the comment has been "hearted" by the video creator.
+ * - `is_liked`: A boolean indicating if the current user has liked the comment.
+ * - `is_disliked`: A boolean indicating if the current user has disliked the comment.
+ * - `reply_count`: The number of replies to the comment.
+ * - `hasReplies`: A boolean indicating if the comment thread has replies.
+ *
+ * @throws {Error}
+ * - If no videos are found for the given `Query`: `Error: No videos found for the given Query`.
+ * - If no comments are found for the identified video: `Error: No comments found for the video`.
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`.
+ * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`.
+ */
 export default async function videoComments({ Query, Verbose }: VideoCommentsOptions): Promise<CommentType[]> {
     try {
         ZodSchema.parse({ Query, Verbose });

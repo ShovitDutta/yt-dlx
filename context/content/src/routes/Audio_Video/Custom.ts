@@ -25,6 +25,64 @@ const ZodSchema = z.object({
     Filter: z.enum(["invert", "rotate90", "rotate270", "grayscale", "rotate180", "flipVertical", "flipHorizontal"]).optional(),
 });
 type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Downloads or streams a YouTube video with custom audio and video quality settings, optional filtering, and metadata retrieval.
+ *
+ * @description This function offers granular control over the quality of both audio and video streams when downloading or streaming a YouTube video.
+ * You can specify desired audio quality by `AudioFormatId` or `AudioBitrate`, and video quality by `VideoFormatId`, `VideoResolution`, or `VideoFPS`.
+ * If no specific audio/video parameters are provided, it defaults to the highest available standard dynamic range for both.
+ * The function supports saving the combined audio-video output to a specified directory, streaming it as a Node.js `Readable` stream, or simply retrieving detailed metadata.
+ * Video processing, such as applying various filters (invert, grayscale, rotations, flips), is handled by FFmpeg.
+ * The function automatically locates `ffmpeg` and `ffprobe` executables on the system.
+ * You can also enable a progress bar for downloads/streams and verbose logging for detailed execution information.
+ *
+ * @param options - An object containing the options for combined audio and video retrieval and processing.
+ * @param options.Query - A string representing the YouTube video URL or ID. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.Output - An optional string specifying the directory where the combined audio and video should be saved. If omitted, the video will be saved in the current working directory. This parameter cannot be used with `Stream` or `MetaData`.
+ * @param options.UseTor - An optional boolean. If `true`, network requests will be routed through the Tor network, enhancing privacy. Defaults to `false`.
+ * @param options.Stream - An optional boolean. If `true`, the combined audio and video content will be returned as a Node.js `Readable` stream, allowing for in-memory processing or piping. This parameter cannot be used with `Output` or `MetaData`.
+ * @param options.Verbose - An optional boolean. If `true`, the function will print detailed logs and FFmpeg command executions to the console. Defaults to `false`.
+ * @param options.VideoFPS - An optional number specifying the desired video frames per second. Only one of `VideoFormatId`, `VideoResolution`, or `VideoFPS` can be provided. This parameter cannot be used with `MetaData`.
+ * @param options.MetaData - An optional boolean. If `true`, the function will only return the video's metadata (title, file name, and all available audio/video links) without downloading or streaming the content. This parameter cannot be combined with `Stream`, `Output`, `Filter`, `ShowProgress`, `AudioLanguage`, `AudioFormatId`, `AudioBitrate`, `VideoFormatId`, `VideoResolution`, or `VideoFPS`.
+ * @param options.ShowProgress - An optional boolean. If `true`, a real-time progress bar will be displayed in the console during the video download or streaming process. Defaults to `false`. This parameter cannot be used with `MetaData`.
+ * @param options.AudioLanguage - An optional string specifying the desired audio language (e.g., "English", "Spanish"). If not provided, the default audio stream for the video will be selected. This parameter cannot be used with `MetaData`.
+ * @param options.AudioFormatId - An optional string specifying the exact format ID of the audio to download. This ID can typically be found in the `Links` object when `MetaData` is set to `true`. Only one of `AudioFormatId` or `AudioBitrate` can be provided. This parameter cannot be used with `MetaData`.
+ * @param options.AudioBitrate - An optional number specifying the desired audio bitrate (e.g., 128 for 128kbps). The function will attempt to find the closest matching bitrate. Only one of `AudioFormatId` or `AudioBitrate` can be provided. This parameter cannot be used with `MetaData`.
+ * @param options.VideoFormatId - An optional string specifying the exact format ID of the video to download. This ID can typically be found in the `Links` object when `MetaData` is set to `true`. Only one of `VideoFormatId`, `VideoResolution`, or `VideoFPS` can be provided. This parameter cannot be used with `MetaData`.
+ * @param options.VideoResolution - An optional string specifying the desired video resolution (e.g., "1080p", "720p"). Only one of `VideoFormatId`, `VideoResolution`, or `VideoFPS` can be provided. This parameter cannot be used with `MetaData`.
+ * @param options.Filter - An optional enum specifying a video filter to apply to the output:
+ * - `"invert"`: Inverts the colors of the video.
+ * - `"rotate90"`: Rotates the video 90 degrees clockwise.
+ * - `"rotate270"`: Rotates the video 270 degrees clockwise.
+ * - `"grayscale"`: Converts the video to grayscale.
+ * - `"rotate180"`: Rotates the video 180 degrees.
+ * - `"flipVertical"`: Flips the video content along its horizontal axis.
+ * - `"flipHorizontal"`: Flips the video content along its vertical axis.
+ * This parameter cannot be used with `MetaData`.
+ *
+ * @returns A Promise that resolves to one of three possible object structures:
+ * - If `MetaData` is `true`: Returns an object containing the video's `MetaData` (full details), a suggested `FileName`, and `Links` to all available audio (standard and dynamic range compression by language) and video (SDR and HDR combined) formats.
+ * - If `Stream` is `true`: Returns an object containing a `Readable` `Stream` of the video content and a suggested `FileName`.
+ * - Otherwise (defaulting to file download): Returns an object containing the `OutputPath` (the full path to the saved video file).
+ *
+ * @throws {Error}
+ * - If `MetaData` is used in conjunction with any other processing-related parameters (`Stream`, `Output`, `Filter`, `ShowProgress`, `AudioLanguage`, `AudioFormatId`, `AudioBitrate`, `VideoFormatId`, `VideoResolution`, `VideoFPS`): `Error: @error: The 'MetaData' parameter cannot be used with other processing parameters.`
+ * - If both `Stream` and `Output` parameters are set to `true`: `Error: @error: The 'Stream' parameter cannot be used with 'Output'.`
+ * - If both `AudioFormatId` and `AudioBitrate` are provided: `Error: @error: The 'AudioFormatId' and 'AudioBitrate' parameters cannot be used together. Please specify only one audio custom parameter.`
+ * - If more than one of `VideoFormatId`, `VideoResolution`, or `VideoFPS` are provided simultaneously: `Error: @error: Please specify only one of 'VideoFormatId', 'VideoResolution', or 'VideoFPS'.`
+ * - If the video metadata cannot be retrieved from the engine: `Error: @error: Unable to retrieve a response from the engine.`
+ * - If metadata is found to be missing from the engine's response: `Error: @error: Metadata was not found in the engine response.`
+ * - If a specified `AudioFormatId` or `AudioBitrate` does not match any available audio formats for the given language: `Error: @error: Audio format with [ID/bitrate] '[value]' not found for language '[language_or_unknown]'.`
+ * - If no suitable audio formats are found for the specified (or default) language: `Error: @error: No suitable audio formats found for language '[language_or_unknown]'.`
+ * - If a specified `VideoFormatId`, `VideoResolution`, or `VideoFPS` does not match any available video formats: `Error: @error: Video format with [ID/resolution/FPS] '[value]' not found.`
+ * - If no suitable video formats are found at all: `Error: @error: No suitable video formats found.`
+ * - If the `ffmpeg` executable is not found on the system: `Error: @error: ffmpeg executable not found.`
+ * - If the `ffprobe` executable is not found on the system: `Error: @error: ffprobe executable not found.`
+ * - If there's a problem creating the specified output directory: `Error: @error: Failed to create the output directory: [error_message]`
+ * - If the provided `options` fail Zod schema validation (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
+ * - For any FFmpeg-related errors during the streaming or download process: `Error: @error: FFmpeg Stream error: [error_message]` or `Error: @error: FFmpeg download error: [error_message]`
+ * - For any other unexpected errors that occur during execution: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function AudioVideoCustom({
     Query,
     Output,
@@ -40,7 +98,7 @@ export default async function AudioVideoCustom({
     VideoFormatId,
     VideoResolution,
     VideoFPS,
-}: AudioVideoCustomOptions): Promise<{ MetaData: EngineOutput['MetaData']; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
+}: AudioVideoCustomOptions): Promise<{ MetaData: EngineOutput["MetaData"]; FileName: string; Links: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, AudioLanguage, AudioFormatId, AudioBitrate, VideoFormatId, VideoResolution, VideoFPS });
         if (MetaData && (Stream || Output || Filter || ShowProgress || AudioLanguage || AudioFormatId || AudioBitrate || VideoFormatId || VideoResolution || VideoFPS)) {

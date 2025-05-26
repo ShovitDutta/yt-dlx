@@ -29,6 +29,28 @@ interface Content {
         height: number;
     }[];
 }
+/**
+ * @shortdesc Fetches and processes the YouTube subscriptions feed for a given account.
+ *
+ * @description This function retrieves the personalized subscriptions feed content for a YouTube account using the provided cookies.
+ * It initializes a Tube client, fetches the feed, and then sanitizes and structures the content.
+ * The `Verbose` option provides additional logging information.
+ *
+ * @param options - An object containing the options for fetching the subscriptions feed.
+ * @param options.Cookies - A string containing the YouTube cookies required for authentication. This is a mandatory parameter.
+ * @param options.Verbose - An optional boolean that, when set to `true`, enables verbose logging, displaying informational messages during execution. Defaults to `false`.
+ *
+ * @returns A Promise that resolves to a `TubeResponse` object.
+ * If successful, the `status` will be "success" and `data` will contain an object with:
+ * - `contents`: An array of `Content` objects, each representing a video from the subscriptions feed, containing details like `type`, `title`, `videoId`, `authorId`, `authorUrl`, `viewCount`, `authorName`, `description`, `authorBadges`, `shortViewCount`, `thumbnails`, and `authorThumbnails`.
+ *
+ * @throws {Error}
+ * - If `Cookies` are not provided: `Error: @error: Cookies not provided!`
+ * - If the Tube client cannot be initialized: `Error: @error: Could not initialize Tube client.`
+ * - If fetching the subscriptions feed fails: `Error: @error: Failed to fetch subscriptions feed.`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
+ * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function subscriptions_feed({ Cookies, Verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {
         ZodSchema.parse({ Cookies, Verbose });

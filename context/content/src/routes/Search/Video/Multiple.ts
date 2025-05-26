@@ -21,6 +21,44 @@ interface VideoSearchResult {
     description?: string;
     channelname?: string;
 }
+/**
+ * @shortdesc Searches for YouTube videos based on a query and optional criteria, including view count filters and sorting.
+ *
+ * @description This function allows you to search for YouTube videos using a specified query.
+ * It provides advanced filtering capabilities based on minimum and maximum view counts,
+ * and allows you to sort the results by relevance, view count, rating, or upload date.
+ * The function retrieves essential video details such as ID, title, live status, duration, view count,
+ * upload date, channel information, and thumbnails.
+ *
+ * @param options - An object containing the search query and optional filters.
+ * @param options.Query - A string representing the search query for YouTube videos. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.minViews - An optional number specifying the minimum number of views a video must have to be included in the search results.
+ * @param options.maxViews - An optional number specifying the maximum number of views a video can have to be included in the search results.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during the search process. Defaults to `false`.
+ * @param options.orderBy - An optional enum specifying the order in which the search results should be sorted:
+ * - `"relevance"`: Sorts results by relevance to the query (default YouTube behavior).
+ * - `"viewCount"`: Sorts results by the number of views in descending order.
+ * - `"rating"`: Sorts results by rating (currently not implemented in the provided code, will default to original order).
+ * - `"date"`: Sorts results by upload date in descending order (newest first).
+ *
+ * @returns {Promise<VideoSearchResult[]>} A promise that resolves to an array of `VideoSearchResult` objects.
+ * Each object in the array represents a video found and has the following properties:
+ * - `id`: The unique identifier of the video.
+ * - `title`: The title of the video.
+ * - `isLive`: A boolean indicating whether the video is a live stream.
+ * - `duration`: (Optional) The duration of the video in seconds.
+ * - `viewCount`: (Optional) The number of views the video has.
+ * - `uploadDate`: (Optional) The upload date of the video in a string format (e.g., "YYYY-MM-DD").
+ * - `channelid`: (Optional) The ID of the channel that uploaded the video.
+ * - `thumbnails`: (Optional) The URL of the highest quality thumbnail available for the video. (Note: The implementation currently only extracts the highest quality thumbnail URL).
+ * - `description`: (Optional) A brief description of the video.
+ * - `channelname`: (Optional) The name of the channel that uploaded the video.
+ *
+ * @throws {Error}
+ * - If no videos are found matching the given query and criteria: `Error: @error: No videos found with the given criteria.`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type, missing required fields, or invalid enum value for `orderBy`): `Error: @error: Argument validation failed: [path.to.field]: [message]`
+ * - For any unexpected errors during the search operation: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function searchVideos({ Query, minViews, maxViews, orderBy, Verbose }: SearchVideosOptions): Promise<VideoSearchResult[]> {
     try {
         ZodSchema.parse({ Query, minViews, maxViews, orderBy, Verbose });

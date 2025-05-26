@@ -20,6 +20,36 @@ async function playlistVideos({ PlaylistId }: { PlaylistId: string }): Promise<p
         throw new Error(colors.red("@error: ") + " " + error.message);
     }
 }
+/**
+ * @shortdesc Retrieves detailed information and video listings for a given YouTube playlist.
+ *
+ * @description This function takes a YouTube playlist link as input and fetches comprehensive data about the playlist,
+ * including its ID, title, total video count, and a list of all videos within the playlist.
+ * For each video in the playlist, it extracts the video ID, title, live status, duration, and thumbnail URLs.
+ * The function leverages the `youtubei` library to interact with YouTube's API.
+ *
+ * @param options - An object containing the playlist link and optional verbose mode.
+ * @param options.playlistLink - A string representing the YouTube playlist URL or ID. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during execution. Defaults to `false`.
+ *
+ * @returns {Promise<{ data: playlistVideosType }>} A promise that resolves to an object containing `data` of type `playlistVideosType`.
+ * The `playlistVideosType` object includes:
+ * - `id`: The unique identifier of the playlist.
+ * - `title`: The title of the playlist.
+ * - `videoCount`: The total number of videos in the playlist.
+ * - `result`: An array of objects, each representing a video in the playlist:
+ * - `id`: The unique identifier of the video.
+ * - `title`: The title of the video.
+ * - `isLive`: A boolean indicating whether the video is a live stream.
+ * - `duration`: The duration of the video in seconds.
+ * - `thumbnails`: An array of thumbnail URLs for the video. (Note: The current implementation only extracts the first thumbnail.)
+ *
+ * @throws {Error}
+ * - If the `playlistLink` is incorrect or cannot be resolved to a valid playlist ID: `Error: @error: Incorrect playlist link provided.`
+ * - If the function is unable to fetch data for the provided playlist: `Error: @error: Unable to fetch playlist data.` or `Error: @error: Unable to retrieve playlist information.`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
+ * - For any other unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function playlist_data({ playlistLink, Verbose }: z.infer<typeof ZodSchema>): Promise<{ data: playlistVideosType }> {
     try {
         ZodSchema.parse({ playlistLink, Verbose });

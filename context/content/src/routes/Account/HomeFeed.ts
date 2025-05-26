@@ -38,6 +38,36 @@ interface Video {
     viewCount: string;
     shortViewCount: string;
 }
+/**
+ * @shortdesc Fetches and processes the YouTube home feed for a given account.
+ *
+ * @description This function retrieves the personalized home feed content (including Shorts and regular videos) for a YouTube account using the provided cookies.
+ * It initializes a Tube client, fetches the home feed, and then sanitizes and categorizes the content into Shorts and Videos.
+ * The results can optionally be sorted based on the `Sort` parameter. The sorting mechanism for "old-to-new" and "new-to-old"
+ * is based on the lexicographical comparison of video IDs, not chronological order.
+ * The `Verbose` option provides additional logging information.
+ *
+ * @param options - An object containing the options for fetching the home feed.
+ * @param options.Cookies - A string containing the YouTube cookies required for authentication. This is a mandatory parameter.
+ * @param options.Verbose - An optional boolean that, when set to `true`, enables verbose logging, displaying informational messages during execution. Defaults to `false`.
+ * @param options.Sort - An optional enum specifying the sorting order for the fetched home feed items.
+ * - `"oldest"`: Returns only the oldest item in both Shorts and Videos arrays.
+ * - `"newest"`: Returns only the newest item in both Shorts and Videos arrays.
+ * - `"old-to-new"`: Sorts items by their video ID in ascending lexicographical order.
+ * - `"new-to-old"`: Sorts items by their video ID in descending lexicographical order.
+ *
+ * @returns A Promise that resolves to a `TubeResponse` object.
+ * If successful, the `status` will be "success" and `data` will contain an object with:
+ * - `Shorts`: An array of `Short` objects, each containing `title`, `videoId`, and `thumbnails`.
+ * - `Videos`: An array of `Video` objects, each containing `type`, `title`, `videoId`, `description`, `thumbnails`, `authorId`, `authorName`, `authorThumbnails`, `authorBadges`, `authorUrl`, `viewCount`, and `shortViewCount`.
+ *
+ * @throws {Error}
+ * - If `Cookies` are not provided: `Error: @error: Cookies not provided!`
+ * - If the Tube client cannot be initialized: `Error: @error: Could not initialize Tube client.`
+ * - If fetching the home feed fails: `Error: @error: Failed to fetch home feed.`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path]: [message]`
+ * - For any other unexpected errors: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function home_feed(options: HomeFeedOptions): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
     let Verbose = false;
     try {

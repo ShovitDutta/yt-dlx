@@ -30,6 +30,33 @@ async function getVideoTranscript({ VideoId }: { VideoId: string }): Promise<Vid
     }
 }
 type VideoTranscriptOptions = z.infer<typeof ZodSchema>;
+/**
+ * @shortdesc Retrieves the transcript of a YouTube video.
+ *
+ * @description This function fetches the automatically generated or user-provided transcript for a given YouTube video.
+ * It takes a video link as input and returns an array of transcript segments, each containing the text, start time, duration, and detailed segment information.
+ * The function utilizes the `youtubei` library to interact with YouTube's data.
+ *
+ * @param options - An object containing the options for transcript retrieval.
+ * @param options.VideoLink - A string representing the YouTube video URL or ID. This is a mandatory parameter and must be at least 2 characters long.
+ * @param options.Verbose - An optional boolean. If `true`, enables verbose logging, displaying additional information during execution. Defaults to `false`.
+ *
+ * @returns {Promise<VideoTranscriptType[]>} A promise that resolves to an array of `VideoTranscriptType` objects,
+ * where each object represents a segment of the video transcript with the following properties:
+ * - `text`: The full text of the transcript segment.
+ * - `start`: The start time of the segment in seconds.
+ * - `duration`: The duration of the segment in seconds.
+ * - `segments`: An array of `CaptionSegment` objects, providing more granular details about the segment's text.
+ * - `utf8`: The UTF-8 encoded text of the caption segment.
+ * - `tOffsetMs`: (Optional) The time offset in milliseconds from the start of the video for this specific sub-segment.
+ * - `acAsrConf`: The ASR (Automatic Speech Recognition) confidence score for the segment.
+ *
+ * @throws {Error}
+ * - If the `VideoLink` is incorrect or invalid: `Error: @error: Incorrect video link`
+ * - If the function is unable to retrieve a transcript for the given video: `Error: @error: Unable to get transcript for this video!`
+ * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
+ * - For any unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
+ */
 export default async function videoTranscript({ VideoLink, Verbose }: VideoTranscriptOptions): Promise<VideoTranscriptType[]> {
     try {
         ZodSchema.parse({ VideoLink, Verbose });
