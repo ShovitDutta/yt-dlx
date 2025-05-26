@@ -28,10 +28,10 @@ export default async function AudioHighest({
     UseTor,
     Stream,
     Filter,
-    MetaData,
     Verbose,
-    ShowProgress,
     Language,
+    MetaData,
+    ShowProgress,
 }: AudioHighestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
