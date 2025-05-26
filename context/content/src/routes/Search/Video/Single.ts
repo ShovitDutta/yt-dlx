@@ -73,7 +73,7 @@ type VideoDataOptions = z.infer<typeof ZodSchema>;
  * - If argument validation fails due to invalid `options` (e.g., incorrect type or missing required fields): `Error: @error: Argument validation failed: [path.to.field]: [message]`
  * - For any unexpected errors during the process: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function videoData({ VideoLink, Verbose }: VideoDataOptions): Promise<SingleVideoType> {
+export default async function Search_Video_Single({ VideoLink, Verbose }: VideoDataOptions): Promise<SingleVideoType> {
     try {
         ZodSchema.parse({ VideoLink, Verbose });
         const vId = await YouTubeID(VideoLink);
