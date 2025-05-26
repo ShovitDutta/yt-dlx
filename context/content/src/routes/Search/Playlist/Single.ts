@@ -29,9 +29,9 @@ export default async function playlist_data({ playlistLink, Verbose }: z.infer<t
         if (!metaData) throw new Error(colors.red("@error: ") + " Unable to retrieve playlist information.");
         return { data: metaData };
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error:") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
+        if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error:") + " An unexpected error occurred: " + String(error));
+        else throw new Error(colors.red("@error: ") + " An unexpected error occurred: " + String(error));
     } finally {
         if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }

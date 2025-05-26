@@ -44,12 +44,12 @@ export default async function searchVideos({ Query, minViews, maxViews, orderBy,
             if (orderBy === "viewCount") videos.sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
             else if (orderBy === "date") videos.sort((a, b) => new Date(b.uploadDate ?? 0).getTime() - new Date(a.uploadDate ?? 0).getTime());
         }
-        if (videos.length === 0) throw new Error(colors.red("@error:") + " No videos found with the given criteria.");
+        if (videos.length === 0) throw new Error(colors.red("@error: ") + " No videos found with the given criteria.");
         return videos;
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error:") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
+        if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error:") + " An unexpected error occurred: " + String(error));
+        else throw new Error(colors.red("@error: ") + " An unexpected error occurred: " + String(error));
     } finally {
         if (Verbose) console.log(colors.green("@info:"), "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }

@@ -8,16 +8,16 @@ const ZodSchema = z.object({ Query: z.string().min(2), Verbose: z.boolean().opti
 type VideoCommentsOptions = z.infer<typeof ZodSchema>;
 async function fetchVideoComments({ Query, Verbose }: VideoCommentsOptions): Promise<CommentType[]> {
     try {
-        if (Verbose) console.log(colors.green("@info:") + "Searching for videos with Query: " + Query);
+        if (Verbose) console.log(colors.green("@info: ") + "Searching for videos with Query: " + Query);
         const youtubeClient = new Client();
         const searchResults = await youtubeClient.search(Query, { type: "video" });
         const video = searchResults.items[0];
         if (!video || !video.id) {
-            if (Verbose) console.log(colors.red("@error:") + "No videos found for the given Query");
+            if (Verbose) console.log(colors.red("@error: ") + "No videos found for the given Query");
             throw new Error("No videos found for the given Query");
         }
         const VideoId = video.id;
-        if (Verbose) console.log(colors.green("@info:") + "Fetching comments for video ID: " + VideoId);
+        if (Verbose) console.log(colors.green("@info: ") + "Fetching comments for video ID: " + VideoId);
         const youtubeInnertube = await Innertube.create({
             user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             cache: new UniversalCache(true, path.join(process.cwd(), "YouTubeDLX")),
@@ -46,17 +46,17 @@ async function fetchVideoComments({ Query, Verbose }: VideoCommentsOptions): Pro
             })
             .filter((item): item is CommentType => item !== null);
         if (comments.length === 0) {
-            if (Verbose) console.log(colors.red("@error:") + "No comments found for the video");
+            if (Verbose) console.log(colors.red("@error: ") + "No comments found for the video");
             throw new Error("No comments found for the video");
         }
-        if (Verbose) console.log(colors.green("@info:") + "Video comments fetched!");
+        if (Verbose) console.log(colors.green("@info: ") + "Video comments fetched!");
         return comments;
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error:") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
+        if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error:") + " An unexpected error occurred: " + String(error));
+        else throw new Error(colors.red("@error: ") + " An unexpected error occurred: " + String(error));
     } finally {
-        if (Verbose) console.log(colors.green("@info:") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info: ") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
 
@@ -66,10 +66,10 @@ export default async function videoComments({ Query, Verbose }: VideoCommentsOpt
         const comments = await fetchVideoComments({ Query, Verbose });
         return comments;
     } catch (error) {
-        if (error instanceof ZodError) throw new Error(colors.red("@error:") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
+        if (error instanceof ZodError) throw new Error(colors.red("@error: ") + " Argument validation failed: " + error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", "));
         else if (error instanceof Error) throw error;
-        else throw new Error(colors.red("@error:") + " An unexpected error occurred: " + String(error));
+        else throw new Error(colors.red("@error: ") + " An unexpected error occurred: " + String(error));
     } finally {
-        if (Verbose) console.log(colors.green("@info:") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
+        if (Verbose) console.log(colors.green("@info: ") + "❣️ Thank you for using yt-dlx. Consider 🌟starring the GitHub repo https://github.com/yt-dlx.");
     }
 }
