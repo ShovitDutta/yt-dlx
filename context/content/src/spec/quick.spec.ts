@@ -36,7 +36,7 @@ if (false) {
 } else {
     (async () => {
         console.log("Starting Tor...");
-        await Start_Tor(true);
+        await Start_Tor({ Verbose: false });
         console.log("Tor started.");
 
         console.log("Using Engine with Tor (first time)...");
@@ -44,7 +44,7 @@ if (false) {
         console.log("Engine with Tor (first time) completed.");
 
         console.log("Requesting new Tor identity...");
-        await New_IP(true);
+        await New_IP({ Verbose: false });
         console.log("New Tor identity requested.");
 
         console.log("Using Engine with Tor (second time)...");
@@ -52,7 +52,7 @@ if (false) {
         console.log("Engine with Tor (second time) completed.");
 
         console.log("Stopping Tor...");
-        Stop_Tor(true);
+        Stop_Tor({ Verbose: false });
         console.log("Tor stopped.");
         process.exit(0);
     })().catch(console.error);
