@@ -75,7 +75,6 @@ export default async function AudioVideoCustom({
             };
         }
 
-        // Refetch EngineMeta right before processing to ensure fresh URLs for download/stream
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
@@ -156,9 +155,6 @@ export default async function AudioVideoCustom({
                 if (Filter && filterMap[Filter]) {
                     instance.withVideoFilter(filterMap[Filter]);
                 }
-                // Removed -c copy to force re-encoding and potentially fix "Invalid data found" error
-
-                // Explicitly whitelist protocols and add reconnect options for FFmpeg to handle HLS streams over HTTPS
                 instance.inputOptions(["-protocol_whitelist file,http,https,tcp,tls,crypto", "-reconnect 1", "-reconnect_streamed 1", "-reconnect_delay_max 5"]);
 
                 let processStartTime: Date;
