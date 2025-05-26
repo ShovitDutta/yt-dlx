@@ -8,7 +8,6 @@ import progbar from "../../utils/ProgBar";
 import { locator } from "../../utils/Locator";
 import { Readable, PassThrough } from "stream";
 import { EngineOutput } from "../../interfaces/EngineOutput";
-
 const ZodSchema = z.object({
     Query: z.string().min(2),
     Output: z.string().optional(),
@@ -23,7 +22,6 @@ const ZodSchema = z.object({
         .optional(),
 });
 type AudioLowestOptions = z.infer<typeof ZodSchema>;
-
 export default async function AudioLowest({
     Query,
     Output,
@@ -37,16 +35,13 @@ export default async function AudioLowest({
 }: AudioLowestOptions): Promise<{ MetaData: object } | { OutputPath: string } | { Stream: Readable; FileName: string }> {
     try {
         ZodSchema.parse({ Query, Output, UseTor, Stream, Filter, MetaData, Verbose, ShowProgress, Language });
-
         if (MetaData && (Stream || Output || Filter || ShowProgress)) {
             throw new Error(`${colors.red("@error:")} The 'MetaData' parameter cannot be used with 'Stream', 'output', 'Filter', or 'ShowProgress'.`);
         }
         if (Stream && Output) throw new Error(`${colors.red("@error:")} The 'Stream' parameter cannot be used with 'output'.`);
-
         const EngineMeta: EngineOutput | null = await Agent({ Query: Query, Verbose: Verbose, UseTor: UseTor });
         if (!EngineMeta) throw new Error(`${colors.red("@error:")} Unable to retrieve a response from the engine.`);
         if (!EngineMeta.MetaData) throw new Error(`${colors.red("@error:")} Metadata was not found in the engine response.`);
-
         if (MetaData) {
             return {
                 MetaData: {
@@ -56,10 +51,8 @@ export default async function AudioLowest({
                 },
             };
         }
-
         const title = EngineMeta.MetaData.title?.replace(/[^a-zA-Z0-9_]+/g, "_") || "audio";
         const folder = Output ? Output : process.cwd();
-
         if (!Stream && !fs.existsSync(folder)) {
             try {
                 fs.mkdirSync(folder, { recursive: true });
@@ -67,14 +60,11 @@ export default async function AudioLowest({
                 throw new Error(`${colors.red("@error:")} Failed to create the output directory: ${mkdirError.message}`);
             }
         }
-
         const lowestQualityAudio = EngineMeta.AudioOnly.Standard[Language || "Default"]?.Lowest;
         if (!lowestQualityAudio?.url) throw new Error(`${colors.red("@error:")} Lowest quality audio URL was not found for language: ${Language || "Default"}.`);
-
         const paths = await locator();
         if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
-
         const main = new M3u8({
             Audio_M3u8_URL: lowestQualityAudio.url,
             Verbose: Verbose,
@@ -82,9 +72,7 @@ export default async function AudioLowest({
             FFprobePath: paths.ffprobe,
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
-
                 instance.withOutputFormat("avi");
-
                 const filterMap: Record<string, string[]> = {
                     speed: ["atempo=2"],
                     flanger: ["flanger"],
@@ -104,7 +92,6 @@ export default async function AudioLowest({
                 };
                 if (Filter && filterMap[Filter]) instance.withAudioFilter(filterMap[Filter]);
                 else instance.outputOptions("-c copy");
-
                 let processStartTime: Date;
                 if (ShowProgress) {
                     instance.on("start", () => {
@@ -114,13 +101,11 @@ export default async function AudioLowest({
                         if (processStartTime) progbar({ ...progress, percent: progress.percent !== undefined ? progress.percent : 0, startTime: processStartTime });
                     });
                 }
-
                 if (Stream) {
                     const passthroughStream = new PassThrough();
                     const FileNameBase = `yt-dlx_AudioLowest_`;
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
                     (passthroughStream as any).FileName = FileName;
-
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info:"), "FFmpeg Stream started:", command);
                     });
@@ -141,7 +126,6 @@ export default async function AudioLowest({
                     let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
                     const OutputPath = path.join(folder, FileName);
                     instance.output(OutputPath);
-
                     instance.on("start", command => {
                         if (Verbose) console.log(colors.green("@info:"), "FFmpeg download started:", command);
                         if (ShowProgress) processStartTime = new Date();
@@ -163,23 +147,18 @@ export default async function AudioLowest({
                 }
             },
         });
-
         const ffmpegCommand = await main.getFfmpegCommand();
-
         if (Stream) {
             const passthroughStream = new PassThrough();
             const FileNameBase = `yt-dlx_AudioLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
             (passthroughStream as any).FileName = FileName;
-
             ffmpegCommand.pipe(passthroughStream, { end: true });
-
             return { Stream: passthroughStream, FileName: FileName };
         } else {
             const FileNameBase = `yt-dlx_AudioLowest_`;
             let FileName = `${FileNameBase}${Filter ? Filter + "_" : ""}${title}.avi`;
             const OutputPath = path.join(folder, FileName);
-
             await new Promise<void>((resolve, reject) => {
                 ffmpegCommand.on("end", () => resolve());
                 ffmpegCommand.on("error", (error, stdout, stderr) => {
@@ -190,7 +169,6 @@ export default async function AudioLowest({
                 });
                 ffmpegCommand.run();
             });
-
             return { OutputPath };
         }
     } catch (error) {
