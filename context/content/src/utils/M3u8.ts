@@ -4,6 +4,7 @@ import colors from "colors";
 import * as path from "path";
 import * as fs from "fs-extra";
 import progbar from "./ProgBar";
+import { Writable } from "stream";
 import { z, ZodError } from "zod";
 import ffmpeg from "fluent-ffmpeg";
 import { EventEmitter } from "events";
@@ -117,5 +118,21 @@ export default class M3u8 extends EventEmitter {
             this.emit("error", error);
             throw error;
         }
+    }
+    async run(): Promise<void> {
+        const command = await this.getFfmpegCommand();
+        return new Promise((resolve, reject) => {
+            command.on("end", () => resolve());
+            command.on("error", (err, stdout, stderr) => {
+                const errorMessage = `FFmpeg error: ${err.message}\nstdout: ${stdout}\nstderr: ${stderr}`;
+                this.emit("error", new Error(errorMessage));
+                reject(new Error(errorMessage));
+            });
+            command.run();
+        });
+    }
+    async pipe(stream: Writable, options?: { end?: boolean }): Promise<Writable> {
+        const command = await this.getFfmpegCommand();
+        return command.pipe(stream, options);
     }
 }
