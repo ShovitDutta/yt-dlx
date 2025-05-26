@@ -5,15 +5,32 @@ import TubeLogin, { TubeType } from "../../utils/TubeLogin";
 import sanitizeContentItem from "../../utils/SanitizeContentItem";
 const ZodSchema = z.object({ Cookies: z.string(), Verbose: z.boolean().optional(), Sort: z.enum(["oldest", "newest", "old-to-new", "new-to-old"]).optional() });
 type WatchHistoryOptions = z.infer<typeof ZodSchema>;
+interface ReelShelfItem {
+    accessibility_text?: string;
+    on_tap_endpoint?: { payload?: { videoId?: string } };
+    thumbnail?: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
+}
 interface Short {
     title: string;
     videoId: string;
-    thumbnails: any;
+    thumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
 }
 interface Video {
     title: string;
     videoId: string;
-    thumbnails: any;
+    thumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
     description: string;
 }
 export default async function watch_history(options: WatchHistoryOptions & { Verbose?: boolean }): Promise<TubeResponse<{ Shorts: Short[]; Videos: Video[] }>> {
@@ -32,7 +49,8 @@ export default async function watch_history(options: WatchHistoryOptions & { Ver
             section.contents?.forEach(content => {
                 const sanitized = sanitizeContentItem(content);
                 if (sanitized?.type === "ReelShelf") {
-                    const shorts = sanitized.items?.map((item: any) => ({ title: item?.accessibility_text, videoId: item?.on_tap_endpoint?.payload?.videoId, thumbnails: item?.thumbnail })) || [];
+                    const shorts =
+                        sanitized.items?.map((item: ReelShelfItem) => ({ title: item?.accessibility_text, videoId: item?.on_tap_endpoint?.payload?.videoId, thumbnails: item?.thumbnail })) || [];
                     if (result.data?.Shorts) result.data.Shorts.push(...shorts);
                 } else if (sanitized?.type === "Video") {
                     const video = { title: sanitized?.title?.text, videoId: sanitized?.videoId, thumbnails: sanitized?.thumbnails, description: sanitized?.description || "" };

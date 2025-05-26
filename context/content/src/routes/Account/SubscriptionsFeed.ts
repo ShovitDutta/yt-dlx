@@ -9,15 +9,25 @@ interface Content {
     type: string;
     title: string;
     videoId: string;
-    thumbnails: any[];
-    description: string;
     authorId: string;
-    authorName: string;
-    authorThumbnails: any[];
-    authorBadges: any[];
     authorUrl: string;
     viewCount: string;
+    authorName: string;
+    description: string;
+    authorBadges: {
+        text: string;
+    }[];
     shortViewCount: string;
+    thumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
+    authorThumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
 }
 export default async function subscriptions_feed({ Cookies, Verbose = false }: subscriptions_feedOptions): Promise<TubeResponse<{ contents: Content[] }>> {
     try {

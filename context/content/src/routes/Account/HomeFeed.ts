@@ -8,18 +8,32 @@ type HomeFeedOptions = z.infer<typeof ZodSchema>;
 interface Short {
     title: string;
     videoId: string;
-    thumbnails: any[];
+    thumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
 }
 interface Video {
     type: string;
     title: string;
     videoId: string;
     description: string;
-    thumbnails: any[];
+    thumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
     authorId: string;
     authorName: string;
-    authorThumbnails: any[];
-    authorBadges: any[];
+    authorThumbnails: {
+        url: string;
+        width: number;
+        height: number;
+    }[];
+    authorBadges: {
+        text: string;
+    }[];
     authorUrl: string;
     viewCount: string;
     shortViewCount: string;
