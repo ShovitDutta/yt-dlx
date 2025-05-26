@@ -85,7 +85,7 @@ type AudioCustomOptions = z.infer<typeof ZodSchema>;
  * - For any FFmpeg-related errors during the download process: `Error: @error: FFmpeg download error: [error_message]`
  * - For any other unexpected errors that occur during execution: `Error: @error: An unexpected error occurred: [generic_error_message]`
  */
-export default async function AudioCustom({
+export default async function Audio_Custom({
     Query,
     Output,
     UseTor,
