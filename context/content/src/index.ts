@@ -26,51 +26,51 @@ import Search_Channel_Multiple from "./routes/Search/Channel/Multiple";
 import Search_Playlist_Multiple from "./routes/Search/Playlist/Multiple";
 var YouTubeDLX = {
     Audio: {
-        Custom: AudioCustom, // YouTubeDLX.Audio.Custom
-        Lowest: AudioLowest, // YouTubeDLX.Audio.Lowest
-        Highest: AudioHighest, // YouTubeDLX.Audio.Highest
+        Custom: Audio_Custom, // YouTubeDLX.Audio.Custom
+        Lowest: Audio_Lowest, // YouTubeDLX.Audio.Lowest
+        Highest: Audio_Highest, // YouTubeDLX.Audio.Highest
     },
     Video: {
-        Custom: VideoCustom, // YouTubeDLX.Video.Custom
-        Lowest: VideoLowest, // YouTubeDLX.Video.Lowest
-        Highest: VideoHighest, // YouTubeDLX.Video.Highest
+        Custom: Video_Custom, // YouTubeDLX.Video.Custom
+        Lowest: Video_Lowest, // YouTubeDLX.Video.Lowest
+        Highest: Video_Highest, // YouTubeDLX.Video.Highest
     },
     Audio_Video: {
-        Custom: AudioVideoCustom, // YouTubeDLX.Audio_Video.Custom
-        Lowest: AudioVideoLowest, // YouTubeDLX.Audio_Video.Lowest
-        Highest: AudioVideoHighest, // YouTubeDLX.Audio_Video.Highest
+        Custom: Audio_Video_Custom, // YouTubeDLX.Audio_Video.Custom
+        Lowest: Audio_Video_Lowest, // YouTubeDLX.Audio_Video.Lowest
+        Highest: Audio_Video_Highest, // YouTubeDLX.Audio_Video.Highest
     },
     Search: {
         Channel: {
-            Single: channel_data, // YouTubeDLX.Search.Channel.Single
-            Multiple: search_channels, // YouTubeDLX.Search.Channel.Multiple
+            Single: Search_Channel_Single, // YouTubeDLX.Search.Channel.Single
+            Multiple: Search_Channel_Multiple, // YouTubeDLX.Search.Channel.Multiple
         },
         Playlist: {
-            Single: playlist_data, // YouTubeDLX.Search.Playlist.Single
-            Multiple: search_playlists, // YouTubeDLX.Search.Playlist.Multiple
+            Single: Search_Playlist_Single, // YouTubeDLX.Search.Playlist.Single
+            Multiple: Search_Playlist_Multiple, // YouTubeDLX.Search.Playlist.Multiple
         },
         Video: {
-            Single: video_data, // YouTubeDLX.Search.Video.Single
-            Multiple: search_videos, // YouTubeDLX.Search.Video.Multiple
+            Single: Search_Video_Single, // YouTubeDLX.Search.Video.Single
+            Multiple: Search_Video_Multiple, // YouTubeDLX.Search.Video.Multiple
         },
     },
     Account: {
-        HomeFeed: home_feed, // YouTubeDLX.Account.HomeFeed
-        History: watch_history, // YouTubeDLX.Account.History
-        SubscriptionsFeed: subscriptions_feed, // YouTubeDLX.Account.SubscriptionsFeed
-        UnseenNotifications: unseen_notifications, // YouTubeDLX.Account.UnseenNotifications
+        HomeFeed: Account_HomeFeed, // YouTubeDLX.Account.HomeFeed
+        History: Account_History, // YouTubeDLX.Account.History
+        SubscriptionsFeed: Account_SubscriptionsFeed, // YouTubeDLX.Account.SubscriptionsFeed
+        UnseenNotifications: Account_UnseenNotifications, // YouTubeDLX.Account.UnseenNotifications
     },
     Misc: {
         System: {
-            Help: help, // YouTubeDLX.Misc.System.Help
+            Help: Misc_System_Help, // YouTubeDLX.Misc.System.Help
             ProgressBar: ProgBar, // YouTubeDLX.Misc.System.ProgressBar
         },
         Video: {
             GetId: YouTubeID, // YouTubeDLX.Misc.Video.GetId
-            Extract: extract, // YouTubeDLX.Misc.Video.Extract
-            Related: related_videos, // YouTubeDLX.Misc.Video.Related
-            Comments: video_comments, // YouTubeDLX.Video.Misc.Comments
-            Transcript: video_transcript, // YouTubeDLX.Misc.Video.Transcript
+            Extract: Misc_Video_Extract, // YouTubeDLX.Misc.Video.Extract
+            Related: Misc_Video_Related, // YouTubeDLX.Misc.Video.Related
+            Comments: Misc_Video_Comments, // YouTubeDLX.Video.Misc.Comments
+            Transcript: Misc_Video_Transcript, // YouTubeDLX.Misc.Video.Transcript
         },
     },
 };
