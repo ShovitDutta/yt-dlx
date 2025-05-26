@@ -28,6 +28,12 @@ sudo apt update && sudo apt upgrade -y || { error "System Update Failed"; exit 1
 info "Installing Nodejs..."
 ROOT_HOME="/root"
 FNM_INSTALL_PATH="$ROOT_HOME/.local/share/fnm"
+
+# Ensure 'unzip' is installed before attempting to install Fnm
+info "Ensuring 'unzip' is installed for Fnm..."
+sudo apt install -y unzip || { error "Failed to install 'unzip'"; exit 1; }
+success "'unzip' is installed."
+
 if ! command -v fnm &>/dev/null; then
     info "Installing Fnm (Fast Node Manager)..."
     curl -o- https://fnm.vercel.app/install | bash
@@ -64,7 +70,7 @@ sudo apt autoremove -y || { warn "Autoremove failed. Manual cleanup might be req
 success "Autoremove completed."
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 info "Installing Tor, Curl, And Unzip..."
-sudo apt install -y tor curl unzip || { error "Failed To Install Tor, Curl, Or Unzip"; exit 1; }
+sudo apt install -y tor curl || { error "Failed To Install Tor, Curl"; exit 1; }
 success "Tor, Curl, And Unzip Installed Successfully."
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 TORRC_PATH="/etc/tor/torrc"
@@ -116,4 +122,4 @@ else
     info "Kali Keyring File Not Found At $KEYRING_PATH. No Deletion Needed."
 fi
 success "Script Execution Finished."
-# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
