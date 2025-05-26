@@ -81,10 +81,10 @@
     },
     "scripts": {
         "make": "yarn install --frozen-lockfile",
-        "docs": "typedoc --options typedoc.json",
         "test": "vitest --config vitest.config.ts",
         "package": "pkg . --output yt-dlx-standalone",
         "prepublishOnly": "rimraf package && yarn build",
+        "docs": "typedoc --options src/config/typedoc.json",
         "postinstall": "node postdeps.mjs && shx chmod -R +x .",
         "spec": "yarn build && node package/cjs/src/spec/quick.spec.js",
         "build": "rimraf package/cjs package/esm package/types && tsc -p ./src/config/cjs.json && tsc -p ./src/config/esm.json && tsc -p ./src/config/types.json"
