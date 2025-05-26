@@ -83,7 +83,7 @@ type AudioVideoCustomOptions = z.infer<typeof ZodSchema>;
  * - For any FFmpeg-related errors during the streaming or download process: `Error: @error: FFmpeg Stream error: [error_message]` or `Error: @error: FFmpeg download error: [error_message]`
  * - For any other unexpected errors that occur during execution: `Error: @error: An unexpected error occurred: [error_message]`
  */
-export default async function AudioVideoCustom({
+export default async function Audio_Video_Custom({
     Query,
     Output,
     UseTor,
