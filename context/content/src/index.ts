@@ -22,7 +22,7 @@ import Audio_Video_Highest from "./routes/Audio_Video/Highest";
 import Misc_Video_Transcript from "./routes/Misc/Video/Transcript";
 import Search_Channel_Multiple from "./routes/Search/Channel/Multiple";
 import Search_Playlist_Multiple from "./routes/Search/Playlist/Multiple";
-import subscriptions_feed from "./routes/Account/SubscriptionsFeed";
+import Account_SubscriptionsFeed from "./routes/Account/SubscriptionsFeed";
 import unseen_notifications from "./routes/Account/UnseenNotifications";
 var YouTubeDLX = {
     Audio: {
