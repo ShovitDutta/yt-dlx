@@ -66,10 +66,10 @@ export default async function AudioLowest({
         if (!paths.ffmpeg) throw new Error(`${colors.red("@error:")} ffmpeg executable not found.`);
         if (!paths.ffprobe) throw new Error(`${colors.red("@error:")} ffprobe executable not found.`);
         const main = new M3u8({
-            Audio_M3u8_URL: lowestQualityAudio.url,
             Verbose: Verbose,
             FFmpegPath: paths.ffmpeg,
             FFprobePath: paths.ffprobe,
+            Audio_M3u8_URL: lowestQualityAudio.url,
             configure: instance => {
                 if (EngineMeta.Thumbnails.Highest?.url) instance.addInput(EngineMeta.Thumbnails.Highest.url);
                 instance.withOutputFormat("avi");
